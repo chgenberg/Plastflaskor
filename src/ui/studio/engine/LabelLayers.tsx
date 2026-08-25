@@ -50,7 +50,7 @@ export function LabelLayers({
           ) : null}
         </div>
       ) : (
-        <div className="absolute inset-0 bg-[#e8ece8]" />
+        <div className="absolute inset-0 bg-[#e5e7eb]" />
       )}
       {rest.map((layer) => {
         const selected = layer.id === selectedId;

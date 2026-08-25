@@ -37,7 +37,7 @@ export function LabelCanvas({
     <div className="relative flex h-full flex-col">
       <div
         ref={frame}
-        className="relative mx-auto my-auto aspect-[16/9] w-full max-w-[560px] overflow-hidden rounded-xl bg-[#e7ebe6] shadow-[0_10px_40px_rgba(20,30,40,.08)]"
+        className="relative mx-auto my-auto aspect-[16/9] w-full max-w-[560px] overflow-hidden rounded-xl bg-[#e5e7eb] shadow-[0_10px_40px_rgba(20,30,40,.08)]"
         style={{ transform: `scale(${zoom})` }}
         onPointerDown={(e) => {
           if ((e.target as HTMLElement).closest("[data-layer]") == null && e.currentTarget === e.target) {

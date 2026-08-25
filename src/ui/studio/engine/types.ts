@@ -26,17 +26,19 @@ export type Tool = "design" | "text" | "upload" | "colors" | "bottle" | "preview
 
 export type Finish = "matte" | "gloss";
 
+export const EXAMPLE_LOGO = "/brand/aqua-visibility-logo.png";
+export const LABEL_GRAY = "#e5e7eb";
+
 export function defaultLayers(): Layer[] {
   return [
     {
       id: "artwork",
       type: "artwork",
-      name: "Bakgrund / fjärilsmotiv",
+      name: "Bakgrund",
       x: 50,
       y: 50,
       scale: 1,
       rotation: 0,
-      src: "/editorial/label-meadow.jpg",
     },
     {
       id: "logo",
@@ -46,6 +48,7 @@ export function defaultLayers(): Layer[] {
       y: 46,
       scale: 1,
       rotation: 0,
+      src: EXAMPLE_LOGO,
     },
     {
       id: "text",

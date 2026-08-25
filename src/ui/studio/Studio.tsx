@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState, useTransition, type ReactNode } f
 import { useRouter } from "next/navigation";
 import { saveDesignAction } from "@/actions";
 import { RealityView } from "./RealityView";
+import { StudioOnboard } from "./StudioOnboard";
 import { flattenLabelBlob } from "./engine/flattenLabel";
 import { LabelCanvas } from "./engine/LabelCanvas";
 import { defaultLayers, skuLabel, type Finish, type Layer, type StudioProduct, type Tool } from "./engine/types";
@@ -49,6 +50,7 @@ export function Studio({
   const [realityFp, setRealityFp] = useState<string | null>(null);
   const [realityLoading, setRealityLoading] = useState(false);
   const [realityError, setRealityError] = useState<string | null>(null);
+  const [onboard, setOnboard] = useState(true);
   const pickerRef = useRef<HTMLDivElement>(null);
   const history = useRef<Layer[][]>([defaultLayers()]);
   const future = useRef<Layer[][]>([]);
@@ -151,6 +153,16 @@ export function Studio({
     } finally {
       setRealityLoading(false);
     }
+  }
+
+  function applyOnboard(next: { logo?: string; background?: string; fromAi?: boolean }) {
+    const composed = layers.map((l) => {
+      if (l.type === "artwork") return { ...l, src: next.background || undefined };
+      if (l.type === "logo") return { ...l, src: next.fromAi ? undefined : next.logo || l.src };
+      return l;
+    });
+    pushHistory(composed);
+    setSelectedId(next.background ? "artwork" : "logo");
   }
 
   function next() {
@@ -322,10 +334,20 @@ export function Studio({
                 )
               }
               onUpload={(src) => updateLayer(selected.type === "logo" ? "logo" : "artwork", { src })}
+              onOpenOnboard={() => setOnboard(true)}
             />
           </aside>
         </div>
       </div>
+
+      {onboard ? (
+        <StudioOnboard
+          productName={product.name}
+          categorySlug={product.categorySlug}
+          onApply={applyOnboard}
+          onClose={() => setOnboard(false)}
+        />
+      ) : null}
 
       <div className="flex gap-2 overflow-x-auto border-t border-black/5 bg-white px-3 py-2 md:hidden">
         {TOOLS.map((t) => (
@@ -368,6 +390,7 @@ function Inspector({
   onMatchColors,
   onOptimize,
   onUpload,
+  onOpenOnboard,
 }: {
   tool: Tool;
   layers: Layer[];
@@ -389,6 +412,7 @@ function Inspector({
   onMatchColors: () => void;
   onOptimize: () => void;
   onUpload: (src: string) => void;
+  onOpenOnboard: () => void;
 }) {
   return (
     <div className="space-y-5 text-sm">
@@ -523,6 +547,7 @@ function Inspector({
       <section>
         <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">AI-hjälp</p>
         <div className="mt-2 space-y-1.5">
+          <AiBtn onClick={onOpenOnboard}>Ny etikett med AI</AiBtn>
           <AiBtn onClick={onCenter}>Centrera motiv</AiBtn>
           <AiBtn onClick={onMatchColors}>Matcha varumärkesfärger</AiBtn>
           <AiBtn onClick={onOptimize}>Optimera layout</AiBtn>

@@ -15,6 +15,8 @@ const fraunces = Fraunces({
   variable: "--font-fraunces",
 });
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "aqua visibility",
   description: "Kolsyrat vatten med egen etikett från aqua visibility",

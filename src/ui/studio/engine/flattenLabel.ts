@@ -32,7 +32,7 @@ export function blankLabelCanvas(w = 1536, h = 768) {
   canvas.height = h;
   const ctx = canvas.getContext("2d");
   if (ctx) {
-    ctx.fillStyle = "#f7f3ea";
+    ctx.fillStyle = "#e5e7eb";
     ctx.fillRect(0, 0, w, h);
   }
   return canvas;

@@ -1,6 +1,8 @@
 import { requireRole } from "@/server/rbac";
 import { AppShell } from "@/ui/shell/AppShell";
 
+export const dynamic = "force-dynamic";
+
 export default async function PartnerLayout({ children }: { children: React.ReactNode }) {
   const user = await requireRole(["RESELLER", "AQUA_STAFF", "AQUA_ADMIN"]);
   return (
