@@ -1,0 +1,56 @@
+:root {
+  --av-blue-50: #e8f3fc;
+  --av-blue-100: #c9e3f7;
+  --av-blue-500: #005caf;
+  --av-blue-600: #004e94;
+  --av-white: #ffffff;
+  --av-gray-50: #f5f5f7;
+  --av-gray-100: #eeeef0;
+  --av-gray-200: #e6e6e6;
+  --av-gray-500: #766a62;
+  --av-gray-600: #5c534e;
+  --av-gray-900: #1d1d1f;
+  --av-green-50: #ecfdf3;
+  --av-green-500: #16a34a;
+  --av-green-700: #15803d;
+  --av-yellow-50: #fffbeb;
+  --av-yellow-500: #d97706;
+  --av-yellow-700: #b45309;
+  --av-red-50: #fef2f2;
+  --av-red-500: #dc2626;
+  --av-red-700: #b91c1c;
+  --av-slate-50: #f4f4f5;
+  --av-slate-500: #71717a;
+  --av-teal: #1a4a5c;
+
+  --av-font: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --av-font-serif: var(--font-fraunces), "Times New Roman", serif;
+  --av-font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --av-bg: #f5f5f7;
+  --av-surface: var(--av-white);
+  --av-text: #1d1d1f;
+  --av-text-secondary: #5c534e;
+  --av-text-muted: #766a62;
+  --av-accent: var(--av-blue-500);
+  --av-accent-hover: var(--av-blue-600);
+  --av-accent-soft: var(--av-blue-50);
+  --av-accent-italic: var(--av-blue-500);
+  --av-ink: #1d1d1f;
+  --av-border: rgba(29, 29, 31, 0.12);
+
+  --av-status-done-fg: var(--av-green-700);
+  --av-status-done-bg: var(--av-green-50);
+  --av-status-next-fg: var(--av-yellow-700);
+  --av-status-next-bg: var(--av-yellow-50);
+  --av-status-blocked-fg: var(--av-red-700);
+  --av-status-blocked-bg: var(--av-red-50);
+  --av-status-idle-fg: var(--av-slate-500);
+  --av-status-idle-bg: var(--av-slate-50);
+
+  --av-radius-sm: 8px;
+  --av-radius-md: 12px;
+  --av-radius-lg: 16px;
+  --av-shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.05);
+  --av-shadow-md: 0 8px 24px rgba(10, 10, 10, 0.06);
+}

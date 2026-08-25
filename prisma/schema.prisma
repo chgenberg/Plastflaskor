@@ -1,0 +1,426 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PUBLIC
+  RESELLER
+  AQUA_STAFF
+  AQUA_ADMIN
+  FACTORY
+}
+
+enum OrderStatus {
+  ORDER_RECEIVED
+  ARTWORK_UPLOADED
+  ARTWORK_APPROVED
+  LABELS_ORDERED
+  LABELS_PRINTED
+  LABELS_SHIPPED_TO_FACTORY
+  LABELS_RECEIVED_BY_FACTORY
+  PRODUCTION_PLANNED
+  PRODUCTION_STARTED
+  BOTTLES_FILLED
+  LABELS_APPLIED
+  PRODUCTION_DONE
+  WAYBILL_CREATED
+  SHIPPED_TO_END_CUSTOMER
+  DELIVERED
+  READY_TO_INVOICE
+  INVOICED
+  PAID
+}
+
+enum LabelStatus {
+  NOT_ORDERED
+  ORDERED
+  PRINTING
+  PRINTED
+  SHIPPED_TO_FACTORY
+  RECEIVED_BY_FACTORY
+}
+
+enum ProductionStatus {
+  NOT_PLANNED
+  PLANNED
+  STARTED
+  FILLING
+  FILLED
+  LABELING
+  LABELS_APPLIED
+  DONE
+}
+
+enum InvoiceStatus {
+  NOT_READY
+  READY
+  ISSUED
+  PARTIALLY_PAID
+  PAID
+}
+
+enum PriceListCode {
+  STANDARD
+  SILVER
+  GOLD
+  SPECIAL
+}
+
+enum ProductCategory {
+  WATER
+  PAPER_CUP
+  ENERGY_DRINK
+  SPORTS_BOTTLE
+  SOFT_DRINK
+  COOLER
+}
+
+enum ShipmentType {
+  LABELS_TO_FACTORY
+  GOODS_TO_CUSTOMER
+}
+
+enum AddressType {
+  BILLING
+  SHIPPING
+  FACTORY
+  HQ
+}
+
+enum DesignStatus {
+  DRAFT
+  SUBMITTED
+  ATTACHED_TO_ORDER
+}
+
+enum DocumentKind {
+  ARTWORK
+  PROOF
+  PRODUCTION
+  ORDER
+  LOGISTICS
+  FINANCE
+  WAYBILL
+  OTHER
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  role         Role
+  isActive     Boolean   @default(true)
+  companyId    String?
+  resellerId   String?
+  factoryId    String?
+  company      Company?  @relation(fields: [companyId], references: [id])
+  reseller     Reseller? @relation(fields: [resellerId], references: [id])
+  factory      Factory?  @relation(fields: [factoryId], references: [id])
+  notifications Notification[]
+  artworkFiles ArtworkFile[]
+}
+
+model Company {
+  id        String     @id @default(uuid())
+  orgNr     String     @unique
+  name      String
+  vatNr     String?
+  email     String?
+  phone     String?
+  reseller  Reseller?
+  customers Customer[]
+  factory   Factory?
+  users     User[]
+  addresses Address[]
+}
+
+model Reseller {
+  id          String     @id @default(uuid())
+  companyId   String     @unique
+  priceListId String
+  code        String     @unique
+  isActive    Boolean    @default(true)
+  company     Company    @relation(fields: [companyId], references: [id])
+  priceList   PriceList  @relation(fields: [priceListId], references: [id])
+  customers   Customer[]
+  orders      Order[]
+  users       User[]
+  invoices    Invoice[]
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  resellerId String
+  companyId String?
+  name      String
+  orgNr     String?
+  email     String?
+  phone     String?
+  reseller  Reseller @relation(fields: [resellerId], references: [id])
+  company   Company? @relation(fields: [companyId], references: [id])
+  orders    Order[]
+  addresses Address[]
+}
+
+model Address {
+  id         String      @id @default(uuid())
+  companyId  String?
+  customerId String?
+  type       AddressType
+  line1      String
+  postalCode String
+  city       String
+  country    String      @default("SE")
+  company    Company?    @relation(fields: [companyId], references: [id])
+  customer   Customer?   @relation(fields: [customerId], references: [id])
+  factories  Factory[]
+  shippingOrders Order[] @relation("ShippingAddress")
+}
+
+model Factory {
+  id        String          @id @default(uuid())
+  companyId String          @unique
+  name      String
+  code      String          @unique
+  addressId String?
+  isActive  Boolean         @default(true)
+  company   Company         @relation(fields: [companyId], references: [id])
+  address   Address?        @relation(fields: [addressId], references: [id])
+  users     User[]
+  jobs      ProductionJob[]
+  orders    Order[]
+}
+
+model Product {
+  id          String          @id @default(uuid())
+  slug        String          @unique
+  skuBase     String          @unique
+  name        String
+  category    ProductCategory
+  categorySlug String
+  oneLiner    String
+  body        String
+  specText    String
+  moq         Int
+  leadTimeText String
+  country     String
+  environmentText String
+  isPublic    Boolean         @default(true)
+  studioEnabled Boolean       @default(true)
+  sortOrder   Int             @default(0)
+  variants    ProductVariant[]
+}
+
+model ProductVariant {
+  id         String   @id @default(uuid())
+  productId  String
+  sku        String   @unique
+  name       String
+  volumeMl   Int?
+  packSize   Int      @default(1)
+  optionsJson String
+  isActive   Boolean  @default(true)
+  product    Product  @relation(fields: [productId], references: [id])
+  prices     PriceListItem[]
+  orderItems OrderItem[]
+}
+
+model PriceList {
+  id       String        @id @default(uuid())
+  code     PriceListCode @unique
+  name     String
+  currency String        @default("SEK")
+  items    PriceListItem[]
+  resellers Reseller[]
+}
+
+model PriceListItem {
+  id             String         @id @default(uuid())
+  priceListId    String
+  variantId      String
+  unitPriceExVat Float
+  minQty         Int            @default(1)
+  priceList      PriceList      @relation(fields: [priceListId], references: [id])
+  variant        ProductVariant @relation(fields: [variantId], references: [id])
+  @@unique([priceListId, variantId, minQty])
+}
+
+model Order {
+  id                String      @id @default(uuid())
+  orderNo           String      @unique
+  resellerId        String
+  customerId        String
+  currentStatus     OrderStatus
+  currency          String      @default("SEK")
+  shippingAddressId String
+  factoryId         String?
+  source            String      @default("reseller_order")
+  sourceOrderId     String?
+  notes             String?
+  requestedDate     String?
+  invoiceRef        String?
+  createdAt         DateTime    @default(now())
+  reseller          Reseller    @relation(fields: [resellerId], references: [id])
+  customer          Customer    @relation(fields: [customerId], references: [id])
+  shippingAddress   Address     @relation("ShippingAddress", fields: [shippingAddressId], references: [id])
+  factory           Factory?    @relation(fields: [factoryId], references: [id])
+  items             OrderItem[]
+  designs           Design[]
+  label             Label?
+  jobs              ProductionJob[]
+  shipments         Shipment[]
+  documents         Document[]
+  invoice           Invoice?
+}
+
+model OrderItem {
+  id             String         @id @default(uuid())
+  orderId        String
+  variantId      String
+  qty            Int
+  unitPriceExVat Float
+  designId       String?
+  order          Order          @relation(fields: [orderId], references: [id])
+  variant        ProductVariant @relation(fields: [variantId], references: [id])
+}
+
+model Design {
+  id             String       @id @default(uuid())
+  orderId        String?
+  userId         String?
+  productId      String
+  variantId      String?
+  projectName    String
+  source         String
+  status         DesignStatus @default(DRAFT)
+  quantity       Int
+  optionsJson    String
+  canvasJson     String       @default("{}")
+  contactJson    String?
+  createdAt      DateTime     @default(now())
+  order          Order?       @relation(fields: [orderId], references: [id])
+  files          ArtworkFile[]
+}
+
+model ArtworkFile {
+  id           String  @id @default(uuid())
+  designId     String
+  fileName     String
+  mimeType     String
+  storageKey   String
+  kind         String  @default("original")
+  uploadedById String?
+  design       Design  @relation(fields: [designId], references: [id])
+  uploadedBy   User?   @relation(fields: [uploadedById], references: [id])
+}
+
+model Label {
+  id         String      @id @default(uuid())
+  orderId    String      @unique
+  status     LabelStatus @default(NOT_ORDERED)
+  qty        Int
+  trackingNo String?
+  orderedAt  DateTime?
+  printedAt  DateTime?
+  shippedAt  DateTime?
+  receivedAt DateTime?
+  order      Order       @relation(fields: [orderId], references: [id])
+}
+
+model ProductionJob {
+  id          String           @id @default(uuid())
+  orderId     String
+  factoryId   String
+  status      ProductionStatus @default(NOT_PLANNED)
+  plannedAt   DateTime?
+  startedAt   DateTime?
+  filledAt    DateTime?
+  labeledAt   DateTime?
+  completedAt DateTime?
+  operatorNote String?
+  order       Order            @relation(fields: [orderId], references: [id])
+  factory     Factory          @relation(fields: [factoryId], references: [id])
+}
+
+model Shipment {
+  id          String       @id @default(uuid())
+  orderId     String
+  type        ShipmentType
+  carrier     String
+  trackingNo  String?
+  waybillNo   String?
+  packages    Int          @default(1)
+  weightKg    Float        @default(0)
+  status      String       @default("CREATED")
+  shippedAt   DateTime?
+  deliveredAt DateTime?
+  order       Order        @relation(fields: [orderId], references: [id])
+}
+
+model Document {
+  id         String       @id @default(uuid())
+  orderId    String?
+  entityType String
+  entityId   String
+  kind       DocumentKind
+  title      String
+  storageKey String
+  version    Int          @default(1)
+  createdAt  DateTime     @default(now())
+  order      Order?       @relation(fields: [orderId], references: [id])
+}
+
+model Invoice {
+  id           String        @id @default(uuid())
+  orderId      String        @unique
+  resellerId   String
+  invoiceNo    String        @unique
+  status       InvoiceStatus @default(NOT_READY)
+  amountExVat  Float
+  vatAmount    Float
+  amountIncVat Float
+  issuedAt     DateTime?
+  dueAt        DateTime?
+  paidAt       DateTime?
+  order        Order         @relation(fields: [orderId], references: [id])
+  reseller     Reseller      @relation(fields: [resellerId], references: [id])
+}
+
+model StatusEvent {
+  id          String   @id @default(uuid())
+  entityType  String
+  entityId    String
+  fromStatus  String?
+  toStatus    String
+  actorUserId String?
+  actorRole   Role
+  source      String
+  payload     String?
+  occurredAt  DateTime @default(now())
+}
+
+model Notification {
+  id         String    @id @default(uuid())
+  userId     String
+  type       String
+  title      String
+  body       String
+  entityType String?
+  entityId   String?
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id])
+}
+
+model PageCopy {
+  id      String @id @default(uuid())
+  slug    String @unique
+  title   String
+  body    String
+}

@@ -20,6 +20,21 @@ const eslintConfig = [
       "next-env.d.ts",
     ],
   },
+  {
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["**/integrations/adapters/mock", "@/server/integrations/adapters/mock"],
+              message: "Importera getIntegrations() istället för mock-adaptrar.",
+            },
+          ],
+        },
+      ],
+    },
+  },
 ];
 
 export default eslintConfig;

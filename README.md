@@ -1,36 +1,30 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AquaVisibility OS
 
-## Getting Started
+B2B-plattform för Aqua Visibility: publik sajt, ÅF-portal, operations och fabrik. Copy från [aquavisibility.se](https://aquavisibility.se). Inga publika priser.
 
-First, run the development server:
+## Starta
 
 ```bash
+npm install
+npx prisma db push
+npx tsx prisma/seed.ts
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Öppna http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Demo-konton
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Lösenord: `AquaDemo26!`
 
-## Learn More
+| E-post | Yta |
+|---|---|
+| reseller.standard@demo.aqua | /partner (Standard) |
+| reseller.gold@demo.aqua | /partner (Gold) |
+| staff@demo.aqua | /operations |
+| admin@demo.aqua | /operations |
+| factory@demo.aqua | /factory |
 
-To learn more about Next.js, take a look at the following resources:
+## Integrationer
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`INTEGRATION_MODE=mock` (default). Byt till `live` när Fortnox/frakt är klara — UI ändras inte.
