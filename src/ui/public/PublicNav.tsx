@@ -48,7 +48,6 @@ const RIGHT: Parent[] = [
     label: "Kontakt",
     href: "/offert",
     children: [
-      { href: "/kassa", label: "Beställ" },
       { href: "/offert", label: "Begär offert" },
       { href: "/aterforsaljare", label: "För återförsäljare" },
     ],
@@ -110,6 +109,12 @@ export function PublicNav({ email }: { email?: string | null }) {
         </nav>
 
         <div className="pointer-events-auto ml-auto flex h-12 min-w-[168px] items-center justify-center gap-2 rounded-full bg-white px-5 shadow-[0_2px_12px_rgba(0,0,0,0.08)] md:absolute md:right-4 md:top-3 md:ml-0 md:h-[72px] md:min-w-[240px] md:px-7">
+          <Link href="/kassa" aria-label="Beställ" className="flex h-10 w-10 items-center justify-center rounded-full text-[#1d1d1f] hover:bg-black/[0.05]">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M6 8h12l-1.1 9.2a1.6 1.6 0 0 1-1.6 1.4H8.7a1.6 1.6 0 0 1-1.6-1.4L6 8Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+              <path d="M9 8V7.2A3 3 0 0 1 12 4.2 3 3 0 0 1 15 7.2V8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+          </Link>
           {email ? (
             <form action={logoutAction}>
               <button type="submit" className="flex h-10 items-center rounded-full px-3 text-[13px] font-medium text-[#1d1d1f] hover:bg-black/[0.05]">

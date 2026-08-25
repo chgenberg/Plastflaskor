@@ -23,9 +23,20 @@ export async function generateRealityPreview(labelPng: Buffer, meta: RealityMeta
     }
   }
 
-  return generateWithReferences({
-    prompt: buildRealityPrompt(meta),
-    images,
-    size: "1024x1536",
-  });
+  try {
+    return await generateWithReferences({
+      prompt: buildRealityPrompt(meta),
+      images,
+      size: "1024x1536",
+    });
+  } catch (err) {
+    if (images.length > 1 && err instanceof RealityPreviewError && err.status === 400) {
+      return generateWithReferences({
+        prompt: buildRealityPrompt(meta),
+        images: [images[0]],
+        size: "1024x1536",
+      });
+    }
+    throw err;
+  }
 }

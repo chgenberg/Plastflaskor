@@ -12,6 +12,20 @@ export class RealityPreviewError extends Error {
 
 export type ImageInput = { bytes: Buffer; name: string };
 
+function mimeFor(name: string, bytes: Buffer) {
+  if (bytes[0] === 0x89 && bytes[1] === 0x50) return "image/png";
+  if (bytes[0] === 0xff && bytes[1] === 0xd8) return "image/jpeg";
+  if (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[8] === 0x57) return "image/webp";
+  const ext = name.split(".").pop()?.toLowerCase();
+  if (ext === "jpg" || ext === "jpeg") return "image/jpeg";
+  if (ext === "webp") return "image/webp";
+  return "image/png";
+}
+
+function usableImages(images: ImageInput[]) {
+  return images.filter((img) => img.bytes.length >= 64);
+}
+
 function mapOpenAiError(err: APIError) {
   const text = (err.message || "").toLowerCase();
   if (err.status === 401) return new RealityPreviewError("Ogiltig OPENAI_API_KEY.", 401);
@@ -39,7 +53,9 @@ export async function generateWithReferences(input: {
   size: "1024x1024" | "1536x1024" | "1024x1536";
 }) {
   const client = new OpenAI({ apiKey: requireOpenAiKey() });
-  const files = await Promise.all(input.images.map((img) => toFile(img.bytes, img.name, { type: "image/png" })));
+  const images = usableImages(input.images);
+  if (!images.length) throw new RealityPreviewError("Etiketten saknas.", 400);
+  const files = await Promise.all(images.map((img) => toFile(img.bytes, img.name, { type: mimeFor(img.name, img.bytes) })));
 
   const models = ["gpt-image-2", "gpt-image-1"] as const;
   let last: unknown;

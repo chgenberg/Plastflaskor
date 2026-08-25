@@ -44,10 +44,24 @@ export function RealityView({
   onBack: () => void;
 }) {
   const pct = useProgress(loading);
+  const showBar = loading || pct > 0;
 
   return (
-    <div className="relative flex h-full flex-col px-4 pb-4 pt-2">
-      <div className="relative mx-auto flex min-h-0 w-full max-w-[420px] flex-1 items-center justify-center">
+    <div className="relative flex h-full flex-col">
+      {showBar ? (
+        <div className="mx-4 mt-2 rounded-2xl bg-[#E8EEFA] px-4 py-3">
+          <div className="flex items-center justify-between text-[13px] font-semibold text-[#3B5BAA]">
+            <span>Skapar bilden i verkligheten…</span>
+            <span>{pct}%</span>
+          </div>
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-white">
+            <div className="h-full rounded-full bg-[#5B7FD4] transition-[width] duration-150 ease-out" style={{ width: `${pct}%` }} />
+          </div>
+          <p className="mt-1.5 text-[12px] text-[#6b7280]">Din uppladdade etikett trycks på produkten. Det tar oftast 10–20 sekunder.</p>
+        </div>
+      ) : null}
+
+      <div className="relative mx-auto flex min-h-0 w-full max-w-[420px] flex-1 items-center justify-center px-4 pb-2 pt-3">
         {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -56,34 +70,29 @@ export function RealityView({
             className={`max-h-full w-full rounded-2xl object-contain shadow-[0_16px_50px_rgba(15,23,42,.12)] ${loading ? "opacity-40" : ""}`}
           />
         ) : (
-          <div className="flex aspect-[4/5] w-full items-center justify-center rounded-2xl bg-[#F4F5F7]" />
-        )}
-        {loading || pct > 0 ? (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-[220px] rounded-2xl bg-white/95 px-4 py-3 shadow-[0_10px_30px_rgba(15,23,42,.12)]">
-              <div className="flex items-center justify-between text-[12px] font-medium text-[#3B5BAA]">
-                <span>Skapar bild</span>
-                <span>{pct}%</span>
-              </div>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#E8EEFA]">
-                <div className="h-full rounded-full bg-[#5B7FD4] transition-[width] duration-150 ease-out" style={{ width: `${pct}%` }} />
-              </div>
-            </div>
+          <div className="flex aspect-[4/5] w-full flex-col items-center justify-center rounded-2xl bg-[#F4F5F7] px-6 text-center">
+            <p className="text-[15px] font-semibold text-[#1d1d1f]">Se produkten i verkligheten</p>
+            <p className="mt-2 text-[13px] leading-relaxed text-[#6b7280]">
+              Först etiketten med din logotyp. Sedan Generera — vi startar inte förrän du klickar.
+            </p>
           </div>
-        ) : null}
+        )}
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-4 pb-4">
         <button type="button" onClick={onBack} className="h-9 rounded-full px-3 text-[13px] text-[#6b7280] hover:bg-black/[0.04]">
           ← Tillbaka till etikett
         </button>
-        {stale && imageUrl && !loading ? (
-          <button type="button" onClick={onGenerate} className="h-9 rounded-full bg-[#5B7FD4] px-4 text-[13px] font-semibold text-white">
-            Uppdatera bilden
-          </button>
-        ) : null}
+        <button
+          type="button"
+          onClick={onGenerate}
+          disabled={loading}
+          className="h-10 rounded-full bg-[#5B7FD4] px-5 text-[13px] font-semibold text-white disabled:opacity-60"
+        >
+          {loading ? "Skapar…" : imageUrl ? (stale ? "Uppdatera bilden" : "Generera igen") : "Generera"}
+        </button>
       </div>
-      {error ? <p className="mt-2 text-center text-[13px] text-red-600">{error}</p> : null}
+      {error ? <p className="px-4 pb-3 text-center text-[13px] text-red-600">{error}</p> : null}
     </div>
   );
 }

@@ -26,7 +26,6 @@ export type Tool = "design" | "text" | "upload" | "colors" | "bottle" | "preview
 
 export type Finish = "matte" | "gloss";
 
-export const EXAMPLE_LOGO = "/brand/aqua-visibility-logo.png";
 export const LABEL_GRAY = "#e5e7eb";
 
 export function defaultLayers(): Layer[] {
@@ -48,7 +47,6 @@ export function defaultLayers(): Layer[] {
       y: 46,
       scale: 1,
       rotation: 0,
-      src: EXAMPLE_LOGO,
     },
     {
       id: "text",

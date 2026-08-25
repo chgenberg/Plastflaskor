@@ -113,7 +113,7 @@ export function buildRealityPrompt(meta: RealityMeta) {
     capLine(meta.cap, meta.categorySlug),
     `- Print: ${labelLine(meta.labelKind, meta.finish, meta.categorySlug)}`,
     extra ? `- Customer text on the label: “${extra}”` : "",
-    meta.projectName ? `- Project: ${meta.projectName}` : "",
+    meta.projectName && !/aqua visibility/i.test(meta.projectName) ? `- Project: ${meta.projectName}` : "",
     "",
     "LOOK",
     "Hyperrealistic commercial product photograph for a Scandinavian B2B beverage brand. 85mm lens, f/2.8. Soft overcast daylight from camera-left, no beauty dish, no hard flash. Kodak Portra 400: warm paper, cool greens, restrained saturation. Palette #F5F5F7, birch, charcoal, forest pine, clear PET, matte aluminum, uncoated board. Subtle film grain. Full product visible with generous margin — top, body and base all in frame. Three-quarter view, 4:5.",
