@@ -79,18 +79,21 @@ export function PhotoMockup({
   const src = imageForProduct(slug);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    const box = host.current;
-    if (!canvas || !box || !src) return;
+    if (!src) return;
+    const photo = src;
     let dead = false;
 
     async function paint() {
+      const canvas = canvasRef.current;
+      const box = host.current;
+      if (!canvas || !box) return;
+
       const product = new window.Image();
       product.crossOrigin = "anonymous";
       await new Promise<void>((resolve, reject) => {
         product.onload = () => resolve();
         product.onerror = () => reject();
-        product.src = src;
+        product.src = photo;
       });
       if (dead) return;
       const label = await composeLabelCanvas(layers);
@@ -138,7 +141,7 @@ export function PhotoMockup({
 
     void paint();
     const ro = new ResizeObserver(() => void paint());
-    ro.observe(box);
+    if (host.current) ro.observe(host.current);
     return () => {
       dead = true;
       ro.disconnect();
