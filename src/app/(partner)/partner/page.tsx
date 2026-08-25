@@ -11,7 +11,20 @@ export default async function PartnerHome() {
   const orders = resellerId ? await listOrdersForReseller(resellerId) : [];
   const active = orders.filter((o) => !["PAID", "DELIVERED"].includes(o.currentStatus)).length;
   const proof = orders.filter((o) => o.currentStatus === "ARTWORK_UPLOADED").length;
-  const prod = orders.filter((o) => ["LABELS_ORDERED", "PRODUCTION_STARTED", "PRODUCTION_PLANNED"].includes(o.currentStatus)).length;
+  const prod = orders.filter((o) =>
+    [
+      "ARTWORK_APPROVED",
+      "LABELS_ORDERED",
+      "LABELS_PRINTED",
+      "LABELS_SHIPPED_TO_FACTORY",
+      "LABELS_RECEIVED_BY_FACTORY",
+      "PRODUCTION_PLANNED",
+      "PRODUCTION_STARTED",
+      "BOTTLES_FILLED",
+      "LABELS_APPLIED",
+      "PRODUCTION_DONE",
+    ].includes(o.currentStatus),
+  ).length;
   const shipped = orders.filter((o) => ["SHIPPED_TO_END_CUSTOMER", "WAYBILL_CREATED"].includes(o.currentStatus)).length;
 
   if (!resellerId) {
@@ -46,6 +59,7 @@ export default async function PartnerHome() {
               { label: "Kund" },
               { label: "Produkt" },
               { label: "Antal", align: "right" },
+              { label: "Leverans" },
               { label: "Status" },
               { label: "" },
             ]}
@@ -60,8 +74,9 @@ export default async function PartnerHome() {
                 <td className="px-5 py-3">{o.customer.name}</td>
                 <td className="px-5 py-3">{o.items[0]?.variant.product.name}</td>
                 <td className="px-5 py-3 text-right tabular-nums">{o.items[0]?.qty}</td>
+                <td className="px-5 py-3 text-sm text-[#6b7280]">{o.requestedDate ?? "–"}</td>
                 <td className="px-5 py-3">
-                  <StatusChip status={o.currentStatus} label={RESELLER_STATUS[o.currentStatus]} />
+                  <StatusChip status={o.currentStatus} label={RESELLER_STATUS[o.currentStatus]} requestedDate={o.requestedDate} />
                 </td>
                 <td className="px-5 py-3 text-right">
                   <Link href={`/partner/ordrar/${o.orderNo}/repeat`} className="text-[13px] font-medium text-[#3B5BAA]">

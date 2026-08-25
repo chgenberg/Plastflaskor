@@ -19,6 +19,7 @@ export default async function WaybillPage({
   if (!job) notFound();
   const addr = job.order.shippingAddress;
   const item = job.order.items[0];
+  const ship = job.order.shipments.find((s) => s.trackingNo === tracking);
 
   return (
     <div className="mx-auto max-w-xl space-y-8">
@@ -73,6 +74,18 @@ export default async function WaybillPage({
             <div>
               <dt className="text-[#6b7280]">Antal</dt>
               <dd>{item?.qty}</dd>
+            </div>
+            <div>
+              <dt className="text-[#6b7280]">Kolli</dt>
+              <dd>{ship?.packages ?? "–"}</dd>
+            </div>
+            <div>
+              <dt className="text-[#6b7280]">Vikt</dt>
+              <dd>{ship ? `${ship.weightKg} kg` : "–"}</dd>
+            </div>
+            <div>
+              <dt className="text-[#6b7280]">Transportör</dt>
+              <dd>{ship?.carrier ?? "–"}</dd>
             </div>
           </dl>
           <PrintButton />

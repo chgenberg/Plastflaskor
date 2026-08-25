@@ -1,3 +1,4 @@
+import { qrSvgDataUrl } from "./qrMark";
 import type { Layer } from "./types";
 
 const cache = new Map<string, HTMLImageElement>();
@@ -95,6 +96,21 @@ export async function composeLabelCanvas(layers: Layer[], w = 1536, h = 768) {
     ctx.shadowBlur = 4;
     ctx.fillText(text.text, 0, 0);
     ctx.restore();
+  }
+
+  const qr = layers.find((l) => l.type === "qr" && l.text);
+  if (qr?.text) {
+    try {
+      const img = await loadImage(qrSvgDataUrl(qr.text, 256));
+      const qw = 160 * qr.scale;
+      ctx.save();
+      ctx.translate((qr.x / 100) * w, (qr.y / 100) * h);
+      ctx.rotate((qr.rotation * Math.PI) / 180);
+      ctx.drawImage(img, -qw / 2, -qw / 2, qw, qw);
+      ctx.restore();
+    } catch {
+      /* skip qr */
+    }
   }
 
   return canvas;

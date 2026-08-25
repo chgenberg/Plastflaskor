@@ -72,3 +72,19 @@ export function assertCanSeePrices(role?: string | null) {
     throw new Error("Priser visas endast för inloggade återförsäljare.");
   }
 }
+
+export function publicProductDto<T extends { variants: { id: string; sku: string; name: string; volumeMl: number | null; packSize: number; optionsJson: string }[] }>(
+  product: T,
+) {
+  return {
+    ...product,
+    variants: product.variants.map((v) => ({
+      id: v.id,
+      sku: v.sku,
+      name: v.name,
+      volumeMl: v.volumeMl,
+      packSize: v.packSize,
+      optionsJson: v.optionsJson,
+    })),
+  };
+}

@@ -74,12 +74,35 @@ export const PIPELINE_PHASES = [
   { id: "ready_invoice", label: "Redo att faktureras", statuses: ["READY_TO_INVOICE"] },
 ] as const;
 
-export function statusTone(status: string): "done" | "next" | "blocked" | "idle" {
+export function statusTone(status: string, requestedDate?: string | null): "done" | "next" | "blocked" | "idle" {
+  const overdue = Boolean(
+    requestedDate &&
+      new Date(requestedDate) < new Date() &&
+      !["DELIVERED", "INVOICED", "PAID"].includes(status),
+  );
+  if (overdue || status.includes("BLOCK")) return "blocked";
   if (["PAID", "DELIVERED", "INVOICED", "PRODUCTION_DONE"].includes(status)) return "done";
   if (["READY_TO_INVOICE", "ARTWORK_UPLOADED", "WAYBILL_CREATED", "LABELS_PRINTED"].includes(status)) return "next";
-  if (status.includes("BLOCK") || status === "ARTWORK_UPLOADED") return "next";
   return "idle";
 }
+
+export const LABEL_STATUS_LABELS: Record<string, string> = {
+  NOT_ORDERED: "Inte beställd",
+  ORDERED: "Beställd",
+  PRINTING: "Trycks",
+  PRINTED: "Tryckt",
+  SHIPPED_TO_FACTORY: "Skickad till fabrik",
+  RECEIVED_BY_FACTORY: "Mottagen av fabrik",
+};
+
+export const LABEL_NEXT: Record<string, { to: string; label: string } | null> = {
+  NOT_ORDERED: { to: "ORDERED", label: "Beställ etiketter" },
+  ORDERED: { to: "PRINTED", label: "Markera tryckt" },
+  PRINTING: { to: "PRINTED", label: "Markera tryckt" },
+  PRINTED: { to: "SHIPPED_TO_FACTORY", label: "Skicka till fabrik" },
+  SHIPPED_TO_FACTORY: { to: "RECEIVED_BY_FACTORY", label: "Mottagen av fabrik" },
+  RECEIVED_BY_FACTORY: null,
+};
 
 export const CATEGORY_META: Record<string, { slug: string; name: string; enum: string }> = {
   profilvatten: { slug: "profilvatten", name: "Profilvatten", enum: "WATER" },

@@ -32,8 +32,11 @@ export default async function HomePage() {
           Behöver ni <em className="italic text-[var(--av-accent-italic)]">svalka?</em>
         </h1>
         <p className="mt-5 text-[13px] font-medium uppercase tracking-[0.22em] text-[#766a62]">Lugn, vi hjälper er!</p>
-        <div className="mt-8">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <PillLink href="/produkter">Se produkter →</PillLink>
+          <PillLink href="/designa" variant="ghost">
+            Starta design
+          </PillLink>
         </div>
 
         <ul className="mx-auto mt-10 flex max-w-3xl flex-col items-center justify-center gap-6 text-[12px] text-[#766a62] sm:flex-row sm:gap-10">
@@ -76,8 +79,9 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-6xl gap-5 px-4 pb-6 pt-20 sm:grid-cols-2 lg:grid-cols-5">
+      <section className="mx-auto grid max-w-6xl gap-5 px-4 pb-6 pt-20 sm:grid-cols-2 lg:grid-cols-3">
         {[
+          { label: "Profilvatten", href: "/produkter/profilvatten", src: PAGE_IMAGES.valAntal },
           { label: "Sportflaskor", href: "/produkter/sportflaskor", src: imageForProduct("aquarefill")! },
           { label: "Pappersmuggar", href: "/produkter/pappersmuggar", src: imageForProduct("pappersmugg-ev-23cl")! },
           { label: "100% Energi!", href: "/produkter/energidryck", src: imageForProduct("energidryck-med-egen-etikett")! },

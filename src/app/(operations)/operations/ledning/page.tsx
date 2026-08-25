@@ -31,7 +31,10 @@ async function averageProductionDays() {
 }
 
 export default async function LeadershipPage() {
-  const orders = await listAllOrders();
+  const all = await listAllOrders();
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const orders = all.filter((o) => o.createdAt >= monthStart);
   const bottles = orders
     .filter((o) => o.items[0]?.variant.product.category === "WATER")
     .reduce((s, o) => s + o.items.reduce((a, i) => a + i.qty, 0), 0);

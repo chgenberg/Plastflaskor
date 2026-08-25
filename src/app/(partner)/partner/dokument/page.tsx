@@ -1,5 +1,6 @@
 import { requireRole } from "@/server/rbac";
 import { listOrdersForReseller } from "@/server/services/order.service";
+import { DocumentUpload } from "@/ui/shell/DocumentUpload";
 import { EmptyState, FileLink, PageHeader, Panel } from "@/ui/shell/primitives";
 
 export default async function DocsPage() {
@@ -17,14 +18,25 @@ export default async function DocsPage() {
         <Panel padded={false}>
           <ul className="divide-y divide-black/5">
             {docs.map((d) => (
-              <li key={d.id} className="flex justify-between gap-4 px-5 py-3 text-sm">
-                <FileLink href={`/api/documents/${d.id}`}>{d.title}</FileLink>
+              <li key={d.id} className="flex flex-wrap items-center justify-between gap-4 px-5 py-3 text-sm">
+                <span>
+                  <FileLink href={`/api/documents/${d.id}`}>{d.title}</FileLink>
+                  <span className="ml-2 text-[#6b7280]">v{d.version}</span>
+                  {" · "}
+                  <FileLink href={`/api/documents/${d.id}?inline=1`}>Förhandsvisa</FileLink>
+                </span>
                 <span className="font-mono text-[#6b7280]">{d.orderNo}</span>
               </li>
             ))}
           </ul>
         </Panel>
       )}
+      {user.resellerId && orders[0] ? (
+        <Panel title="Ladda upp dokument">
+          <DocumentUpload orderId={orders[0].id} returnTo="/partner/dokument" />
+          <p className="mt-2 text-[12px] text-[#6b7280]">Bifogas senaste ordern ({orders[0].orderNo}). Öppna en order för att ladda upp där.</p>
+        </Panel>
+      ) : null}
     </div>
   );
 }

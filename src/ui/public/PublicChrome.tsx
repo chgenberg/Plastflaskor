@@ -68,6 +68,7 @@ export function PublicFooter() {
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#766a62]">Sidor</p>
           <div className="mt-3 flex flex-col gap-2 text-[var(--av-text-secondary)]">
             <Link href="/aterforsaljare">För återförsäljare</Link>
+            <Link href="/kassa">Beställ</Link>
             <Link href="/offert">Begär offert</Link>
             <Link href="/partner">ÅF-portal</Link>
           </div>

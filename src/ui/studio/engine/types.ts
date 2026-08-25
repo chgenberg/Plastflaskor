@@ -7,7 +7,7 @@ export type StudioProduct = {
   volumeMl?: number | null;
 };
 
-export type LayerType = "artwork" | "logo" | "text";
+export type LayerType = "artwork" | "logo" | "text" | "qr";
 
 export type Layer = {
   id: string;
@@ -60,6 +60,16 @@ export function defaultLayers(): Layer[] {
       rotation: 0,
       text: "",
       color: "#1d1d1f",
+    },
+    {
+      id: "qr",
+      type: "qr",
+      name: "QR-kod",
+      x: 82,
+      y: 82,
+      scale: 0.7,
+      rotation: 0,
+      text: "",
     },
   ];
 }

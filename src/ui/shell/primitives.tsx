@@ -2,8 +2,16 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { statusTone } from "@/domain/enums";
 
-export function StatusChip({ status, label }: { status: string; label?: string }) {
-  const tone = statusTone(status);
+export function StatusChip({
+  status,
+  label,
+  requestedDate,
+}: {
+  status: string;
+  label?: string;
+  requestedDate?: string | null;
+}) {
+  const tone = statusTone(status, requestedDate);
   const cls =
     tone === "done"
       ? "bg-[var(--av-status-done-bg)] text-[var(--av-status-done-fg)]"
@@ -58,7 +66,7 @@ export function PageHeader({
   );
 }
 
-export function Panel({ title, children, padded = true }: { title?: string; children: ReactNode; padded?: boolean }) {
+export function Panel({ title, children, padded = true }: { title?: ReactNode; children: ReactNode; padded?: boolean }) {
   return (
     <section className="overflow-hidden rounded-[22px] bg-white shadow-[0_8px_30px_rgba(15,23,42,.04)]">
       {title ? (

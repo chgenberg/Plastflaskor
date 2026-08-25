@@ -7,7 +7,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
 
   return (
     <div className="space-y-8">
-      <PageHeader title="Sök" subtitle="Hitta order, kund, ÅF, tracking eller faktura." />
+      <PageHeader title="Sök" subtitle="Hitta order, kund, ÅF, produkt, org.nr, tracking eller faktura." />
       <Panel>
         <form action="/operations/ordrar">
           <label className="block text-sm">
@@ -15,7 +15,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
             <input
               name="q"
               autoFocus
-              placeholder="AV-10450, kund, tracking…"
+              placeholder="AV-10450, produkt, org.nr, tracking…"
               className="mt-2 h-11 w-full max-w-xl rounded-full border border-black/10 px-4 text-sm"
             />
           </label>

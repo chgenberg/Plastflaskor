@@ -21,7 +21,7 @@ export function AppShell({
   dense,
 }: {
   title: string;
-  nav: { href: string; label: string }[];
+  nav: { href: string; label: string; badge?: number }[];
   children: React.ReactNode;
   email?: string | null;
   role?: string | null;
@@ -49,11 +49,16 @@ export function AppShell({
             <Link
               key={n.href}
               href={n.href}
-              className={`rounded-xl ${tap} font-medium ${
+              className={`flex items-center justify-between rounded-xl ${tap} font-medium ${
                 active(n.href) ? "bg-[#E8EEFA] text-[#3B5BAA]" : "text-[#6b7280] hover:bg-black/[0.04] hover:text-[#1d1d1f]"
               }`}
             >
-              {n.label}
+              <span>{n.label}</span>
+              {n.badge ? (
+                <span className="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-[#5B7FD4] px-1.5 text-[11px] font-semibold text-white">
+                  {n.badge}
+                </span>
+              ) : null}
             </Link>
           ))}
         </nav>

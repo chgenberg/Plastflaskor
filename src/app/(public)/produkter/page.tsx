@@ -7,17 +7,19 @@ import { listCategories, listProducts } from "@/server/services/catalog.service"
 import { EditorialShot, PageIntro } from "@/ui/public/PageIntro";
 
 const INTRO: Record<string, string> = {
+  profilvatten: "Vårt populära profilvatten med egen etikett tappas ur Tollagårdens friska källa!",
   pappersmuggar:
     "Vi levererar pappersmuggar med enkel- och dubbelvägg i olika storlekar. Alla pappersmuggar tillverkas av FSC-märkt kartong.",
   energidryck: "Visst är det häftigt att kunna servera sin ”egna energidryck”!",
   sportflaskor: "Sportflaskor med oändliga möjligheter.",
   "lask-must": "Läsk och julmust från anrika Mora Bryggeri.",
+  kyl: "En profilerbar kyl med avtagbart energibesparande lock.",
 };
 
 export default async function ProductsIndex() {
-  const slugs = await listCategories();
+  const slugs = [...new Set([...Object.keys(CATEGORY_META), ...(await listCategories())])];
   const products = await listProducts();
-  const cover: Record<string, string> = {};
+  const cover: Record<string, string> = { profilvatten: PAGE_IMAGES.valAntal };
   for (const p of products) {
     const img = imageForProduct(p.slug);
     if (img && !cover[p.categorySlug]) cover[p.categorySlug] = img;

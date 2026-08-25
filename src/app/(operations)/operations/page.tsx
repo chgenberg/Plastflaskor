@@ -1,31 +1,31 @@
 import { listAllOrders } from "@/server/services/order.service";
 import { weekProduction } from "@/server/services/production.service";
-import { ActionRow, DataRow, DataTable, EmptyState, KpiCard, PageHeader, Panel } from "@/ui/shell/primitives";
+import { exceptionSummary, exceptionsFor } from "@/domain/exceptions";
 import { PIPELINE_PHASES } from "@/domain/enums";
+import { ActionRow, DataRow, DataTable, EmptyState, KpiCard, PageHeader, Panel } from "@/ui/shell/primitives";
 
 export default async function OpsHome() {
   const orders = await listAllOrders();
   const start = new Date();
-  start.setDate(start.getDate() - start.getDay() + 1);
   start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
   const jobs = await weekProduction(start);
   const bottles = jobs.reduce((s, j) => s + j.order.items.reduce((a, i) => a + i.qty, 0), 0);
-  const missingArt = orders.filter((o) => o.currentStatus === "ORDER_RECEIVED").length;
-  const labelsShip = orders.filter((o) => o.currentStatus === "LABELS_PRINTED").length;
-  const waybill = orders.filter((o) => o.currentStatus === "PRODUCTION_DONE").length;
-  const late = orders.filter((o) => o.currentStatus === "PRODUCTION_PLANNED").length;
+  const tasks = exceptionSummary(exceptionsFor(orders));
 
-  const byDay = new Map<string, { size33: number; size50: number; still: number; spark: number }>();
+  const byDay = new Map<string, { size33: number; size50: number; still: number; spark: number; cap: number; label: number }>();
   for (const job of jobs) {
     const day = job.plannedAt ? job.plannedAt.toLocaleDateString("sv-SE", { weekday: "long" }) : "okänd";
-    const row = byDay.get(day) ?? { size33: 0, size50: 0, still: 0, spark: 0 };
+    const row = byDay.get(day) ?? { size33: 0, size50: 0, still: 0, spark: 0, cap: 0, label: 0 };
     for (const item of job.order.items) {
       const ml = item.variant.volumeMl ?? 0;
       if (ml <= 330) row.size33 += item.qty;
       else row.size50 += item.qty;
-      const opt = JSON.parse(item.variant.optionsJson || "{}") as { waterType?: string };
+      const opt = JSON.parse(item.variant.optionsJson || "{}") as { waterType?: string; cap?: string; label?: string };
       if (opt.waterType === "kolsyrat") row.spark += item.qty;
       else row.still += item.qty;
+      if (opt.cap) row.cap += item.qty;
+      if (opt.label) row.label += item.qty;
     }
     byDay.set(day, row);
   }
@@ -46,6 +46,8 @@ export default async function OpsHome() {
               { label: "50 cl", align: "right" },
               { label: "Stilla", align: "right" },
               { label: "Kolsyrat", align: "right" },
+              { label: "Kapsyl", align: "right" },
+              { label: "Etikett", align: "right" },
             ]}
           >
             {[...byDay.entries()].map(([day, r]) => (
@@ -55,18 +57,23 @@ export default async function OpsHome() {
                 <td className="px-5 py-2.5 text-right tabular-nums">{r.size50 || "–"}</td>
                 <td className="px-5 py-2.5 text-right tabular-nums">{r.still || "–"}</td>
                 <td className="px-5 py-2.5 text-right tabular-nums">{r.spark || "–"}</td>
+                <td className="px-5 py-2.5 text-right tabular-nums">{r.cap || "–"}</td>
+                <td className="px-5 py-2.5 text-right tabular-nums">{r.label || "–"}</td>
               </DataRow>
             ))}
           </DataTable>
         )}
       </Panel>
       <Panel title="Behöver åtgärd idag">
-        <div className="divide-y divide-black/5">
-          <ActionRow href="/operations/ordrar?phase=awaiting_artwork" label="Ordrar saknar godkänt artwork" value={missingArt} />
-          <ActionRow href="/operations/etiketter" label="Etikettordrar behöver skickas" value={labelsShip} />
-          <ActionRow href="/operations/ordrar?phase=ready_ship" label="Leveranser saknar fraktsedel" value={waybill} />
-          <ActionRow href="/operations/produktion" label="Produktioner riskerar att bli försenade" value={late} />
-        </div>
+        {tasks.length === 0 ? (
+          <p className="text-sm text-[#6b7280]">Inget som kräver åtgärd just nu.</p>
+        ) : (
+          <div className="divide-y divide-black/5">
+            {tasks.map((t) => (
+              <ActionRow key={t.kind} href={t.href} label={t.label} value={t.count} />
+            ))}
+          </div>
+        )}
       </Panel>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {PIPELINE_PHASES.map((p) => (

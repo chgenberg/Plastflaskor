@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { qrSvgDataUrl } from "./qrMark";
 import type { Layer } from "./types";
 
 export function LabelLayers({
@@ -98,6 +99,20 @@ export function LabelLayers({
               >
                 {layer.text}
               </p>
+            ) : null}
+            {layer.type === "qr" && layer.text ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={qrSvgDataUrl(layer.text, compact ? 48 : 88)}
+                alt=""
+                draggable={false}
+                className={compact ? "h-10 w-10" : "h-[72px] w-[72px]"}
+              />
+            ) : null}
+            {layer.type === "qr" && !layer.text && interactive ? (
+              <div className="rounded-md border border-dashed border-[#1d1d1f]/25 bg-white/70 px-3 py-2 text-[11px] text-[#9ca3af]">
+                QR
+              </div>
             ) : null}
             {interactive && selected ? (
               <>

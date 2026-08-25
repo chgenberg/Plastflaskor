@@ -1,4 +1,5 @@
 import { prisma } from "@/server/db";
+import { notifyOrderChange } from "@/server/services/notify";
 import type { IntegrationRegistry } from "../../types";
 
 function delay(ms = 280) {
@@ -57,6 +58,7 @@ export function createMockIntegrations(): IntegrationRegistry {
             storageKey: `invoices/${invoiceNo}.pdf`,
           },
         });
+        await notifyOrderChange(orderId, "INVOICED");
         return { invoiceNo, status: "Skickad", issuedAt: new Date().toISOString() };
       },
       async sendInvoice(invoiceNo) {
@@ -105,6 +107,7 @@ export function createMockIntegrations(): IntegrationRegistry {
             storageKey: `waybills/${trackingNo}.pdf`,
           },
         });
+        await notifyOrderChange(input.orderId, "WAYBILL_CREATED");
         return {
           shipmentId: shipment.id,
           trackingNo,
@@ -125,14 +128,23 @@ export function createMockIntegrations(): IntegrationRegistry {
     label: {
       async orderLabels(orderId) {
         await delay();
-        await prisma.label.update({
-          where: { orderId },
-          data: { status: "ORDERED", orderedAt: new Date() },
-        });
+        const existing = await prisma.label.findUnique({ where: { orderId } });
+        if (existing) {
+          await prisma.label.update({
+            where: { orderId },
+            data: { status: "ORDERED", orderedAt: new Date() },
+          });
+        } else {
+          const order = await prisma.order.findUnique({ where: { id: orderId }, include: { items: true } });
+          await prisma.label.create({
+            data: { orderId, qty: order?.items[0]?.qty ?? 1, status: "ORDERED", orderedAt: new Date() },
+          });
+        }
         await prisma.order.update({ where: { id: orderId }, data: { currentStatus: "LABELS_ORDERED" } });
         await prisma.statusEvent.create({
           data: { entityType: "ORDER", entityId: orderId, toStatus: "LABELS_ORDERED", actorRole: "AQUA_STAFF", source: "label" },
         });
+        await notifyOrderChange(orderId, "LABELS_ORDERED");
         return { labelOrderId: orderId, status: "ORDERED" };
       },
       async getPrintStatus() {

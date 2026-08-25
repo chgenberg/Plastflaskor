@@ -4,22 +4,26 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { signIn, signOut } from "@/server/auth";
 import { getSessionUser } from "@/server/rbac";
-import { createQuote, repeatOrder, advanceOrder, getOrderByNo } from "@/server/services/order.service";
+import { createQuote, repeatOrder, advanceOrder, getOrderByNo, createResellerOrderFromDesign } from "@/server/services/order.service";
+import { approveArtwork, confirmDelivery } from "@/server/services/artwork.service";
+import { addressSchema, quoteSchema, repeatSchema } from "@/domain/schemas";
+import { LABEL_NEXT } from "@/domain/enums";
 import { FACTORY_EVENTS, factoryAdvance } from "@/server/services/production.service";
 import { getIntegrations } from "@/server/integrations/composition";
 import { prisma } from "@/server/db";
 import { OrderStatus } from "@prisma/client";
+import { safeInternalPath } from "@/domain/safePath";
 
 export async function loginAction(formData: FormData) {
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
-  const next = String(formData.get("next") ?? "");
+  const next = safeInternalPath(String(formData.get("next") ?? ""), "/");
   try {
     await signIn("credentials", { email, password, redirect: false });
   } catch {
     redirect("/login?error=invalid");
   }
-  redirect(next || "/");
+  redirect(next);
 }
 
 export async function logoutAction() {
@@ -27,30 +31,41 @@ export async function logoutAction() {
 }
 
 export async function quoteAction(formData: FormData) {
-  const order = await createQuote({
+  const parsed = quoteSchema.safeParse({
     company: String(formData.get("company") ?? ""),
     email: String(formData.get("email") ?? ""),
-    phone: String(formData.get("phone") ?? ""),
-    city: String(formData.get("city") ?? ""),
-    message: String(formData.get("message") ?? ""),
+    phone: String(formData.get("phone") || "") || undefined,
+    city: String(formData.get("city") || "") || undefined,
+    message: String(formData.get("message") || "") || undefined,
     productId: String(formData.get("productId") ?? ""),
     qty: Number(formData.get("qty") ?? 270),
     designId: String(formData.get("designId") || "") || undefined,
   });
+  if (!parsed.success) redirect("/offert?error=1");
+  const order = await createQuote(parsed.data);
   redirect(`/offert/tack?order=${order.orderNo}`);
 }
 
 export async function repeatOrderAction(formData: FormData) {
   const user = await getSessionUser();
-  if (!user?.resellerId) throw new Error("Endast återförsäljare");
-  const order = await repeatOrder({
+  const parsed = repeatSchema.safeParse({
     sourceOrderId: String(formData.get("sourceOrderId")),
-    resellerId: user.resellerId,
     qty: Number(formData.get("qty")),
     requestedDate: String(formData.get("requestedDate")),
     addressId: String(formData.get("addressId") || "") || undefined,
     sameArtwork: formData.get("sameArtwork") === "yes",
     invoiceRef: String(formData.get("invoiceRef") || ""),
+  });
+  if (!parsed.success) throw new Error("Ogiltig repeat-order");
+  const source = await prisma.order.findUnique({ where: { id: parsed.data.sourceOrderId } });
+  if (!source) throw new Error("Order saknas");
+  const staff = user?.role === "AQUA_STAFF" || user?.role === "AQUA_ADMIN";
+  if (user?.role === "RESELLER" && source.resellerId !== user.resellerId) throw new Error("Forbidden");
+  const resellerId = user?.role === "RESELLER" ? user.resellerId : staff ? source.resellerId : null;
+  if (!resellerId) throw new Error("Endast återförsäljare");
+  const order = await repeatOrder({
+    ...parsed.data,
+    resellerId,
   });
   redirect(`/partner/ordrar/${order.orderNo}`);
 }
@@ -130,6 +145,10 @@ export async function saveDesignAction(input: {
 }) {
   const user = await getSessionUser();
   if (input.designId) {
+    const existing = await prisma.design.findUnique({ where: { id: input.designId } });
+    if (!existing) throw new Error("Design saknas");
+    const staff = user?.role === "AQUA_STAFF" || user?.role === "AQUA_ADMIN";
+    if (existing.userId && existing.userId !== user?.id && !staff) throw new Error("Forbidden");
     return prisma.design.update({
       where: { id: input.designId },
       data: {
@@ -154,7 +173,102 @@ export async function saveDesignAction(input: {
   });
 }
 
+export async function attachDesignToOrderAction(designId: string) {
+  const user = await getSessionUser();
+  if (!user?.resellerId) throw new Error("Endast återförsäljare");
+  return createResellerOrderFromDesign({
+    designId,
+    resellerId: user.resellerId,
+    userId: user.id,
+  });
+}
+
+export async function labelAdvanceAction(formData: FormData) {
+  const user = await getSessionUser();
+  if (user?.role !== "AQUA_STAFF" && user?.role !== "AQUA_ADMIN") throw new Error("Forbidden");
+  const labelId = String(formData.get("labelId"));
+  const to = String(formData.get("to"));
+  const allowed = Object.values(LABEL_NEXT)
+    .map((n) => n?.to)
+    .filter(Boolean);
+  if (!allowed.includes(to)) throw new Error("Ogiltig etikettstatus");
+  const label = await prisma.label.findUnique({ where: { id: labelId }, include: { order: true } });
+  if (!label) throw new Error("Etikett saknas");
+  if (to === "ORDERED") {
+    await getIntegrations().label.orderLabels(label.orderId);
+  } else {
+    await prisma.label.update({
+      where: { id: labelId },
+      data: {
+        status: to as "PRINTED" | "SHIPPED_TO_FACTORY" | "RECEIVED_BY_FACTORY",
+        ...(to === "PRINTED" ? { printedAt: new Date() } : {}),
+        ...(to === "SHIPPED_TO_FACTORY" ? { shippedAt: new Date() } : {}),
+        ...(to === "RECEIVED_BY_FACTORY" ? { receivedAt: new Date() } : {}),
+      },
+    });
+    const orderStatus =
+      to === "PRINTED"
+        ? "LABELS_PRINTED"
+        : to === "SHIPPED_TO_FACTORY"
+          ? "LABELS_SHIPPED_TO_FACTORY"
+          : "LABELS_RECEIVED_BY_FACTORY";
+    await advanceOrder(label.orderId, orderStatus, user.role as "AQUA_STAFF", "labels");
+  }
+  revalidatePath("/operations/etiketter");
+  revalidatePath(`/operations/ordrar/${label.order.orderNo}`);
+}
+
+export async function approveArtworkAction(formData: FormData) {
+  const user = await getSessionUser();
+  if (user?.role !== "AQUA_STAFF" && user?.role !== "AQUA_ADMIN") throw new Error("Forbidden");
+  const orderNo = String(formData.get("orderNo"));
+  const order = await getOrderByNo(orderNo);
+  if (!order) throw new Error("Order saknas");
+  await approveArtwork(order.id, user.role as "AQUA_STAFF");
+  revalidatePath(`/operations/ordrar/${orderNo}`);
+  revalidatePath("/operations");
+}
+
+export async function confirmDeliveryAction(formData: FormData) {
+  const user = await getSessionUser();
+  if (user?.role !== "AQUA_STAFF" && user?.role !== "AQUA_ADMIN") throw new Error("Forbidden");
+  const orderNo = String(formData.get("orderNo"));
+  const order = await getOrderByNo(orderNo);
+  if (!order) throw new Error("Order saknas");
+  await confirmDelivery(order.id, user.role as "AQUA_STAFF");
+  revalidatePath(`/operations/ordrar/${orderNo}`);
+  revalidatePath("/operations");
+  revalidatePath("/operations/ekonomi");
+}
+
+export async function addAddressAction(formData: FormData) {
+  const user = await getSessionUser();
+  if (!user?.resellerId) throw new Error("Endast återförsäljare");
+  const reseller = await prisma.reseller.findUnique({ where: { id: user.resellerId } });
+  if (!reseller) throw new Error("Återförsäljare saknas");
+  const parsed = addressSchema.parse({
+    line1: String(formData.get("line1") ?? ""),
+    postalCode: String(formData.get("postalCode") ?? ""),
+    city: String(formData.get("city") ?? ""),
+    type: String(formData.get("type") || "SHIPPING"),
+  });
+  await prisma.address.create({
+    data: {
+      companyId: reseller.companyId,
+      type: parsed.type,
+      line1: parsed.line1,
+      postalCode: parsed.postalCode,
+      city: parsed.city,
+    },
+  });
+  revalidatePath("/partner/konto");
+}
+
 export async function markNotificationRead(id: string) {
+  const user = await getSessionUser();
+  if (!user) throw new Error("Forbidden");
+  const note = await prisma.notification.findUnique({ where: { id } });
+  if (!note || note.userId !== user.id) throw new Error("Forbidden");
   await getIntegrations().notifications.markRead(id);
   revalidatePath("/operations/notiser");
 }

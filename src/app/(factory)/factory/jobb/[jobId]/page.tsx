@@ -13,6 +13,8 @@ export default async function JobPage({ params }: { params: Promise<{ jobId: str
   const received = Boolean(job.order.label?.receivedAt);
   const opt = JSON.parse(item?.variant.optionsJson || "{}") as { waterType?: string; cap?: string };
   const volume = item?.variant.volumeMl ? `${item.variant.volumeMl / 10} cl` : item?.variant.name;
+  const waybillReady = job.status === "DONE" && job.order.currentStatus === "PRODUCTION_DONE";
+  const shippedReady = job.order.currentStatus === "WAYBILL_CREATED";
 
   return (
     <div className="mx-auto max-w-lg space-y-8">
@@ -22,6 +24,8 @@ export default async function JobPage({ params }: { params: Promise<{ jobId: str
         <p className="mt-4 text-sm text-[#6b7280]">
           {[opt.waterType, opt.cap, item?.variant.product.name].filter(Boolean).join(" · ")}
         </p>
+        <p className="mt-2 text-sm">Design: {job.order.designs[0]?.projectName ?? "–"}</p>
+        <p className="text-sm">Etikett: {job.order.label ? `${job.order.label.qty} st · ${job.order.label.status}` : "–"}</p>
         <p className="mt-2 text-sm">
           {job.order.shippingAddress.line1}, {job.order.shippingAddress.city}
         </p>
@@ -38,39 +42,46 @@ export default async function JobPage({ params }: { params: Promise<{ jobId: str
         ) : null}
         <div className="mt-6 space-y-3">
           {!received ? (
-            <form action={factoryAction}>
-              <input type="hidden" name="jobId" value={job.id} />
-              <input type="hidden" name="action" value="LABELS_RECEIVED_BY_FACTORY" />
-              <Button type="submit" variant="secondary" size="lg" className="w-full">
-                Mottag etikett
-              </Button>
-            </form>
+            <FactoryBtn jobId={job.id} action="LABELS_RECEIVED_BY_FACTORY" label="Mottag etikett" variant="secondary" />
           ) : null}
-          {job.status !== "STARTED" && job.status !== "DONE" ? (
-            <form action={factoryAction}>
-              <input type="hidden" name="jobId" value={job.id} />
-              <input type="hidden" name="action" value="PRODUCTION_STARTED" />
-              <Button type="submit" size="lg" className="w-full" disabled={!received}>
-                Starta
-              </Button>
-            </form>
+          {received && (job.status === "NOT_PLANNED" || job.status === "PLANNED") ? (
+            <FactoryBtn jobId={job.id} action="PRODUCTION_STARTED" label="Starta produktion" />
           ) : null}
-          {job.status === "STARTED" ? (
-            <form action={factoryAction}>
-              <input type="hidden" name="jobId" value={job.id} />
-              <input type="hidden" name="action" value="PRODUCTION_DONE" />
-              <Button type="submit" size="lg" className="w-full">
-                Klar
-              </Button>
-            </form>
-          ) : null}
-          {job.status === "DONE" ? (
+          {job.status === "STARTED" ? <FactoryBtn jobId={job.id} action="BOTTLES_FILLED" label="Markera fylld" /> : null}
+          {job.status === "FILLED" ? <FactoryBtn jobId={job.id} action="LABELS_APPLIED" label="Etiketter applicerade" /> : null}
+          {job.status === "LABELS_APPLIED" ? <FactoryBtn jobId={job.id} action="PRODUCTION_DONE" label="Produktion klar" /> : null}
+          {waybillReady ? (
             <LinkButton href={`/factory/jobb/${job.id}/fraktsedel`} size="lg" className="w-full">
-              Fraktsedel
+              Skriv ut fraktsedel
             </LinkButton>
           ) : null}
+          {shippedReady ? <FactoryBtn jobId={job.id} action="SHIPPED_TO_END_CUSTOMER" label="Markera skickad" /> : null}
         </div>
       </Panel>
     </div>
+  );
+}
+
+function FactoryBtn({
+  jobId,
+  action,
+  label,
+  variant = "primary",
+  disabled,
+}: {
+  jobId: string;
+  action: string;
+  label: string;
+  variant?: "primary" | "secondary";
+  disabled?: boolean;
+}) {
+  return (
+    <form action={factoryAction}>
+      <input type="hidden" name="jobId" value={jobId} />
+      <input type="hidden" name="action" value={action} />
+      <Button type="submit" variant={variant} size="lg" className="w-full" disabled={disabled}>
+        {label}
+      </Button>
+    </form>
   );
 }

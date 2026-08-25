@@ -4,12 +4,23 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { saveDesignAction } from "@/actions";
+import { attachDesignToOrderAction, saveDesignAction } from "@/actions";
 import { RealityView } from "./RealityView";
 import { StudioOnboard } from "./StudioOnboard";
+import { BottlePreview } from "./engine/BottlePreview";
 import { flattenLabelBlob } from "./engine/flattenLabel";
 import { LabelCanvas } from "./engine/LabelCanvas";
 import { defaultLayers, skuLabel, type Finish, type Layer, type StudioProduct, type Tool } from "./engine/types";
+
+const STEPS = [
+  { id: "product", label: "Produkt" },
+  { id: "options", label: "Val" },
+  { id: "qty", label: "Antal" },
+  { id: "upload", label: "Ladda upp" },
+  { id: "design", label: "Design" },
+  { id: "preview", label: "Förhandsvisning" },
+  { id: "send", label: "Skicka" },
+] as const;
 
 const TOOLS: { id: Tool; label: string }[] = [
   { id: "design", label: "Designa" },
@@ -29,6 +40,7 @@ export function Studio({
   initialSlug?: string;
   role?: string | null;
 }) {
+  const isReseller = role === "RESELLER";
   const router = useRouter();
   const preferred = products.find((p) => p.slug === initialSlug) ?? products.find((p) => p.slug.includes("50cl")) ?? products[0];
   const [slug, setSlug] = useState(preferred?.slug);
@@ -45,7 +57,10 @@ export function Studio({
   const [zoom2d, setZoom2d] = useState(1);
   const [saved, setSaved] = useState(true);
   const [picker, setPicker] = useState(false);
-  const [view, setView] = useState<"etikett" | "verklighet">("etikett");
+  const [view, setView] = useState<"etikett" | "vinklar" | "verklighet">("etikett");
+  const [yaw, setYaw] = useState(18);
+  const [printFiles, setPrintFiles] = useState<string[]>([]);
+  const [step, setStep] = useState(4);
   const [realityUrl, setRealityUrl] = useState<string | null>(null);
   const [realityFp, setRealityFp] = useState<string | null>(null);
   const [realityLoading, setRealityLoading] = useState(false);
@@ -165,18 +180,74 @@ export function Studio({
     setSelectedId(next.background ? "artwork" : "logo");
   }
 
+  function persistDesign() {
+    return saveDesignAction({
+      productId: product.id,
+      projectName: project,
+      quantity: qty,
+      optionsJson: options,
+      canvasJson: JSON.stringify({ layers, finish, printFiles }),
+    });
+  }
+
   function next() {
     start(async () => {
-      const design = await saveDesignAction({
-        productId: product.id,
-        projectName: project,
-        quantity: qty,
-        optionsJson: options,
-        canvasJson: JSON.stringify({ layers, finish }),
-      });
-      if (role === "RESELLER") router.push(`/partner/ordrar?design=${design.id}`);
-      else router.push(`/offert?product=${product.id}&design=${design.id}`);
+      const design = await persistDesign();
+      router.push(`/kassa?product=${product.id}&design=${design.id}&qty=${qty}`);
     });
+  }
+
+  function requestQuote() {
+    start(async () => {
+      const design = await persistDesign();
+      router.push(`/offert?product=${product.id}&design=${design.id}&qty=${qty}`);
+    });
+  }
+
+  function addToOrder() {
+    start(async () => {
+      const design = await persistDesign();
+      const order = await attachDesignToOrderAction(design.id);
+      router.push(`/partner/ordrar/${order.orderNo}`);
+    });
+  }
+
+  function resetDesign() {
+    const nextLayers = defaultLayers();
+    history.current = [nextLayers];
+    future.current = [];
+    setLayers(nextLayers);
+    setSelectedId("artwork");
+    setPrintFiles([]);
+    setWater("stilla");
+    setCap("skruvkork");
+    setLabel("papper");
+    setFinish("matte");
+    setQty(product.moq);
+    setSaved(false);
+  }
+
+  function goStep(i: number) {
+    setStep(i);
+    const id = STEPS[i].id;
+    if (id === "product") setPicker(true);
+    if (id === "options" || id === "qty") {
+      setTool("bottle");
+      setView("etikett");
+    }
+    if (id === "upload") {
+      setTool("upload");
+      setView("etikett");
+    }
+    if (id === "design") {
+      setTool("design");
+      setView("etikett");
+    }
+    if (id === "preview") {
+      setTool("preview");
+      setView("vinklar");
+    }
+    if (id === "send") setTool("preview");
   }
 
   const qtys = [product.moq, 540, 1080, 2500, 5000].filter((n, i, a) => n >= product.moq && a.indexOf(n) === i);
@@ -232,8 +303,20 @@ export function Studio({
             ) : null}
           </div>
           <p className="hidden text-[12px] text-[#6b7280] sm:block">{qty} st</p>
+          <button type="button" onClick={resetDesign} className="hidden h-9 rounded-full border border-black/10 px-3 text-[12px] font-medium sm:inline-flex sm:items-center">
+            Återställ
+          </button>
+          {isReseller ? (
+            <button type="button" onClick={addToOrder} className="h-9 rounded-full border border-black/10 bg-white px-4 text-[13px] font-semibold">
+              Lägg till i order
+            </button>
+          ) : (
+            <button type="button" onClick={requestQuote} className="h-9 rounded-full border border-black/10 bg-white px-4 text-[13px] font-semibold">
+              Begär offert
+            </button>
+          )}
           <button type="button" onClick={next} className="h-9 rounded-full bg-[#5B7FD4] px-5 text-[13px] font-semibold text-white shadow-sm hover:bg-[#4C6FC4]">
-            Nästa
+            Kassa
           </button>
         </div>
       </header>
@@ -261,12 +344,30 @@ export function Studio({
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 overflow-auto p-3 lg:flex-row lg:overflow-hidden">
           <section className="flex min-h-[420px] min-w-0 flex-1 flex-col rounded-[22px] bg-white shadow-[0_8px_30px_rgba(15,23,42,.04)]">
+            <ol className="flex gap-1 overflow-x-auto px-4 pt-3 text-[11px] font-medium">
+              {STEPS.map((s, i) => (
+                <li key={s.id} className="flex items-center gap-1">
+                  {i > 0 ? <span className="text-[#d4d4d8]">→</span> : null}
+                  <button
+                    type="button"
+                    onClick={() => goStep(i)}
+                    className={`rounded-full px-2.5 py-1 ${step === i ? "bg-[#E8EEFA] text-[#3B5BAA]" : "text-[#6b7280] hover:bg-black/[0.04]"}`}
+                  >
+                    {s.label}
+                  </button>
+                </li>
+              ))}
+            </ol>
             <PaneToggle
               active={view}
               loading={realityLoading}
               onEtikett={() => {
                 setView("etikett");
                 if (tool === "preview") setTool("design");
+              }}
+              onAngles={() => {
+                setView("vinklar");
+                setTool("preview");
               }}
               onReality={() => void seeInReality()}
             />
@@ -283,6 +384,22 @@ export function Studio({
                     if (tool === "preview") setTool("design");
                   }}
                 />
+              ) : view === "vinklar" ? (
+                <div className="absolute inset-0 px-4 pb-4 pt-2">
+                  <BottlePreview
+                    categorySlug={product.categorySlug}
+                    productSlug={product.slug}
+                    volumeMl={product.volumeMl}
+                    cap={cap}
+                    finish={finish}
+                    water={water}
+                    labelKind={label}
+                    yaw={yaw}
+                    zoom={1}
+                    layers={layers}
+                    onYaw={setYaw}
+                  />
+                </div>
               ) : (
                 <div className="absolute inset-0 px-4 pb-4 pt-2">
                   <LabelCanvas
@@ -294,7 +411,12 @@ export function Studio({
                     onScale={(id, scale) => updateLayer(id, { scale })}
                     onDelete={() => {
                       if (selected.type === "artwork") return;
-                      updateLayer(selected.id, selected.type === "text" ? { text: "" } : { x: 50, y: 46, scale: 1, rotation: 0 });
+                      updateLayer(
+                        selected.id,
+                        selected.type === "text" || selected.type === "qr"
+                          ? { text: "" }
+                          : { x: 50, y: 46, scale: 1, rotation: 0 },
+                      );
                     }}
                     onZoom={setZoom2d}
                   />
@@ -335,7 +457,10 @@ export function Studio({
                 )
               }
               onUpload={(src) => updateLayer(selected.type === "logo" ? "logo" : "artwork", { src })}
+              onPrintFile={(name) => setPrintFiles((prev) => [...prev, name])}
+              printFiles={printFiles}
               onOpenOnboard={() => setOnboard(true)}
+              onReset={resetDesign}
             />
           </aside>
         </div>
@@ -391,7 +516,10 @@ function Inspector({
   onMatchColors,
   onOptimize,
   onUpload,
+  onPrintFile,
+  printFiles,
   onOpenOnboard,
+  onReset,
 }: {
   tool: Tool;
   layers: Layer[];
@@ -413,7 +541,10 @@ function Inspector({
   onMatchColors: () => void;
   onOptimize: () => void;
   onUpload: (src: string) => void;
+  onPrintFile: (name: string) => void;
+  printFiles: string[];
   onOpenOnboard: () => void;
+  onReset: () => void;
 }) {
   return (
     <div className="space-y-5 text-sm">
@@ -449,22 +580,51 @@ function Inspector({
         </label>
       ) : null}
 
+      {selected.type === "qr" || tool === "upload" ? (
+        <label className="block">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">QR-länk</span>
+          <input
+            value={layers.find((l) => l.type === "qr")?.text ?? ""}
+            onChange={(e) => {
+              onSelect("qr");
+              onLayerChange("qr", { text: e.target.value });
+            }}
+            className="mt-2 h-10 w-full rounded-xl border border-black/10 px-3"
+            placeholder="https://"
+          />
+        </label>
+      ) : null}
+
       {tool === "upload" ? (
         <label className="flex h-28 cursor-pointer items-center justify-center rounded-2xl border border-dashed border-black/15 text-center text-[13px] text-[#6b7280]">
           <input
             type="file"
-            accept=".png,.jpg,.jpeg,.svg,.webp"
+            accept=".png,.jpg,.jpeg,.svg,.webp,.pdf,.ai"
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (!file) return;
+              const ext = file.name.split(".").pop()?.toLowerCase();
+              if (ext === "pdf" || ext === "ai") {
+                onPrintFile(file.name);
+                return;
+              }
               const reader = new FileReader();
               reader.onload = () => onUpload(String(reader.result));
               reader.readAsDataURL(file);
             }}
           />
-          {selected.type === "logo" ? "Ladda upp logotyp (PNG eller SVG)" : "Ladda upp bakgrund (PNG, JPG eller SVG)"}
+          {selected.type === "logo"
+            ? "Ladda upp logotyp (PNG, SVG, PDF eller AI)"
+            : "Ladda upp bakgrund eller tryckfil (PNG, JPG, SVG, PDF, AI)"}
         </label>
+      ) : null}
+      {printFiles.length ? (
+        <ul className="space-y-1 text-[12px] text-[#6b7280]">
+          {printFiles.map((name) => (
+            <li key={name}>Tryckfil: {name}</li>
+          ))}
+        </ul>
       ) : null}
 
       {tool === "colors" ? (
@@ -552,6 +712,7 @@ function Inspector({
           <AiBtn onClick={onCenter}>Centrera motiv</AiBtn>
           <AiBtn onClick={onMatchColors}>Matcha varumärkesfärger</AiBtn>
           <AiBtn onClick={onOptimize}>Optimera layout</AiBtn>
+          <AiBtn onClick={onReset}>Återställ design</AiBtn>
           <Link href="/designa/ai" className="block rounded-xl px-3 py-2 text-[13px] text-[#3B5BAA] hover:bg-[#E8EEFA]">
             Öppna AI-studio →
           </Link>
@@ -598,11 +759,13 @@ function PaneToggle({
   active,
   loading,
   onEtikett,
+  onAngles,
   onReality,
 }: {
-  active: "etikett" | "verklighet";
+  active: "etikett" | "vinklar" | "verklighet";
   loading: boolean;
   onEtikett: () => void;
+  onAngles: () => void;
   onReality: () => void;
 }) {
   return (
@@ -614,6 +777,13 @@ function PaneToggle({
           className={`rounded-full px-4 py-1.5 ${active === "etikett" ? "bg-white text-[#1d1d1f] shadow-sm" : "text-[#6b7280]"}`}
         >
           Etikett
+        </button>
+        <button
+          type="button"
+          onClick={onAngles}
+          className={`rounded-full px-4 py-1.5 ${active === "vinklar" ? "bg-white text-[#1d1d1f] shadow-sm" : "text-[#6b7280]"}`}
+        >
+          3D / vinklar
         </button>
         <button
           type="button"

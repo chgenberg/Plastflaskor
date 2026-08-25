@@ -20,6 +20,11 @@ export default async function InvoicePage({
   const vat = amount * 0.25;
   const invoiceDoc = order.documents.find((d) => d.kind === "FINANCE");
   const issued = order.invoice?.status === "ISSUED";
+  const billing =
+    order.reseller.company.addresses.find((a) => a.type === "BILLING") ??
+    order.reseller.company.addresses[0] ??
+    order.shippingAddress;
+  const freight = order.shipments[0];
   return (
     <div className="mx-auto max-w-xl space-y-8">
       <PageHeader title="Slutför order & fakturera" subtitle={order.orderNo} />
@@ -39,6 +44,16 @@ export default async function InvoicePage({
             <dd className="mt-1">{order.reseller.company.orgNr}</dd>
           </div>
           <div>
+            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Fakturaadress</dt>
+            <dd className="mt-1">
+              {billing.line1}, {billing.postalCode} {billing.city}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">E-post</dt>
+            <dd className="mt-1">{order.reseller.company.email ?? order.customer.email ?? "–"}</dd>
+          </div>
+          <div>
             <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Produkter</dt>
             <dd className="mt-1">
               {order.items[0]?.qty} × {order.items[0]?.variant.product.name}
@@ -47,6 +62,12 @@ export default async function InvoicePage({
           <div>
             <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">À-pris</dt>
             <dd className="mt-1 tabular-nums">{order.items[0]?.unitPriceExVat.toFixed(2)} kr</dd>
+          </div>
+          <div>
+            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Frakt</dt>
+            <dd className="mt-1">
+              {freight ? `${freight.carrier} · ${freight.packages} kolli · ${freight.weightKg} kg` : "Enligt avtal / 0 kr i demo"}
+            </dd>
           </div>
           <div>
             <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Totalsumma</dt>

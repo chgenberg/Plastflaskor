@@ -14,11 +14,13 @@ const LEFT: Parent[] = [
     href: "/produkter",
     children: [
       { href: "/produkter", label: "Alla produkter" },
+      { href: "/produkter/profilvatten", label: "Profilvatten" },
       { href: "/produkter/pappersmuggar", label: "Pappersmuggar" },
       { href: "/produkter/energidryck", label: "Energidryck" },
       { href: "/produkter/sportflaskor", label: "Sportflaskor" },
       { href: "/produkter/lask-must", label: "Läsk" },
       { href: "/produkter/kyl", label: "Kyl" },
+      { href: "/ovriga", label: "Övriga" },
     ],
   },
   {
@@ -26,6 +28,7 @@ const LEFT: Parent[] = [
     href: "/designa",
     children: [
       { href: "/designa", label: "Designa själv" },
+      { href: "/inspiration", label: "Inspiration" },
       { href: "/valmojligheter", label: "Valmöjligheter" },
     ],
   },
@@ -45,6 +48,7 @@ const RIGHT: Parent[] = [
     label: "Kontakt",
     href: "/offert",
     children: [
+      { href: "/kassa", label: "Beställ" },
       { href: "/offert", label: "Begär offert" },
       { href: "/aterforsaljare", label: "För återförsäljare" },
     ],

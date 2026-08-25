@@ -1,5 +1,6 @@
 import { requireRole } from "@/server/rbac";
 import { listDesignsForUser } from "@/server/services/document.service";
+import { ArtworkUpload } from "@/ui/shell/ArtworkUpload";
 import { EmptyState, FileLink, LinkButton, PageHeader, Panel } from "@/ui/shell/primitives";
 
 export default async function ArtworkPage() {
@@ -34,6 +35,9 @@ export default async function ArtworkPage() {
                   ))}
                 </ul>
               )}
+              {d.order?.id && (d.order.currentStatus === "ORDER_RECEIVED" || d.order.currentStatus === "ARTWORK_UPLOADED") ? (
+                <ArtworkUpload orderId={d.order.id} returnTo="/partner/artwork" />
+              ) : null}
             </Panel>
           ))}
         </div>

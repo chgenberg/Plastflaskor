@@ -1,5 +1,54 @@
+import { readFile } from "fs/promises";
+import path from "path";
 import { prisma } from "../db";
 import { renderSimplePdf } from "../pdf/simplePdf";
+import type { DocumentKind } from "@prisma/client";
+import { getLocalFile, putLocalFile } from "../storage/local";
+
+const UPLOAD_ROOT = path.join(process.cwd(), "uploads");
+
+export function uploadPath(storageKey: string) {
+  return path.join(UPLOAD_ROOT, storageKey);
+}
+
+export async function readUploadedBytes(storageKey: string) {
+  const fromStore = await getLocalFile(storageKey);
+  if (fromStore) return fromStore;
+  try {
+    return await readFile(uploadPath(storageKey));
+  } catch {
+    return null;
+  }
+}
+
+export async function saveUploadedDocument(input: {
+  orderId: string;
+  title: string;
+  kind: DocumentKind;
+  fileName: string;
+  mimeType: string;
+  bytes: Buffer;
+}) {
+  const previous = await prisma.document.findFirst({
+    where: { orderId: input.orderId, title: input.title },
+    orderBy: { version: "desc" },
+  });
+  const version = (previous?.version ?? 0) + 1;
+  const safe = input.fileName.replace(/[^\wåäöÅÄÖ.-]+/g, "_");
+  const storageKey = `orders/${input.orderId}/${Date.now()}-v${version}-${safe}`;
+  await putLocalFile(storageKey, input.bytes);
+  return prisma.document.create({
+    data: {
+      orderId: input.orderId,
+      entityType: "ORDER",
+      entityId: input.orderId,
+      kind: input.kind,
+      title: input.title,
+      storageKey,
+      version,
+    },
+  });
+}
 
 const FACTORY_DOC_KINDS = ["PRODUCTION", "LOGISTICS", "ARTWORK", "WAYBILL"] as const;
 
@@ -13,7 +62,7 @@ type SessionLike = {
 export async function getAuthorizedDocument(id: string, user: SessionLike) {
   const doc = await prisma.document.findUnique({
     where: { id },
-    include: { order: { include: { customer: true, reseller: { include: { company: true } } } } },
+    include: { order: { include: { customer: true, reseller: { include: { company: true } }, invoice: true } } },
   });
   if (!doc) return null;
   if (user.role === "RESELLER") {
@@ -55,17 +104,37 @@ export function documentPdf(doc: {
   kind: string;
   storageKey: string;
   version: number;
-  order?: { orderNo: string; customer?: { name: string }; reseller?: { company?: { name: string } } } | null;
+  order?: {
+    orderNo: string;
+    customer?: { name: string; email?: string | null };
+    reseller?: { company?: { name: string } };
+    invoice?: {
+      invoiceNo: string;
+      status: string;
+      amountExVat: number;
+      vatAmount: number;
+      amountIncVat: number;
+    } | null;
+  } | null;
 }) {
+  const inv = doc.order?.invoice;
+  const finance = doc.kind === "FINANCE" && inv;
   return renderSimplePdf(doc.title, [
-    `Typ: ${doc.kind}`,
-    `Version: ${doc.version}`,
+    finance ? "Aqua Visibility AB  ·  Testdebitering" : `Typ: ${doc.kind}`,
+    finance ? "Ingen affär sker. Kortet debiteras inte." : `Version: ${doc.version}`,
     doc.order?.orderNo ? `Order: ${doc.order.orderNo}` : "",
     doc.order?.customer?.name ? `Kund: ${doc.order.customer.name}` : "",
+    doc.order?.customer?.email ? `E-post: ${doc.order.customer.email}` : "",
     doc.order?.reseller?.company?.name ? `ÅF: ${doc.order.reseller.company.name}` : "",
-    `Nyckel: ${doc.storageKey}`,
+    finance ? `Fakturanr: ${inv.invoiceNo}` : `Nyckel: ${doc.storageKey}`,
+    finance ? `Status: ${inv.status === "PAID" ? "Betald (Stripe test 4242)" : inv.status}` : "",
+    finance ? `Summa ex moms: ${inv.amountExVat.toFixed(2)} kr` : "",
+    finance ? `Moms 25%: ${inv.vatAmount.toFixed(2)} kr` : "",
+    finance ? `Att betala: ${inv.amountIncVat.toFixed(2)} kr` : "",
     "",
-    "Detta är en genererad kopia. Originalfilen finns hos Aqua Visibility.",
+    finance
+      ? "Detta är en dummyfaktura för demonstration."
+      : "Detta är en genererad kopia. Originalfilen finns hos Aqua Visibility.",
   ].filter(Boolean));
 }
 

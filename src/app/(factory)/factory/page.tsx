@@ -7,7 +7,9 @@ export default async function FactoryHome() {
   const scoped = user.role === "FACTORY";
   const jobs =
     scoped && !user.factoryId ? [] : await listJobsForFactory(scoped ? user.factoryId ?? undefined : undefined);
-  const today = jobs.filter((j) => ["PLANNED", "STARTED", "DONE", "NOT_PLANNED"].includes(j.status));
+  const today = jobs.filter((j) =>
+    ["NOT_PLANNED", "PLANNED", "STARTED", "FILLING", "FILLED", "LABELING", "LABELS_APPLIED", "DONE"].includes(j.status),
+  );
   const showFactory = !user.factoryId;
 
   if (scoped && !user.factoryId) {
@@ -39,6 +41,10 @@ export default async function FactoryHome() {
                 </h2>
                 <p className="mt-1 text-sm text-[#6b7280]">
                   {[opt.waterType, opt.cap, item?.variant.product.name].filter(Boolean).join(" · ")}
+                </p>
+                <p className="mt-1 text-sm">
+                  Design: {j.order.designs[0]?.projectName ?? "–"}
+                  {j.order.label ? ` · Etikett ${j.order.label.qty} st` : ""}
                 </p>
                 <p className="mt-4 text-sm">Etikett mottagen: {j.order.label?.receivedAt ? "Ja" : "Nej"}</p>
                 <p className="text-sm">Leverans: {j.order.requestedDate ?? "–"}</p>

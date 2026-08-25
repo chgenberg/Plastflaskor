@@ -2,6 +2,7 @@ import { OrderStatus, Role } from "@prisma/client";
 import { prisma } from "../db";
 import { getIntegrations } from "../integrations/composition";
 import { resolveUnitPrice } from "./catalog.service";
+import { notifyOrderChange } from "./notify";
 
 export async function listOrdersForReseller(resellerId: string) {
   return prisma.order.findMany({
@@ -11,16 +12,18 @@ export async function listOrdersForReseller(resellerId: string) {
       items: { include: { variant: { include: { product: true } } } },
       shippingAddress: true,
       documents: true,
+      designs: true,
     },
     orderBy: { createdAt: "desc" },
   });
 }
 
-export async function listAllOrders(filters?: { status?: OrderStatus; q?: string; phaseStatuses?: string[] }) {
+export async function listAllOrders(filters?: { status?: OrderStatus; q?: string; phaseStatuses?: string[]; source?: string }) {
   return prisma.order.findMany({
     where: {
       ...(filters?.status ? { currentStatus: filters.status } : {}),
       ...(filters?.phaseStatuses?.length ? { currentStatus: { in: filters.phaseStatuses as OrderStatus[] } } : {}),
+      ...(filters?.source ? { source: filters.source } : {}),
       ...(filters?.q
         ? {
             OR: [
@@ -29,6 +32,9 @@ export async function listAllOrders(filters?: { status?: OrderStatus; q?: string
               { reseller: { company: { name: { contains: filters.q } } } },
               { invoice: { invoiceNo: { contains: filters.q } } },
               { shipments: { some: { trackingNo: { contains: filters.q } } } },
+              { items: { some: { variant: { product: { name: { contains: filters.q } } } } } },
+              { reseller: { company: { orgNr: { contains: filters.q } } } },
+              { customer: { orgNr: { contains: filters.q } } },
             ],
           }
         : {}),
@@ -52,8 +58,8 @@ export async function getOrderByNo(orderNo: string) {
   return prisma.order.findUnique({
     where: { orderNo },
     include: {
-      customer: true,
-      reseller: { include: { company: true, priceList: true } },
+      customer: { include: { addresses: true } },
+      reseller: { include: { company: { include: { addresses: true } }, priceList: true } },
       items: { include: { variant: { include: { product: true } } } },
       shippingAddress: true,
       label: true,
@@ -87,6 +93,7 @@ export async function advanceOrder(orderId: string, toStatus: OrderStatus, actor
       source,
     },
   });
+  await notifyOrderChange(orderId, toStatus);
 }
 
 export async function createQuote(input: {
@@ -141,6 +148,7 @@ export async function createQuote(input: {
       data: { orderId: order.id, status: "SUBMITTED" },
     });
   }
+  await prisma.label.create({ data: { orderId: order.id, qty: input.qty, status: "NOT_ORDERED" } });
   await prisma.statusEvent.create({
     data: {
       entityType: "ORDER",
@@ -152,6 +160,7 @@ export async function createQuote(input: {
     },
   });
   await getIntegrations().email.sendOrderConfirmation(order.id);
+  await notifyOrderChange(order.id, "ORDER_RECEIVED");
   return order;
 }
 
@@ -194,7 +203,7 @@ export async function repeatOrder(input: {
           variantId: item.variantId,
           qty: input.qty,
           unitPriceExVat: price.unitPriceExVat,
-          designId: input.sameArtwork ? item.designId : null,
+          designId: input.sameArtwork ? (item.designId ?? source.designs[0]?.id ?? null) : null,
         },
       },
     },
@@ -214,5 +223,86 @@ export async function repeatOrder(input: {
       data: { orderId: order.id, factoryId: source.factoryId, status: "NOT_PLANNED" },
     });
   }
+  await notifyOrderChange(order.id, "ORDER_RECEIVED");
+  return order;
+}
+
+export async function createResellerOrderFromDesign(input: { designId: string; resellerId: string; userId: string }) {
+  const design = await prisma.design.findUnique({ where: { id: input.designId } });
+  if (!design) throw new Error("Design saknas");
+  const product = await prisma.product.findUnique({
+    where: { id: design.productId },
+    include: { variants: true },
+  });
+  if (!product?.variants[0]) throw new Error("Produktvariant saknas");
+  const reseller = await prisma.reseller.findUnique({
+    where: { id: input.resellerId },
+    include: {
+      priceList: { include: { items: true } },
+      company: { include: { addresses: true } },
+      customers: true,
+    },
+  });
+  if (!reseller) throw new Error("Återförsäljare saknas");
+  const variant = product.variants[0];
+  const price = resolveUnitPrice(reseller.priceList.items, variant.id, design.quantity);
+  if (!price) throw new Error("Kontakta oss för pris");
+  let customer = reseller.customers[0];
+  if (!customer) {
+    customer = await prisma.customer.create({
+      data: {
+        resellerId: reseller.id,
+        companyId: reseller.companyId,
+        name: reseller.company.name,
+        email: reseller.company.email,
+      },
+    });
+  }
+  let addr = reseller.company.addresses[0];
+  if (!addr) {
+    addr = await prisma.address.create({
+      data: {
+        type: "SHIPPING",
+        line1: "Anges senare",
+        postalCode: "00000",
+        city: "Sverige",
+        companyId: reseller.companyId,
+      },
+    });
+  }
+  const count = await prisma.order.count();
+  const order = await prisma.order.create({
+    data: {
+      orderNo: `AV-${10500 + count}`,
+      resellerId: reseller.id,
+      customerId: customer.id,
+      currentStatus: "ORDER_RECEIVED",
+      shippingAddressId: addr.id,
+      source: "reseller_studio",
+      items: {
+        create: {
+          variantId: variant.id,
+          qty: design.quantity,
+          unitPriceExVat: price.unitPriceExVat,
+          designId: design.id,
+        },
+      },
+    },
+  });
+  await prisma.design.update({
+    where: { id: design.id },
+    data: { orderId: order.id, status: "ATTACHED_TO_ORDER" },
+  });
+  await prisma.label.create({ data: { orderId: order.id, qty: design.quantity, status: "NOT_ORDERED" } });
+  await prisma.statusEvent.create({
+    data: {
+      entityType: "ORDER",
+      entityId: order.id,
+      toStatus: "ORDER_RECEIVED",
+      actorRole: "RESELLER",
+      source: "studio",
+    },
+  });
+  await notifyOrderChange(order.id, "ORDER_RECEIVED");
   return order;
 }

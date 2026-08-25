@@ -1,6 +1,9 @@
+import Link from "next/link";
 import { requireRole } from "@/server/rbac";
-import { getPricesForReseller } from "@/server/services/catalog.service";
+import { getPricesForReseller, resolveUnitPrice } from "@/server/services/catalog.service";
 import { DataRow, DataTable, EmptyState, LinkButton, PageHeader, Panel } from "@/ui/shell/primitives";
+
+const QTYS = [270, 540, 1080, 2500, 5000];
 
 export default async function PricesPage() {
   const user = await requireRole(["RESELLER", "AQUA_STAFF", "AQUA_ADMIN"]);
@@ -29,27 +32,46 @@ export default async function PricesPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader title="Priser" subtitle={`Lista: ${list.name}`} action={<LinkButton href="/designa">Designa / Beställ</LinkButton>} />
+      <PageHeader title="Priser" subtitle={`Lista: ${list.name} · ${list.code}`} action={<LinkButton href="/designa">Designa / Beställ</LinkButton>} />
       <div className="space-y-5">
-        {[...grouped.entries()].map(([name, items]) => (
-          <Panel key={name} title={name} padded={false}>
-            <DataTable
-              headers={[
-                { label: "Variant" },
-                { label: "Från antal" },
-                { label: "Nettopris", align: "right" },
-              ]}
+        {[...grouped.entries()].map(([name, items]) => {
+          const variants = new Map<string, typeof items>();
+          for (const item of items) {
+            variants.set(item.variantId, [...(variants.get(item.variantId) ?? []), item]);
+          }
+          return (
+            <Panel
+              key={name}
+              title={
+                <Link href={`/partner/priser/${items[0].variant.product.slug}`} className="text-[#1d1d1f] hover:text-[#3B5BAA]">
+                  {name}
+                </Link>
+              }
+              padded={false}
             >
-              {items.map((i) => (
-                <DataRow key={i.id}>
-                  <td className="px-5 py-3">{i.variant.name}</td>
-                  <td className="px-5 py-3 tabular-nums">{i.minQty}</td>
-                  <td className="px-5 py-3 text-right tabular-nums">{i.unitPriceExVat.toFixed(2)} kr</td>
-                </DataRow>
-              ))}
-            </DataTable>
-          </Panel>
-        ))}
+              <DataTable
+                headers={[
+                  { label: "Variant" },
+                  ...QTYS.map((n) => ({ label: `${n} st`, align: "right" as const })),
+                ]}
+              >
+                {[...variants.entries()].map(([variantId, rows]) => (
+                  <DataRow key={variantId}>
+                    <td className="px-5 py-3">{rows[0].variant.name}</td>
+                    {QTYS.map((n) => {
+                      const price = resolveUnitPrice(rows, variantId, n);
+                      return (
+                        <td key={n} className="px-5 py-3 text-right tabular-nums">
+                          {price ? `${price.unitPriceExVat.toFixed(2)} kr` : "–"}
+                        </td>
+                      );
+                    })}
+                  </DataRow>
+                ))}
+              </DataTable>
+            </Panel>
+          );
+        })}
       </div>
     </div>
   );

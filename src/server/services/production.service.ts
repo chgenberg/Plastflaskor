@@ -1,6 +1,37 @@
-import { Role } from "@prisma/client";
+import { DocumentKind, Role } from "@prisma/client";
 import { prisma } from "../db";
 import { advanceOrder } from "./order.service";
+
+const FACTORY_DOCS: DocumentKind[] = ["PRODUCTION", "LOGISTICS", "ARTWORK", "WAYBILL"];
+
+const factoryOrder = {
+  select: {
+    id: true,
+    orderNo: true,
+    requestedDate: true,
+    factoryId: true,
+    currentStatus: true,
+    items: {
+      select: {
+        qty: true,
+        variant: {
+          select: {
+            name: true,
+            volumeMl: true,
+            optionsJson: true,
+            product: { select: { name: true, category: true } },
+          },
+        },
+      },
+    },
+    shippingAddress: true,
+    customer: { select: { name: true } },
+    label: true,
+    shipments: { select: { id: true, trackingNo: true, carrier: true, packages: true, weightKg: true, status: true, type: true } },
+    documents: { where: { kind: { in: FACTORY_DOCS } }, select: { id: true, title: true, kind: true } },
+    designs: { select: { id: true, projectName: true } },
+  },
+};
 
 export const FACTORY_EVENTS = [
   "LABELS_RECEIVED_BY_FACTORY",
@@ -16,16 +47,7 @@ export async function listJobsForFactory(factoryId?: string) {
   return prisma.productionJob.findMany({
     where: factoryId ? { factoryId } : undefined,
     include: {
-      order: {
-        include: {
-          items: { include: { variant: { include: { product: true } } } },
-          shippingAddress: true,
-          customer: true,
-          label: true,
-          shipments: true,
-          documents: { where: { kind: { in: ["PRODUCTION", "LOGISTICS", "ARTWORK", "WAYBILL"] } } },
-        },
-      },
+      order: factoryOrder,
       factory: true,
     },
     orderBy: { plannedAt: "asc" },
@@ -36,16 +58,7 @@ export async function getJob(jobId: string, factoryId?: string) {
   const job = await prisma.productionJob.findUnique({
     where: { id: jobId },
     include: {
-      order: {
-        include: {
-          items: { include: { variant: { include: { product: true } } } },
-          shippingAddress: true,
-          customer: true,
-          label: true,
-          shipments: true,
-          documents: { where: { kind: { in: ["PRODUCTION", "LOGISTICS", "ARTWORK", "WAYBILL"] } } },
-        },
-      },
+      order: factoryOrder,
       factory: true,
     },
   });
@@ -63,7 +76,7 @@ export async function factoryAdvance(
   const job = await prisma.productionJob.findFirst({ where: { id: jobId, factoryId } });
   if (!job) throw new Error("Jobb saknas");
   if (action === "LABELS_RECEIVED_BY_FACTORY") {
-    await prisma.label.update({
+    await prisma.label.updateMany({
       where: { orderId: job.orderId },
       data: { status: "RECEIVED_BY_FACTORY", receivedAt: new Date() },
     });
@@ -84,6 +97,12 @@ export async function factoryAdvance(
     await prisma.productionJob.update({
       where: { id: jobId },
       data: { status: "DONE", completedAt: new Date() },
+    });
+  }
+  if (action === "SHIPPED_TO_END_CUSTOMER") {
+    await prisma.shipment.updateMany({
+      where: { orderId: job.orderId, type: "GOODS_TO_CUSTOMER" },
+      data: { status: "PICKED_UP", shippedAt: new Date() },
     });
   }
   await advanceOrder(job.orderId, action, actorRole, "factory");

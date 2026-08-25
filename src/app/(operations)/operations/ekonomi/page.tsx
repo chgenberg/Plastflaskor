@@ -10,14 +10,19 @@ export default async function FinancePage() {
   const ready = orders.filter((o) => o.currentStatus === "READY_TO_INVOICE" || o.currentStatus === "DELIVERED");
   const invoiced = orders.filter((o) => o.invoice && o.invoice.status === "ISSUED");
   const waiting = invoiced.filter((o) => o.invoice?.status !== "PAID");
+  const weekStart = new Date();
+  weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
+  weekStart.setHours(0, 0, 0, 0);
+  const invoicedWeek = orders.filter((o) => o.invoice?.issuedAt && o.invoice.issuedAt >= weekStart);
   const isAdmin = user?.role === "AQUA_ADMIN";
 
   return (
     <div className="space-y-8">
       <PageHeader title="Ekonomi" subtitle="Redo att fakturera, utfärdade och väntar betalning." />
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard label="Redo att faktureras" value={ready.length} />
         <KpiCard label="Fakturerade" value={invoiced.length} />
+        <KpiCard label="Fakturerade denna vecka" value={invoicedWeek.length} />
         <KpiCard label="Väntar betalning" value={waiting.length} />
       </div>
       {ready.length === 0 ? (

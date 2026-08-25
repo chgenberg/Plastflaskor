@@ -5,6 +5,7 @@ import { getPublicProductBySlug } from "@/server/services/catalog.service";
 import { getSessionUser } from "@/server/rbac";
 import { canSeePrices } from "@/domain/policies/priceVisibility";
 import { imageForProduct } from "@/domain/productImages";
+import { productFacts } from "@/domain/productFacts";
 import { PageIntro, PillLink } from "@/ui/public/PageIntro";
 
 export default async function ProductPage({ params }: { params: Promise<{ category: string; product: string }> }) {
@@ -14,9 +15,29 @@ export default async function ProductPage({ params }: { params: Promise<{ catego
   const user = await getSessionUser();
   const showResellerCta = !canSeePrices(user?.role);
   const img = imageForProduct(item.slug);
+  const variant = item.variants[0];
+  const facts = productFacts({
+    moq: item.moq,
+    leadTimeText: item.leadTimeText,
+    country: item.country,
+    environmentText: item.environmentText,
+    volumeMl: variant?.volumeMl,
+    optionsJson: variant?.optionsJson,
+    specText: item.specText,
+  });
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: item.name,
+    description: item.oneLiner,
+    category,
+    brand: { "@type": "Brand", name: "aqua visibility" },
+  };
 
   return (
     <main className="mx-auto max-w-3xl px-4 pb-20 pt-36">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#766a62]">{category}</p>
       <PageIntro title={item.name} />
       <p className="mt-4 text-lg text-[var(--av-text-secondary)]">{item.oneLiner}</p>
@@ -26,22 +47,12 @@ export default async function ProductPage({ params }: { params: Promise<{ catego
         </div>
       ) : null}
       <dl className="mt-10 grid gap-4 rounded-[28px] bg-white p-7 text-sm shadow-[0_2px_12px_rgba(0,0,0,0.05)] sm:grid-cols-2">
-        <div>
-          <dt className="text-[11px] uppercase tracking-[0.14em] text-[#766a62]">Minsta beställningsantal</dt>
-          <dd className="mt-1 font-medium">{item.moq} st</dd>
-        </div>
-        <div>
-          <dt className="text-[11px] uppercase tracking-[0.14em] text-[#766a62]">Leveranstid</dt>
-          <dd className="mt-1 font-medium">{item.leadTimeText}</dd>
-        </div>
-        <div>
-          <dt className="text-[11px] uppercase tracking-[0.14em] text-[#766a62]">Produktionsland</dt>
-          <dd className="mt-1 font-medium">{item.country}</dd>
-        </div>
-        <div>
-          <dt className="text-[11px] uppercase tracking-[0.14em] text-[#766a62]">Miljö</dt>
-          <dd className="mt-1 font-medium">{item.environmentText}</dd>
-        </div>
+        {facts.map((row) => (
+          <div key={row.label}>
+            <dt className="text-[11px] uppercase tracking-[0.14em] text-[#766a62]">{row.label}</dt>
+            <dd className="mt-1 font-medium">{row.value}</dd>
+          </div>
+        ))}
       </dl>
       <pre className="mt-4 whitespace-pre-wrap rounded-[28px] bg-white p-7 text-sm leading-relaxed text-[var(--av-text-secondary)] shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
         {item.specText}
@@ -49,6 +60,9 @@ export default async function ProductPage({ params }: { params: Promise<{ catego
       <div className="mt-8 flex flex-wrap gap-3">
         <PillLink href={`/designa/${item.slug}`}>
           {item.categorySlug === "kyl" ? "Designa din kyl" : "Designa din flaska"}
+        </PillLink>
+        <PillLink href={`/kassa?product=${item.id}`} variant="ghost">
+          Beställ
         </PillLink>
         <PillLink href={`/offert?product=${item.id}`} variant="ghost">
           Begär offert
