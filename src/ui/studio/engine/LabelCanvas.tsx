@@ -4,9 +4,13 @@ import { useEffect, useRef } from "react";
 import { LabelLayers } from "./LabelLayers";
 import type { Layer } from "./types";
 
-function clamp(n: number, min = 4, max = 96) {
+function clamp(n: number, min: number, max: number) {
   return Math.min(max, Math.max(min, n));
 }
+
+type Drag =
+  | { kind: "move"; id: string; dx: number; dy: number; x: number; y: number }
+  | { kind: "scale"; id: string; cx: number; cy: number; startDist: number; startScale: number; scale: number };
 
 export function LabelCanvas({
   layers,
@@ -14,6 +18,7 @@ export function LabelCanvas({
   zoom,
   onSelect,
   onMove,
+  onScale,
   onDelete,
   onZoom,
 }: {
@@ -22,15 +27,18 @@ export function LabelCanvas({
   zoom: number;
   onSelect: (id: string) => void;
   onMove: (id: string, x: number, y: number) => void;
+  onScale: (id: string, scale: number) => void;
   onDelete: () => void;
   onZoom: (next: number) => void;
 }) {
   const frame = useRef<HTMLDivElement>(null);
-  const drag = useRef<{ id: string; dx: number; dy: number; x: number; y: number } | null>(null);
+  const drag = useRef<Drag | null>(null);
   const layersRef = useRef(layers);
   const onMoveRef = useRef(onMove);
+  const onScaleRef = useRef(onScale);
   layersRef.current = layers;
   onMoveRef.current = onMove;
+  onScaleRef.current = onScale;
 
   function clientToPct(clientX: number, clientY: number) {
     const box = frame.current?.getBoundingClientRect();
@@ -41,19 +49,38 @@ export function LabelCanvas({
     };
   }
 
-  function place(id: string, x: number, y: number) {
-    const el = frame.current?.querySelector<HTMLElement>(`[data-layer-id="${id}"]`);
-    if (!el) return;
-    el.style.left = `${x}%`;
-    el.style.top = `${y}%`;
+  function layerEl(id: string) {
+    return frame.current?.querySelector<HTMLElement>(`[data-layer-id="${id}"]`);
   }
 
-  function startDrag(id: string, e: { clientX: number; clientY: number; pointerId: number }) {
+  function paint(id: string, next: { x?: number; y?: number; scale?: number }) {
+    const el = layerEl(id);
+    const layer = layersRef.current.find((l) => l.id === id);
+    if (!el || !layer) return;
+    const x = next.x ?? layer.x;
+    const y = next.y ?? layer.y;
+    const scale = next.scale ?? layer.scale;
+    el.style.left = `${x}%`;
+    el.style.top = `${y}%`;
+    el.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${layer.rotation}deg)`;
+  }
+
+  function startMove(id: string, e: { clientX: number; clientY: number }) {
     const layer = layersRef.current.find((l) => l.id === id);
     if (!layer || layer.type === "artwork") return;
     const { x, y } = clientToPct(e.clientX, e.clientY);
-    drag.current = { id, dx: x - layer.x, dy: y - layer.y, x: layer.x, y: layer.y };
-    frame.current?.setPointerCapture?.(e.pointerId);
+    drag.current = { kind: "move", id, dx: x - layer.x, dy: y - layer.y, x: layer.x, y: layer.y };
+  }
+
+  function startScale(id: string, e: { clientX: number; clientY: number }) {
+    const layer = layersRef.current.find((l) => l.id === id);
+    const el = layerEl(id);
+    if (!layer || !el) return;
+    const box = el.getBoundingClientRect();
+    const cx = box.left + box.width / 2;
+    const cy = box.top + box.height / 2;
+    const startDist = Math.hypot(e.clientX - cx, e.clientY - cy) || 1;
+    drag.current = { kind: "scale", id, cx, cy, startDist, startScale: layer.scale, scale: layer.scale };
   }
 
   useEffect(() => {
@@ -61,17 +88,24 @@ export function LabelCanvas({
       const active = drag.current;
       if (!active) return;
       e.preventDefault();
-      const { x, y } = clientToPct(e.clientX, e.clientY);
-      active.x = clamp(x - active.dx);
-      active.y = clamp(y - active.dy);
-      place(active.id, active.x, active.y);
+      if (active.kind === "move") {
+        const { x, y } = clientToPct(e.clientX, e.clientY);
+        active.x = clamp(x - active.dx, 4, 96);
+        active.y = clamp(y - active.dy, 4, 96);
+        paint(active.id, { x: active.x, y: active.y });
+        return;
+      }
+      const dist = Math.hypot(e.clientX - active.cx, e.clientY - active.cy) || 1;
+      active.scale = clamp(active.startScale * (dist / active.startDist), 0.3, 4);
+      paint(active.id, { scale: active.scale });
     }
 
     function end() {
       const active = drag.current;
       if (!active) return;
       drag.current = null;
-      onMoveRef.current(active.id, active.x, active.y);
+      if (active.kind === "move") onMoveRef.current(active.id, active.x, active.y);
+      else onScaleRef.current(active.id, Number(active.scale.toFixed(2)));
     }
 
     window.addEventListener("pointermove", move, { passive: false });
@@ -89,6 +123,16 @@ export function LabelCanvas({
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       const layer = layersRef.current.find((l) => l.id === selectedId);
       if (!layer || layer.type === "artwork") return;
+      if (e.key === "]" || e.key === "+") {
+        e.preventDefault();
+        onScaleRef.current(layer.id, clamp(layer.scale + 0.1, 0.3, 4));
+        return;
+      }
+      if (e.key === "[" || e.key === "-") {
+        e.preventDefault();
+        onScaleRef.current(layer.id, clamp(layer.scale - 0.1, 0.3, 4));
+        return;
+      }
       const step = e.shiftKey ? 4 : 1;
       const map: Record<string, [number, number]> = {
         ArrowLeft: [-step, 0],
@@ -99,7 +143,7 @@ export function LabelCanvas({
       const delta = map[e.key];
       if (!delta) return;
       e.preventDefault();
-      onMoveRef.current(layer.id, clamp(layer.x + delta[0]), clamp(layer.y + delta[1]));
+      onMoveRef.current(layer.id, clamp(layer.x + delta[0], 4, 96), clamp(layer.y + delta[1], 4, 96));
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -109,21 +153,15 @@ export function LabelCanvas({
     <div className="relative flex h-full flex-col">
       <div
         ref={frame}
-        className="relative mx-auto my-auto aspect-[16/9] w-full max-w-[560px] overflow-hidden rounded-xl bg-[#e5e7eb] shadow-[0_10px_40px_rgba(20,30,40,.08)] touch-none"
+        className="relative mx-auto my-auto aspect-[16/9] w-full max-w-[560px] touch-none overflow-hidden rounded-xl bg-[#e5e7eb] shadow-[0_10px_40px_rgba(20,30,40,.08)]"
         style={{ transform: `scale(${zoom})` }}
       >
         <div className="absolute inset-0">
-          <LabelLayers
-            layers={layers}
-            selectedId={selectedId}
-            interactive
-            onSelect={onSelect}
-            onDragStart={startDrag}
-          />
+          <LabelLayers layers={layers} selectedId={selectedId} interactive onSelect={onSelect} onDragStart={startMove} onScaleStart={startScale} />
         </div>
       </div>
 
-      <p className="mt-3 text-center text-[12px] text-[#9ca3af]">Dra loggan eller texten. Piltangenter flyttar 1 %, Shift 4 %.</p>
+      <p className="mt-3 text-center text-[12px] text-[#9ca3af]">Dra för att flytta. Hörnen skalar. Piltangenter flyttar, [ ] ändrar storlek.</p>
       <div className="mt-auto flex items-center justify-between px-1 pt-3">
         <button type="button" onClick={onDelete} className="flex h-9 w-9 items-center justify-center rounded-full text-[#6b7280] hover:bg-black/[0.05]" aria-label="Ta bort lager">
           <TrashIcon />

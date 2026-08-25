@@ -7,13 +7,15 @@ export function LabelLayers({
   interactive,
   onSelect,
   onDragStart,
+  onScaleStart,
   compact,
 }: {
   layers: Layer[];
   selectedId?: string;
   interactive?: boolean;
   onSelect?: (id: string) => void;
-  onDragStart?: (id: string, e: { clientX: number; clientY: number; pointerId: number }) => void;
+  onDragStart?: (id: string, e: { clientX: number; clientY: number }) => void;
+  onScaleStart?: (id: string, e: { clientX: number; clientY: number }) => void;
   compact?: boolean;
 }) {
   const artwork = layers.find((l) => l.type === "artwork");
@@ -98,7 +100,28 @@ export function LabelLayers({
               </p>
             ) : null}
             {interactive && selected ? (
-              <span className="pointer-events-none absolute inset-[-8px] rounded border border-dashed border-[#4C7AD9]" />
+              <>
+                <span className="pointer-events-none absolute inset-[-10px] rounded border border-[#4C7AD9]" />
+                {(
+                  [
+                    ["nw", "left-[-13px] top-[-13px] cursor-nwse-resize"],
+                    ["ne", "right-[-13px] top-[-13px] cursor-nesw-resize"],
+                    ["sw", "bottom-[-13px] left-[-13px] cursor-nesw-resize"],
+                    ["se", "bottom-[-13px] right-[-13px] cursor-nwse-resize"],
+                  ] as const
+                ).map(([key, cls]) => (
+                  <span
+                    key={key}
+                    className={`absolute h-3 w-3 rounded-sm border border-[#4C7AD9] bg-white ${cls}`}
+                    onPointerDown={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onSelect?.(layer.id);
+                      onScaleStart?.(layer.id, e);
+                    }}
+                  />
+                ))}
+              </>
             ) : null}
           </div>
         );

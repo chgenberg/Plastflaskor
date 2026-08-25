@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { composeLabelFromAssets } from "@/server/services/composeLabel.service";
-import { RealityPreviewError } from "@/server/services/realityPreview.service";
+import { RealityPreviewError } from "@/server/services/openaiImage";
 
 export const maxDuration = 120;
 

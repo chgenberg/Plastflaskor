@@ -106,3 +106,12 @@ export async function flattenLabelBlob(layers: Layer[]) {
   if (!blob) throw new Error("Kunde inte läsa etiketten.");
   return blob;
 }
+
+export async function composeLocalLabel(background?: string, logo?: string) {
+  const canvas = await composeLabelCanvas([
+    { id: "artwork", type: "artwork", name: "Bakgrund", x: 50, y: 50, scale: 1, rotation: 0, src: background },
+    { id: "logo", type: "logo", name: "Logotyp", x: 50, y: 46, scale: 1, rotation: 0, src: logo },
+    { id: "text", type: "text", name: "Text", x: 50, y: 70, scale: 1, rotation: 0, text: "" },
+  ]);
+  return canvas.toDataURL("image/png");
+}

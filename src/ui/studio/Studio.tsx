@@ -291,6 +291,7 @@ export function Studio({
                     zoom={zoom2d}
                     onSelect={setSelectedId}
                     onMove={(id, x, y) => updateLayer(id, { x, y })}
+                    onScale={(id, scale) => updateLayer(id, { scale })}
                     onDelete={() => {
                       if (selected.type === "artwork") return;
                       updateLayer(selected.id, selected.type === "text" ? { text: "" } : { x: 50, y: 46, scale: 1, rotation: 0 });
