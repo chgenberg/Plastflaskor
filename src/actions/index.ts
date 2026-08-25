@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { signIn, signOut } from "@/server/auth";
-import { getSessionUser } from "@/server/rbac";
+import { getSessionUser, homeForRole } from "@/server/rbac";
 import { createQuote, repeatOrder, advanceOrder, getOrderByNo, createResellerOrderFromDesign } from "@/server/services/order.service";
 import { approveArtwork, confirmDelivery } from "@/server/services/artwork.service";
 import { addressSchema, quoteSchema, repeatSchema } from "@/domain/schemas";
@@ -17,13 +17,20 @@ import { safeInternalPath } from "@/domain/safePath";
 export async function loginAction(formData: FormData) {
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
-  const next = safeInternalPath(String(formData.get("next") ?? ""), "/");
+  const nextRaw = String(formData.get("next") ?? "");
   try {
     await signIn("credentials", { email, password, redirect: false });
   } catch {
     redirect("/login?error=invalid");
   }
-  redirect(next);
+  const user = await getSessionUser();
+  const role =
+    user?.role ??
+    (await prisma.user.findUnique({
+      where: { email: email.toLowerCase().trim() },
+      select: { role: true },
+    }))?.role;
+  redirect(safeInternalPath(nextRaw, homeForRole(role)));
 }
 
 export async function logoutAction() {
