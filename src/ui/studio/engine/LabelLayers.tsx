@@ -1,5 +1,4 @@
 import Image from "next/image";
-import type { PointerEvent } from "react";
 import type { Layer } from "./types";
 
 export function LabelLayers({
@@ -14,7 +13,7 @@ export function LabelLayers({
   selectedId?: string;
   interactive?: boolean;
   onSelect?: (id: string) => void;
-  onDragStart?: (id: string, e: PointerEvent) => void;
+  onDragStart?: (id: string, e: { clientX: number; clientY: number; pointerId: number }) => void;
   compact?: boolean;
 }) {
   const artwork = layers.find((l) => l.type === "artwork");
@@ -57,15 +56,17 @@ export function LabelLayers({
         return (
           <div
             key={layer.id}
+            data-layer-id={layer.id}
             role={interactive ? "button" : undefined}
             tabIndex={interactive ? 0 : undefined}
             onPointerDown={(e) => {
               if (!interactive) return;
+              e.preventDefault();
               e.stopPropagation();
               onSelect?.(layer.id);
               onDragStart?.(layer.id, e);
             }}
-            className={`absolute ${interactive ? "cursor-move" : ""}`}
+            className={`absolute ${interactive ? "cursor-grab active:cursor-grabbing touch-none select-none" : ""}`}
             style={{
               left: `${layer.x}%`,
               top: `${layer.y}%`,
@@ -73,13 +74,14 @@ export function LabelLayers({
             }}
           >
             {layer.type === "logo" && layer.src ? (
-              <div className="rounded-md bg-white/90 px-2.5 py-1.5 shadow-sm backdrop-blur-sm">
-                {layer.src.startsWith("data:") || layer.src.startsWith("blob:") ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={layer.src} alt="" className={compact ? "h-7 w-auto" : "h-10 w-auto"} />
-                ) : (
-                  <Image src={layer.src} alt="" width={compact ? 86 : 128} height={compact ? 28 : 42} />
-                )}
+              <div className="rounded-xl bg-white/80 px-4 py-3 shadow-sm ring-1 ring-black/5">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={layer.src}
+                  alt=""
+                  draggable={false}
+                  className={compact ? "h-8 w-auto max-w-[140px] object-contain" : "h-16 w-auto max-w-[240px] object-contain"}
+                />
               </div>
             ) : null}
             {layer.type === "logo" && !layer.src && interactive ? (
