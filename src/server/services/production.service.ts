@@ -1,3 +1,4 @@
+import { Role } from "@prisma/client";
 import { prisma } from "../db";
 import { advanceOrder } from "./order.service";
 
@@ -11,9 +12,9 @@ export const FACTORY_EVENTS = [
   "SHIPPED_TO_END_CUSTOMER",
 ] as const;
 
-export async function listJobsForFactory(factoryId: string) {
+export async function listJobsForFactory(factoryId?: string) {
   return prisma.productionJob.findMany({
-    where: { factoryId },
+    where: factoryId ? { factoryId } : undefined,
     include: {
       order: {
         include: {
@@ -53,7 +54,12 @@ export async function getJob(jobId: string, factoryId?: string) {
   return job;
 }
 
-export async function factoryAdvance(jobId: string, factoryId: string, action: (typeof FACTORY_EVENTS)[number]) {
+export async function factoryAdvance(
+  jobId: string,
+  factoryId: string,
+  action: (typeof FACTORY_EVENTS)[number],
+  actorRole: Role = "FACTORY",
+) {
   const job = await prisma.productionJob.findFirst({ where: { id: jobId, factoryId } });
   if (!job) throw new Error("Jobb saknas");
   if (action === "LABELS_RECEIVED_BY_FACTORY") {
@@ -80,7 +86,7 @@ export async function factoryAdvance(jobId: string, factoryId: string, action: (
       data: { status: "DONE", completedAt: new Date() },
     });
   }
-  await advanceOrder(job.orderId, action, "FACTORY", "factory");
+  await advanceOrder(job.orderId, action, actorRole, "factory");
 }
 
 export async function weekProduction(weekStart: Date) {

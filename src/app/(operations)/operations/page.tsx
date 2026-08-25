@@ -1,7 +1,6 @@
-import Link from "next/link";
 import { listAllOrders } from "@/server/services/order.service";
 import { weekProduction } from "@/server/services/production.service";
-import { KpiCard } from "@/ui/shell/primitives";
+import { ActionRow, DataRow, DataTable, EmptyState, KpiCard, PageHeader, Panel } from "@/ui/shell/primitives";
 import { PIPELINE_PHASES } from "@/domain/enums";
 
 export default async function OpsHome() {
@@ -32,57 +31,44 @@ export default async function OpsHome() {
   }
 
   return (
-    <div>
-      <h1 className="text-3xl font-semibold">Kommande produktion</h1>
-      <p className="mt-1 text-[var(--av-text-secondary)]">Den här veckan · {bottles.toLocaleString("sv-SE")} flaskor</p>
-      <div className="mt-6 overflow-hidden rounded-2xl bg-white">
-        <table className="w-full text-sm">
-          <thead className="text-left text-xs uppercase text-[var(--av-text-muted)]">
-            <tr>
-              <th className="px-4 py-3">Produktion</th>
-              <th className="text-right">33 cl</th>
-              <th className="text-right">50 cl</th>
-              <th className="text-right">Stilla</th>
-              <th className="text-right">Kolsyrat</th>
-            </tr>
-          </thead>
-          <tbody>
+    <div className="space-y-8">
+      <PageHeader title="Idag" subtitle={`Den här veckan · ${bottles.toLocaleString("sv-SE")} flaskor`} />
+      <Panel title="Produktion denna vecka" padded={false}>
+        {byDay.size === 0 ? (
+          <div className="p-5">
+            <EmptyState title="Ingen planerad produktion" body="När jobb läggs i veckan syns 33/50 cl och stilla/kolsyrat här." />
+          </div>
+        ) : (
+          <DataTable
+            headers={[
+              { label: "Produktion" },
+              { label: "33 cl", align: "right" },
+              { label: "50 cl", align: "right" },
+              { label: "Stilla", align: "right" },
+              { label: "Kolsyrat", align: "right" },
+            ]}
+          >
             {[...byDay.entries()].map(([day, r]) => (
-              <tr key={day} className="border-t">
-                <td className="px-4 py-2 capitalize">{day}</td>
-                <td className="text-right">{r.size33 || "–"}</td>
-                <td className="text-right">{r.size50 || "–"}</td>
-                <td className="text-right">{r.still || "–"}</td>
-                <td className="text-right">{r.spark || "–"}</td>
-              </tr>
+              <DataRow key={day}>
+                <td className="px-5 py-2.5 capitalize">{day}</td>
+                <td className="px-5 py-2.5 text-right tabular-nums">{r.size33 || "–"}</td>
+                <td className="px-5 py-2.5 text-right tabular-nums">{r.size50 || "–"}</td>
+                <td className="px-5 py-2.5 text-right tabular-nums">{r.still || "–"}</td>
+                <td className="px-5 py-2.5 text-right tabular-nums">{r.spark || "–"}</td>
+              </DataRow>
             ))}
-          </tbody>
-        </table>
-      </div>
-      <h2 className="mt-10 text-2xl font-semibold">Behöver åtgärd idag</h2>
-      <ul className="mt-4 space-y-2">
-        <li>
-          <Link href="/operations/ordrar?phase=awaiting_artwork" className="block rounded-2xl bg-white p-4">
-            {missingArt} ordrar saknar godkänt artwork
-          </Link>
-        </li>
-        <li>
-          <Link href="/operations/etiketter" className="block rounded-2xl bg-white p-4">
-            {labelsShip} etikettordrar behöver skickas
-          </Link>
-        </li>
-        <li>
-          <Link href="/operations/ordrar?phase=ready_ship" className="block rounded-2xl bg-white p-4">
-            {waybill} leveranser saknar fraktsedel
-          </Link>
-        </li>
-        <li>
-          <Link href="/operations/produktion" className="block rounded-2xl bg-white p-4">
-            {late} produktioner riskerar att bli försenade
-          </Link>
-        </li>
-      </ul>
-      <div className="mt-8 grid gap-3 sm:grid-cols-4">
+          </DataTable>
+        )}
+      </Panel>
+      <Panel title="Behöver åtgärd idag">
+        <div className="divide-y divide-black/5">
+          <ActionRow href="/operations/ordrar?phase=awaiting_artwork" label="Ordrar saknar godkänt artwork" value={missingArt} />
+          <ActionRow href="/operations/etiketter" label="Etikettordrar behöver skickas" value={labelsShip} />
+          <ActionRow href="/operations/ordrar?phase=ready_ship" label="Leveranser saknar fraktsedel" value={waybill} />
+          <ActionRow href="/operations/produktion" label="Produktioner riskerar att bli försenade" value={late} />
+        </div>
+      </Panel>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {PIPELINE_PHASES.map((p) => (
           <KpiCard
             key={p.id}

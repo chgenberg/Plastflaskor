@@ -9,6 +9,7 @@ export default async function PartnerLayout({ children }: { children: React.Reac
     <AppShell
       title="ÅF-portal"
       email={user.email}
+      role={user.role}
       nav={[
         { href: "/partner", label: "Översikt" },
         { href: "/partner/priser", label: "Priser" },

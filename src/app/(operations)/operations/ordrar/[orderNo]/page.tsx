@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getOrderByNo, eventsFor } from "@/server/services/order.service";
 import { ORDER_STEPS, ORDER_STEP_LABELS } from "@/domain/enums";
-import { StatusChip } from "@/ui/shell/primitives";
+import { Button, FileLink, LinkButton, PageHeader, Panel, StatusChip } from "@/ui/shell/primitives";
 import { opsAdvanceAction } from "@/actions";
 
 export default async function OpsOrderDetail({ params }: { params: Promise<{ orderNo: string }> }) {
@@ -14,59 +14,68 @@ export default async function OpsOrderDetail({ params }: { params: Promise<{ ord
   const value = order.items.reduce((s, i) => s + i.unitPriceExVat * i.qty, 0);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-      <aside className="rounded-2xl bg-white p-5">
-        <h2 className="font-semibold">Produktionsstatus</h2>
-        <ol className="mt-4 space-y-2 text-sm">
-          {ORDER_STEPS.map((s, i) => (
-            <li key={s} className="flex items-center gap-2">
-              <span className={`h-2 w-2 rounded-full ${i < idx ? "bg-[var(--av-green-500)]" : i === idx ? "bg-[var(--av-yellow-500)]" : "bg-[var(--av-slate-500)]"}`} />
-              {ORDER_STEP_LABELS[s]}
-            </li>
-          ))}
-        </ol>
-      </aside>
-      <section className="rounded-2xl bg-white p-6">
-        <p className="font-mono text-sm">{order.orderNo}</p>
-        <h1 className="text-3xl font-semibold">{order.customer.name}</h1>
-        <p className="text-sm text-[var(--av-text-secondary)]">ÅF: {order.reseller.company.name}</p>
-        <p className="mt-3">
-          {order.items[0]?.qty} × {order.items[0]?.variant.product.name}
-        </p>
-        <StatusChip status={order.currentStatus} label={ORDER_STEP_LABELS[order.currentStatus]} />
-        <p className="mt-4 text-lg font-semibold">{value.toLocaleString("sv-SE")} kr</p>
-        <p className="mt-4 text-sm">
-          Vad händer nu? {ORDER_STEP_LABELS[order.currentStatus]}. Nästa steg: {next ? ORDER_STEP_LABELS[next] : "Klar"}.
-        </p>
-        {next ? (
-          <form action={opsAdvanceAction} className="mt-4">
-            <input type="hidden" name="orderNo" value={order.orderNo} />
-            <input type="hidden" name="toStatus" value={next} />
-            <button className="rounded-xl bg-[var(--av-accent)] px-4 py-2 text-sm text-white">Markera: {ORDER_STEP_LABELS[next]}</button>
-          </form>
-        ) : null}
-        {order.currentStatus === "READY_TO_INVOICE" || order.currentStatus === "DELIVERED" ? (
-          <a href={`/operations/ekonomi/${order.orderNo}/fakturera`} className="mt-3 inline-block text-sm text-[var(--av-accent)]">
-            Slutför order & fakturera
-          </a>
-        ) : null}
-        <h2 className="mt-8 font-semibold">Dokument</h2>
-        <ul className="mt-2 text-sm">
-          {order.documents.map((d) => (
-            <li key={d.id}>
-              {d.kind}: {d.title} (v{d.version})
-            </li>
-          ))}
-        </ul>
-        <h2 className="mt-8 font-semibold">Eventlogg</h2>
-        <ol className="mt-2 space-y-1 text-sm text-[var(--av-text-secondary)]">
-          {events.map((e) => (
-            <li key={e.id}>
-              {e.occurredAt.toLocaleString("sv-SE")} – {ORDER_STEP_LABELS[e.toStatus as keyof typeof ORDER_STEP_LABELS] ?? e.toStatus}
-            </li>
-          ))}
-        </ol>
-      </section>
+    <div className="space-y-8">
+      <PageHeader title={order.customer.name} subtitle={`${order.orderNo} · ÅF: ${order.reseller.company.name}`} />
+      <div className="grid gap-5 lg:grid-cols-[280px_1fr]">
+        <Panel title="Produktionsstatus">
+          <ol className="space-y-2 text-sm">
+            {ORDER_STEPS.map((s, i) => (
+              <li key={s} className="flex items-center gap-2">
+                <span className={`h-2 w-2 rounded-full ${i < idx ? "bg-[#16a34a]" : i === idx ? "bg-[#d97706]" : "bg-[#d4d4d8]"}`} />
+                <span className={i === idx ? "font-medium" : "text-[#6b7280]"}>{ORDER_STEP_LABELS[s]}</span>
+              </li>
+            ))}
+          </ol>
+        </Panel>
+        <div className="space-y-5">
+          <Panel>
+            <StatusChip status={order.currentStatus} label={ORDER_STEP_LABELS[order.currentStatus]} />
+            <p className="mt-4 text-[15px]">
+              {order.items[0]?.qty} × {order.items[0]?.variant.product.name}
+            </p>
+            <p className="mt-2 text-lg font-semibold tabular-nums">{value.toLocaleString("sv-SE")} kr</p>
+            <p className="mt-4 text-sm text-[#6b7280]">
+              Vad händer nu? {ORDER_STEP_LABELS[order.currentStatus]}. Nästa steg: {next ? ORDER_STEP_LABELS[next] : "Klar"}.
+            </p>
+            {next ? (
+              <form action={opsAdvanceAction} className="mt-5">
+                <input type="hidden" name="orderNo" value={order.orderNo} />
+                <input type="hidden" name="toStatus" value={next} />
+                <Button type="submit">Markera: {ORDER_STEP_LABELS[next]}</Button>
+              </form>
+            ) : null}
+            {order.currentStatus === "READY_TO_INVOICE" || order.currentStatus === "DELIVERED" ? (
+              <div className="mt-4">
+                <LinkButton href={`/operations/ekonomi/${order.orderNo}/fakturera`}>Slutför order & fakturera</LinkButton>
+              </div>
+            ) : null}
+          </Panel>
+          <Panel title="Dokument">
+            {order.documents.length === 0 ? (
+              <p className="text-sm text-[#6b7280]">Inga dokument ännu.</p>
+            ) : (
+              <ul className="space-y-2 text-sm">
+                {order.documents.map((d) => (
+                  <li key={d.id}>
+                    <FileLink href={`/api/documents/${d.id}`}>
+                      {d.kind}: {d.title} (v{d.version})
+                    </FileLink>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Panel>
+          <Panel title="Eventlogg">
+            <ol className="space-y-2 text-sm text-[#6b7280]">
+              {events.map((e) => (
+                <li key={e.id}>
+                  {e.occurredAt.toLocaleString("sv-SE")} – {ORDER_STEP_LABELS[e.toStatus as keyof typeof ORDER_STEP_LABELS] ?? e.toStatus}
+                </li>
+              ))}
+            </ol>
+          </Panel>
+        </div>
+      </div>
     </div>
   );
 }

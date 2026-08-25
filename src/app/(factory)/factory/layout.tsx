@@ -9,6 +9,8 @@ export default async function FactoryLayout({ children }: { children: React.Reac
     <AppShell
       title="Fabriken"
       email={user.email}
+      role={user.role}
+      dense
       nav={[
         { href: "/factory", label: "Idag" },
         { href: "/factory/skickat", label: "Skickat" },

@@ -676,7 +676,7 @@ async function main() {
     customers.push({ customer: c, reseller: host.reseller, addr: host.addr });
   }
 
-  await prisma.user.create({
+  const standardUser = await prisma.user.create({
     data: {
       email: "reseller.standard@demo.aqua",
       name: "Kim Standard",
@@ -686,7 +686,7 @@ async function main() {
       resellerId: resellerRows[0].reseller.id,
     },
   });
-  await prisma.user.create({
+  const goldUser = await prisma.user.create({
     data: {
       email: "reseller.gold@demo.aqua",
       name: "Nova Gold",
@@ -696,6 +696,49 @@ async function main() {
       resellerId: resellerRows[14].reseller.id,
     },
   });
+  const sampleProduct = createdProducts[0];
+  if (sampleProduct) {
+    await prisma.design.create({
+      data: {
+        userId: standardUser.id,
+        productId: sampleProduct.id,
+        projectName: "Kim sommar Standard",
+        source: "reseller_order",
+        status: "SUBMITTED",
+        quantity: 1080,
+        optionsJson: "{}",
+        files: {
+          create: {
+            fileName: "kim-standard-etikett.pdf",
+            mimeType: "application/pdf",
+            storageKey: "artwork/kim-standard-etikett.pdf",
+            kind: "original",
+            uploadedById: standardUser.id,
+          },
+        },
+      },
+    });
+    await prisma.design.create({
+      data: {
+        userId: goldUser.id,
+        productId: sampleProduct.id,
+        projectName: "Nova Gold sommar",
+        source: "reseller_order",
+        status: "SUBMITTED",
+        quantity: 2500,
+        optionsJson: "{}",
+        files: {
+          create: {
+            fileName: "nova-gold-etikett.pdf",
+            mimeType: "application/pdf",
+            storageKey: "artwork/nova-gold-etikett.pdf",
+            kind: "original",
+            uploadedById: goldUser.id,
+          },
+        },
+      },
+    });
+  }
   const staff = await prisma.user.create({
     data: {
       email: "staff@demo.aqua",
@@ -823,6 +866,16 @@ async function main() {
           amountIncVat: qty * 6.4 * 1.25,
           issuedAt: new Date(),
           paidAt: idx >= 17 ? new Date() : null,
+        },
+      });
+      await prisma.document.create({
+        data: {
+          orderId: order.id,
+          entityType: "ORDER",
+          entityId: order.id,
+          kind: "FINANCE",
+          title: `Faktura ${10450 + i}`,
+          storageKey: `invoices/${10450 + i}.pdf`,
         },
       });
     }

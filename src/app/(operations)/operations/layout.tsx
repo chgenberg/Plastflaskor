@@ -7,8 +7,9 @@ export default async function OpsLayout({ children }: { children: React.ReactNod
   const user = await requireRole(["AQUA_STAFF", "AQUA_ADMIN"]);
   return (
     <AppShell
-      title="Aqua Operations"
+      title="Operations"
       email={user.email}
+      role={user.role}
       nav={[
         { href: "/operations", label: "Idag" },
         { href: "/operations/pipeline", label: "Pipeline" },
@@ -17,6 +18,7 @@ export default async function OpsLayout({ children }: { children: React.ReactNod
         { href: "/operations/etiketter", label: "Etiketter" },
         { href: "/operations/ekonomi", label: "Ekonomi" },
         { href: "/operations/ledning", label: "Ledning" },
+        { href: "/operations/sok", label: "Sök" },
         { href: "/operations/notiser", label: "Notiser" },
       ]}
     >

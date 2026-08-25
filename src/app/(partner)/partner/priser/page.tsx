@@ -1,48 +1,54 @@
-import Link from "next/link";
 import { requireRole } from "@/server/rbac";
 import { getPricesForReseller } from "@/server/services/catalog.service";
+import { DataRow, DataTable, EmptyState, LinkButton, PageHeader, Panel } from "@/ui/shell/primitives";
 
 export default async function PricesPage() {
   const user = await requireRole(["RESELLER", "AQUA_STAFF", "AQUA_ADMIN"]);
-  if (!user.resellerId) return <p>Ingen prislista kopplad.</p>;
+  if (!user.resellerId) {
+    return (
+      <div className="space-y-8">
+        <PageHeader title="Priser" subtitle="Nettopriser för din lista." />
+        <EmptyState title="Ingen prislista kopplad" body="Logga in som återförsäljare för att se era nettopriser." />
+      </div>
+    );
+  }
   const list = await getPricesForReseller(user.resellerId);
-  if (!list) return <p>Ingen prislista kopplad.</p>;
+  if (!list) {
+    return (
+      <div className="space-y-8">
+        <PageHeader title="Priser" />
+        <EmptyState title="Ingen prislista kopplad" body="Kontakta Aqua Visibility om listan saknas." />
+      </div>
+    );
+  }
   const grouped = new Map<string, typeof list.items>();
-  for (const item of list?.items ?? []) {
+  for (const item of list.items) {
     const key = item.variant.product.name;
     grouped.set(key, [...(grouped.get(key) ?? []), item]);
   }
 
   return (
-    <div>
-      <h1 className="text-3xl font-semibold">Priser</h1>
-      <p className="mt-2 text-sm text-[var(--av-text-secondary)]">Lista: {list?.name}</p>
-      <div className="mt-8 space-y-6">
+    <div className="space-y-8">
+      <PageHeader title="Priser" subtitle={`Lista: ${list.name}`} action={<LinkButton href="/designa">Designa / Beställ</LinkButton>} />
+      <div className="space-y-5">
         {[...grouped.entries()].map(([name, items]) => (
-          <section key={name} className="rounded-2xl bg-white p-5 shadow-[var(--av-shadow-sm)]">
-            <h2 className="font-semibold">{name}</h2>
-            <table className="mt-3 w-full text-sm">
-              <thead className="text-left text-xs text-[var(--av-text-muted)]">
-                <tr>
-                  <th>Variant</th>
-                  <th>Från antal</th>
-                  <th className="text-right">Nettopris</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((i) => (
-                  <tr key={i.id} className="border-t">
-                    <td className="py-2">{i.variant.name}</td>
-                    <td>{i.minQty}</td>
-                    <td className="text-right tabular-nums">{i.unitPriceExVat.toFixed(2)} kr</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <Link href="/designa" className="mt-3 inline-block text-sm text-[var(--av-accent)]">
-              Designa / Beställ
-            </Link>
-          </section>
+          <Panel key={name} title={name} padded={false}>
+            <DataTable
+              headers={[
+                { label: "Variant" },
+                { label: "Från antal" },
+                { label: "Nettopris", align: "right" },
+              ]}
+            >
+              {items.map((i) => (
+                <DataRow key={i.id}>
+                  <td className="px-5 py-3">{i.variant.name}</td>
+                  <td className="px-5 py-3 tabular-nums">{i.minQty}</td>
+                  <td className="px-5 py-3 text-right tabular-nums">{i.unitPriceExVat.toFixed(2)} kr</td>
+                </DataRow>
+              ))}
+            </DataTable>
+          </Panel>
         ))}
       </div>
     </div>

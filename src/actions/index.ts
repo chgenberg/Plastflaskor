@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { signIn, signOut } from "@/server/auth";
 import { getSessionUser } from "@/server/rbac";
 import { createQuote, repeatOrder, advanceOrder, getOrderByNo } from "@/server/services/order.service";
-import { factoryAdvance } from "@/server/services/production.service";
+import { FACTORY_EVENTS, factoryAdvance } from "@/server/services/production.service";
 import { getIntegrations } from "@/server/integrations/composition";
 import { prisma } from "@/server/db";
 import { OrderStatus } from "@prisma/client";
@@ -84,23 +84,33 @@ export async function invoiceAction(formData: FormData) {
   redirect(`/operations/ekonomi/${orderNo}/fakturera?ok=1&invoice=${result.invoiceNo}`);
 }
 
+function canRunFactory(role?: string | null) {
+  return role === "FACTORY" || role === "AQUA_STAFF" || role === "AQUA_ADMIN";
+}
+
 export async function factoryAction(formData: FormData) {
   const user = await getSessionUser();
-  if (user?.role !== "FACTORY" || !user.factoryId) throw new Error("Forbidden");
+  if (!user || !canRunFactory(user.role)) throw new Error("Forbidden");
   const jobId = String(formData.get("jobId"));
-  const action = String(formData.get("action")) as Parameters<typeof factoryAdvance>[2];
-  await factoryAdvance(jobId, user.factoryId, action);
+  const action = String(formData.get("action"));
+  if (!FACTORY_EVENTS.includes(action as (typeof FACTORY_EVENTS)[number])) throw new Error("Forbidden");
+  const job = await prisma.productionJob.findUnique({ where: { id: jobId } });
+  if (!job) throw new Error("Jobb saknas");
+  if (user.role === "FACTORY" && job.factoryId !== user.factoryId) throw new Error("Forbidden");
+  await factoryAdvance(jobId, job.factoryId, action as (typeof FACTORY_EVENTS)[number], user.role as "FACTORY" | "AQUA_STAFF" | "AQUA_ADMIN");
   revalidatePath("/factory");
   revalidatePath(`/factory/jobb/${jobId}`);
 }
 
 export async function createWaybillAction(formData: FormData) {
   const user = await getSessionUser();
-  if (user?.role !== "FACTORY" || !user.factoryId) throw new Error("Forbidden");
-  const orderId = String(formData.get("orderId"));
+  if (!user || !canRunFactory(user.role)) throw new Error("Forbidden");
   const jobId = String(formData.get("jobId"));
+  const job = await prisma.productionJob.findUnique({ where: { id: jobId } });
+  if (!job) throw new Error("Jobb saknas");
+  if (user.role === "FACTORY" && job.factoryId !== user.factoryId) throw new Error("Forbidden");
   const result = await getIntegrations().shipment.createWaybill({
-    orderId,
+    orderId: job.orderId,
     jobId,
     packages: Number(formData.get("packages") ?? 1),
     weightKg: Number(formData.get("weightKg") ?? 20),
@@ -168,4 +178,8 @@ export async function markInvoicePaid(formData: FormData) {
   const inv = await prisma.invoice.findUnique({ where: { invoiceNo } });
   if (inv) await advanceOrder(inv.orderId, "PAID", "AQUA_ADMIN", "fortnox");
   revalidatePath("/operations/ekonomi");
+  if (inv) {
+    const order = await prisma.order.findUnique({ where: { id: inv.orderId } });
+    if (order) revalidatePath(`/operations/ekonomi/${order.orderNo}/fakturera`);
+  }
 }

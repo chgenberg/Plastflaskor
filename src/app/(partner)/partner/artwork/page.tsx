@@ -1,22 +1,43 @@
-import { prisma } from "@/server/db";
 import { requireRole } from "@/server/rbac";
+import { listDesignsForUser } from "@/server/services/document.service";
+import { EmptyState, FileLink, LinkButton, PageHeader, Panel } from "@/ui/shell/primitives";
 
 export default async function ArtworkPage() {
-  await requireRole(["RESELLER", "AQUA_STAFF", "AQUA_ADMIN"]);
-  const designs = await prisma.design.findMany({ include: { files: true }, orderBy: { createdAt: "desc" }, take: 30 });
+  const user = await requireRole(["RESELLER", "AQUA_STAFF", "AQUA_ADMIN"]);
+  const designs = await listDesignsForUser(user);
   return (
-    <div>
-      <h1 className="text-3xl font-semibold">Artwork</h1>
-      <p className="mt-2 text-sm text-[var(--av-text-secondary)]">Mallar och tidigare designer. Publik /mallar är flyttad hit.</p>
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
-        {designs.map((d) => (
-          <article key={d.id} className="rounded-2xl bg-white p-4">
-            <p className="font-medium">{d.projectName}</p>
-            <p className="text-xs text-[var(--av-text-muted)]">{d.status}</p>
-          </article>
-        ))}
-        {designs.length === 0 ? <p className="text-sm text-[var(--av-text-muted)]">Inga designer ännu. Starta i studion.</p> : null}
-      </div>
+    <div className="space-y-8">
+      <PageHeader
+        title="Artwork"
+        subtitle={user.role === "RESELLER" ? "Era mallar och tidigare designer." : "Alla designer i systemet."}
+        action={<LinkButton href="/designa">Ny design</LinkButton>}
+      />
+      {designs.length === 0 ? (
+        <EmptyState title="Inga designer ännu" body="Starta i studion för att lägga upp logo och bakgrund." />
+      ) : (
+        <div className="grid gap-4 md:grid-cols-3">
+          {designs.map((d) => (
+            <Panel key={d.id}>
+              <p className="font-medium">{d.projectName}</p>
+              <p className="mt-1 text-xs text-[#6b7280]">
+                {d.status}
+                {d.order?.orderNo ? ` · ${d.order.orderNo}` : ""}
+              </p>
+              {d.files.length === 0 ? (
+                <p className="mt-3 text-sm text-[#6b7280]">Inga filer.</p>
+              ) : (
+                <ul className="mt-3 space-y-1 text-sm">
+                  {d.files.map((f) => (
+                    <li key={f.id}>
+                      <FileLink href={`/api/artwork-files/${f.id}`}>{f.fileName}</FileLink>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Panel>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
