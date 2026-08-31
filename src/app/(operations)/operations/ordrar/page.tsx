@@ -75,13 +75,13 @@ export default async function OpsOrders({
     <div className="space-y-8">
       <PageHeader title={title} subtitle="Sök på order, kund, ÅF, produkt, org.nr, kontakt, tracking eller faktura." />
       <div className="flex flex-wrap gap-3 text-sm">
-        <Link href="/operations/ordrar" className={!source && !late && !phase && !alert ? "font-medium text-[#3B5BAA]" : "text-[#6b7280]"}>
+        <Link href="/operations/ordrar" className={!source && !late && !phase && !alert ? "font-medium text-[var(--av-accent)]" : "text-[var(--av-text-muted)]"}>
           Alla
         </Link>
-        <Link href="/operations/ordrar?source=quote" className={source === "quote" ? "font-medium text-[#3B5BAA]" : "text-[#6b7280]"}>
+        <Link href="/operations/ordrar?source=quote" className={source === "quote" ? "font-medium text-[var(--av-accent)]" : "text-[var(--av-text-muted)]"}>
           Offerter
         </Link>
-        <Link href="/operations/pipeline" className="text-[#6b7280]">
+        <Link href="/operations/pipeline" className="text-[var(--av-text-muted)]">
           Tavla
         </Link>
       </div>

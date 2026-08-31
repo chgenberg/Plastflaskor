@@ -30,7 +30,7 @@ export default async function OpsHome() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-7">
       <PageHeader
         title="Vad behöver du göra nu?"
         subtitle={`Den här veckan · ${cups.toLocaleString("sv-SE")} muggar`}

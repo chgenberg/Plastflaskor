@@ -46,7 +46,7 @@ export default async function JobPage({ params }: { params: Promise<{ jobId: str
           {FACTORY_PRODUCTION_STEPS.map((s, i) => (
             <li key={s.id} className="flex items-center gap-2">
               {i > 0 ? <span className="text-[#d4d4d8]">→</span> : null}
-              <span className={i === stepIdx ? "font-semibold text-[#1d1d1f]" : "text-[#6b7280]"}>{s.label}</span>
+              <span className={i === stepIdx ? "font-semibold text-[var(--av-text)]" : "text-[var(--av-text-muted)]"}>{s.label}</span>
             </li>
           ))}
         </ol>
@@ -65,9 +65,9 @@ export default async function JobPage({ params }: { params: Promise<{ jobId: str
           Leverans: {addr.line1}, {addr.postalCode} {addr.city}
         </p>
         <div className="mt-4 space-y-1.5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">Slutgiltig tryckfil</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Slutgiltig tryckfil</p>
           {finalFiles.length === 0 ? (
-            <p className="text-sm text-[#6b7280]">Ingen slutgiltig tryckfil ännu.</p>
+            <p className="text-sm text-[var(--av-text-muted)]">Ingen slutgiltig tryckfil ännu.</p>
           ) : (
             finalFiles.map(({ version, file }) =>
               file ? (
@@ -97,7 +97,7 @@ export default async function JobPage({ params }: { params: Promise<{ jobId: str
                 <input
                   name="issueNote"
                   placeholder="Föreslaget datum / anledning"
-                  className="h-12 w-full rounded-xl border border-black/10 px-3 text-sm"
+                  className="h-12 w-full rounded-xl border border-[var(--av-border-strong)] px-3 text-sm"
                 />
                 <Button type="submit" variant="secondary" size="lg" className="w-full">
                   Flagga problem
@@ -112,7 +112,7 @@ export default async function JobPage({ params }: { params: Promise<{ jobId: str
             <form action={factoryAction} className="space-y-2">
               <input type="hidden" name="jobId" value={job.id} />
               <input type="hidden" name="action" value="DONE" />
-              <input name="readyDate" type="date" className="h-12 w-full rounded-xl border border-black/10 px-3 text-sm" />
+              <input name="readyDate" type="date" className="h-12 w-full rounded-xl border border-[var(--av-border-strong)] px-3 text-sm" />
               <Button type="submit" size="lg" className="w-full">
                 Produktion klar + estimerat datum
               </Button>
@@ -123,7 +123,7 @@ export default async function JobPage({ params }: { params: Promise<{ jobId: str
               Ladda ner fraktsedel
             </LinkButton>
           ) : job.order.currentStatus === "READY_TO_SHIP" ? (
-            <p className="text-sm text-[#6b7280]">Väntar på att Aqua skapar fraktsedel.</p>
+            <p className="text-sm text-[var(--av-text-muted)]">Väntar på att Aqua skapar fraktsedel.</p>
           ) : null}
           {canShip ? <FactoryBtn jobId={job.id} action="SHIPPED" label="Markera skickad" /> : null}
         </div>

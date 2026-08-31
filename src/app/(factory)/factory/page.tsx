@@ -86,10 +86,10 @@ export default async function FactoryHome() {
             }));
             const artworkDocs = j.order.documents.filter((d) => d.kind === "ARTWORK");
             return (
-              <article key={j.id} className="flex flex-col rounded-[18px] bg-white p-4 shadow-[0_8px_30px_rgba(15,23,42,.04)]">
-                <p className="font-mono text-[13px] text-[#6b7280]">{j.order.orderNo}</p>
+              <article key={j.id} className="av-card flex flex-col p-5">
+                <p className="av-mono text-[13px] text-[var(--av-text-muted)]">{j.order.orderNo}</p>
                 <h2 className="mt-1 text-[18px] font-semibold tracking-tight">{j.order.customer.name}</h2>
-                {spec ? <div className="mt-3"><VisualSpecCard spec={spec} compact /></div> : null}
+                {spec ? <div className="mt-4"><VisualSpecCard spec={spec} compact /></div> : null}
                 <p className="mt-3 text-sm">
                   Antal:{" "}
                   <span className="font-semibold tabular-nums">
@@ -97,9 +97,9 @@ export default async function FactoryHome() {
                   </span>
                 </p>
                 <div className="mt-2 space-y-1">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">Slutgiltig tryckfil</p>
+                  <p className="av-label">Slutgiltig tryckfil</p>
                   {finalFiles.length === 0 && artworkDocs.length === 0 ? (
-                    <p className="text-sm text-[#6b7280]">Ingen slutgiltig tryckfil ännu.</p>
+                    <p className="text-sm text-[var(--av-text-muted)]">Ingen slutgiltig tryckfil ännu.</p>
                   ) : (
                     <>
                       {finalFiles.map(({ version, file }) =>
@@ -147,10 +147,14 @@ export default async function FactoryHome() {
                       <form action={factoryAction} className="space-y-2">
                         <input type="hidden" name="jobId" value={j.id} />
                         <input type="hidden" name="action" value="FLAG_ISSUE" />
+                        <label className="sr-only" htmlFor={`issue-${j.id}`}>
+                          Föreslaget datum eller anledning
+                        </label>
                         <input
+                          id={`issue-${j.id}`}
                           name="issueNote"
                           placeholder="Föreslaget datum / anledning"
-                          className="h-12 w-full rounded-xl border border-black/10 px-3 text-sm"
+                          className="h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-3 text-sm"
                         />
                         <Button type="submit" variant="secondary" size="lg" className="w-full">
                           Flagga problem
@@ -171,7 +175,10 @@ export default async function FactoryHome() {
                     <form action={factoryAction} className="space-y-2">
                       <input type="hidden" name="jobId" value={j.id} />
                       <input type="hidden" name="action" value="DONE" />
-                      <input name="readyDate" type="date" className="h-12 w-full rounded-xl border border-black/10 px-3 text-sm" />
+                      <label className="sr-only" htmlFor={`ready-${j.id}`}>
+                        Estimerat klart-datum
+                      </label>
+                      <input id={`ready-${j.id}`} name="readyDate" type="date" className="h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-3 text-sm" />
                       <Button type="submit" size="lg" className="w-full">
                         Produktion klar + estimerat datum
                       </Button>

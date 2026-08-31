@@ -7,7 +7,7 @@ import { imageForProduct } from "@/domain/productImages";
 import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
 import { OrderConfirmationPreview } from "@/ui/order/OrderConfirmationPreview";
 import { ArtworkUpload } from "@/ui/shell/ArtworkUpload";
-import { Button, FileLink, PageHeader, Panel, StatusChip } from "@/ui/shell/primitives";
+import { Button, Field, FileLink, NextStep, PageHeader, Panel, StatusChip, Timeline } from "@/ui/shell/primitives";
 import { canSeePrices } from "@/domain/policies/priceVisibility";
 
 type Order = {
@@ -72,31 +72,31 @@ export function BuyerOrderDetail({ order, role, repeatHref }: { order: Order; ro
   const trackSteps = shipment ? shipmentTrackingSteps(shipment.status) : [];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <PageHeader title={order.orderNo} subtitle={item?.variant.product.name} />
       <StatusChip status={order.currentStatus} label={BUYER_STATUS[order.currentStatus]} requestedDate={order.requestedDate} />
       {spec && !order.lockedAt ? <VisualSpecCard spec={spec} /> : null}
 
       {needsProof ? (
-        <Panel title={customerFinal ? "Korrektur godkänd" : "Godkänn korrektur"}>
-          {customerFinal ? (
-            <p className="text-sm text-[#6b7280]">Korrektur godkänd. AquaVisibility skickar slutlig orderbekräftelse.</p>
-          ) : (
-            <>
-              {proofDoc ? (
-                <p className="mb-3 text-sm">
-                  <FileLink href={`/api/documents/${proofDoc.id}?inline=1`}>Förhandsvisa</FileLink>
-                  {" · "}
-                  <FileLink href={`/api/documents/${proofDoc.id}`}>Ladda ner</FileLink>
-                </p>
-              ) : null}
-              <p className="text-sm text-[#6b7280]">När ni godkänner blir filen slutgiltig tryckfil till tryckeriet.</p>
-              <form action={customerApproveProofAction} className="mt-4">
-                <input type="hidden" name="orderNo" value={order.orderNo} />
-                <Button type="submit">Godkänn korrektur</Button>
-              </form>
-            </>
-          )}
+        customerFinal ? (
+          <NextStep title="Korrektur godkänd" body="AquaVisibility skickar slutlig orderbekräftelse." tone="done" />
+        ) : (
+          <NextStep title="Godkänn korrektur" body="När ni godkänner blir filen slutgiltig tryckfil till tryckeriet." tone="next" />
+        )
+      ) : null}
+      {needsProof && !customerFinal ? (
+        <Panel title="Korrektur">
+          {proofDoc ? (
+            <p className="mb-3 text-sm">
+              <FileLink href={`/api/documents/${proofDoc.id}?inline=1`}>Förhandsvisa</FileLink>
+              {" · "}
+              <FileLink href={`/api/documents/${proofDoc.id}`}>Ladda ner</FileLink>
+            </p>
+          ) : null}
+          <form action={customerApproveProofAction}>
+            <input type="hidden" name="orderNo" value={order.orderNo} />
+            <Button type="submit">Godkänn korrektur</Button>
+          </form>
         </Panel>
       ) : null}
 
@@ -112,37 +112,17 @@ export function BuyerOrderDetail({ order, role, repeatHref }: { order: Order; ro
             showPrices={showPrice}
             lockedCopy="Kontakta AquaVisibility."
           />
-          <a href={repeatHref} className="inline-block text-sm font-medium text-[#3B5BAA]">
+          <a href={repeatHref} className="inline-block text-sm font-medium text-[var(--av-accent)]">
             Beställ igen
           </a>
         </>
       ) : null}
 
       <Panel title="Tidslinje">
-        <ol className="space-y-3">
-          {steps.map((s, i) => (
-            <li key={s.id} className="flex items-start gap-3 text-sm">
-              <span className="mt-1.5 flex w-3 flex-col items-center">
-                <span
-                  className={`h-2.5 w-2.5 rounded-full ${
-                    s.current ? "bg-[#d97706] ring-4 ring-[#d97706]/15" : s.done ? "bg-[#16a34a]" : "bg-[#d4d4d8]"
-                  }`}
-                />
-                {i < steps.length - 1 ? <span className="mt-1 h-4 w-px bg-black/10" /> : null}
-              </span>
-              <span className={s.current ? "font-semibold" : s.done ? "font-medium" : "text-[#6b7280]"}>{s.label}</span>
-            </li>
-          ))}
-        </ol>
-        <dl className="mt-5 grid gap-3 border-t border-black/5 pt-4 text-sm sm:grid-cols-2">
-          <div>
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Aqua-godkänd leverans</dt>
-            <dd className="mt-1 font-medium">{approved ?? "Bekräftas av AquaVisibility"}</dd>
-          </div>
-          <div>
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Preliminärt datum</dt>
-            <dd className="mt-1 text-[#6b7280]">{order.preliminaryDate ?? "Beräknas från ledtid"}</dd>
-          </div>
+        <Timeline steps={steps} />
+        <dl className="mt-1 grid gap-3 border-t border-[var(--av-border)] pt-4 text-sm sm:grid-cols-2">
+          <Field label="Aqua-godkänd leverans">{approved ?? "Bekräftas av AquaVisibility"}</Field>
+          <Field label="Preliminärt datum">{order.preliminaryDate ?? "Beräknas från ledtid"}</Field>
         </dl>
         {order.deliveryRequirement ? (
           <p className="mt-3 text-sm font-medium text-[var(--av-status-blocked-fg)]">Viktigt leveranskrav: {order.deliveryRequirement}</p>
@@ -165,7 +145,7 @@ export function BuyerOrderDetail({ order, role, repeatHref }: { order: Order; ro
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-[#6b7280]">Ingen tryckfil uppladdad ännu.</p>
+            <p className="text-sm text-[var(--av-text-muted)]">Ingen tryckfil uppladdad ännu.</p>
           )}
           <ArtworkUpload orderId={order.id} returnTo={repeatHref.replace(/\/repeat$/, "")} />
         </Panel>
@@ -183,7 +163,7 @@ export function BuyerOrderDetail({ order, role, repeatHref }: { order: Order; ro
               </li>
             ))}
             {snap.extras.map((e) => (
-              <li key={e.kind} className="flex justify-between gap-4 text-[#6b7280]">
+              <li key={e.kind} className="flex justify-between gap-4 text-[var(--av-text-muted)]">
                 <span>{e.label}</span>
                 <span className="tabular-nums">{e.amountExVat.toLocaleString("sv-SE")} kr</span>
               </li>
@@ -215,23 +195,9 @@ export function BuyerOrderDetail({ order, role, repeatHref }: { order: Order; ro
             {shipment.carrier}
             {shipment.trackingNo ? ` · ${shipment.trackingNo}` : ""}
           </p>
-          <ol className="mt-4 space-y-3">
-            {trackSteps.map((s, i) => (
-              <li key={s.id} className="flex items-start gap-3 text-sm">
-                <span className="mt-1.5 flex w-3 flex-col items-center">
-                  <span
-                    className={`h-2.5 w-2.5 rounded-full ${
-                      s.current ? "bg-[#3B5BAA] ring-4 ring-[#E8EEFA]" : s.done ? "bg-[#16a34a]" : "bg-[#d4d4d8]"
-                    }`}
-                  />
-                  {i < trackSteps.length - 1 ? <span className="mt-1 h-4 w-px bg-black/10" /> : null}
-                </span>
-                <span className={s.current ? "font-semibold text-[#3B5BAA]" : s.done ? "font-medium" : "text-[#6b7280]"}>
-                  {s.label}
-                </span>
-              </li>
-            ))}
-          </ol>
+          <div className="mt-4">
+            <Timeline steps={trackSteps} />
+          </div>
         </Panel>
       ) : null}
 

@@ -1,58 +1,59 @@
 import Image from "next/image";
 import type { VisualSpec } from "@/domain/visualSpec";
 
-function Badge({ children, accent }: { children: string; accent?: boolean }) {
+function SpecLine({ children, strong }: { children: string; strong?: boolean }) {
   return (
-    <span
-      className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] ${
-        accent ? "bg-[#E8EEFA] text-[#3B5BAA]" : "bg-[#f4f5f7] text-[#3f3f46]"
-      }`}
-    >
+    <p className={`uppercase tracking-[0.06em] ${strong ? "text-[15px] font-semibold text-[var(--av-text)]" : "text-[13px] font-medium text-[var(--av-text-secondary)]"}`}>
       {children}
-    </span>
+    </p>
   );
 }
 
 export function VisualSpecCard({ spec, compact, dense }: { spec: VisualSpec; compact?: boolean; dense?: boolean }) {
-  const badges = [spec.volumeLabel || null, spec.wall, spec.eco ? "ECO-mugg" : null, spec.finish, spec.lid].filter(Boolean) as string[];
+  const lines = [
+    spec.volumeLabel || null,
+    spec.wall,
+    spec.eco ? "ECO" : null,
+    spec.finish,
+    spec.lid && spec.lid !== "Utan lock" ? spec.lid : null,
+  ].filter(Boolean) as string[];
+
   if (dense) {
     return (
       <div className="flex flex-wrap gap-1">
-        {badges.slice(0, 3).map((b) => (
-          <Badge key={b} accent={b === "ECO-mugg" || b === "Dubbelvägg"}>
+        {lines.slice(0, 3).map((b) => (
+          <span key={b} className="rounded-md bg-[var(--av-accent-soft)] px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--av-accent)]">
             {b}
-          </Badge>
+          </span>
         ))}
       </div>
     );
   }
-  const img = compact ? "h-[88px] w-[72px]" : "h-[168px] w-[136px]";
+
+  const img = compact ? "h-[120px] w-[96px]" : "h-[200px] w-[160px]";
 
   return (
-    <div
-      className={`flex items-start gap-5 ${compact ? "" : "rounded-[22px] bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,.04)]"}`}
-    >
-      <div className={`relative shrink-0 overflow-hidden rounded-2xl bg-[#f4f5f7] ${img}`}>
+    <div className={`flex items-start gap-5 ${compact ? "" : "av-card p-5"}`}>
+      <div className={`relative shrink-0 overflow-hidden rounded-[var(--av-radius-md)] bg-[var(--av-bg)] ${img}`}>
         {spec.imageSrc ? (
-          <Image src={spec.imageSrc} alt={spec.productName} fill className="object-contain p-2" sizes={compact ? "72px" : "136px"} />
+          <Image src={spec.imageSrc} alt={spec.productName} fill className="object-contain p-2" sizes={compact ? "96px" : "160px"} />
         ) : (
-          <div className="flex h-full items-center justify-center text-[11px] uppercase tracking-[0.12em] text-[#9ca3af]">Mugg</div>
+          <div className="flex h-full items-center justify-center text-[11px] uppercase tracking-[0.12em] text-[var(--av-text-muted)]">
+            Mugg
+          </div>
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">Pappersmugg</p>
-        <p className={`${compact ? "mt-1 text-xl" : "mt-1.5 text-[28px]"} font-semibold tracking-tight tabular-nums`}>
+        <p className="av-label">Pappersmugg</p>
+        <p className={`${compact ? "mt-1 text-[22px]" : "mt-1.5 text-[32px]"} font-semibold tracking-tight tabular-nums text-[var(--av-text)]`}>
           {spec.qty.toLocaleString("sv-SE")} st
         </p>
-        <p className={`${compact ? "mt-0.5 text-sm" : "mt-1 text-lg"} font-medium`}>
-          {spec.volumeLabel ? `${spec.volumeLabel} · ` : ""}
-          {spec.productName}
-        </p>
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {badges.map((b) => (
-            <Badge key={b} accent={b === "ECO-mugg" || b === "Dubbelvägg"}>
-              {b}
-            </Badge>
+        <p className={`${compact ? "mt-0.5 text-[14px]" : "mt-1 text-[16px]"} font-medium text-[var(--av-text)]`}>{spec.productName}</p>
+        <div className="mt-3 space-y-0.5">
+          {lines.map((line, i) => (
+            <SpecLine key={line} strong={i === 0}>
+              {line}
+            </SpecLine>
           ))}
         </div>
       </div>

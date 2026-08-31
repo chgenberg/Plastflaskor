@@ -133,7 +133,7 @@ export function CheckoutForm({
       </div>
 
       {loggedIn ? (
-        <p className="rounded-2xl bg-[#E8EEFA] px-4 py-3 text-[13px] text-[#3B5BAA]">Ordern läggs på ditt inloggade konto.</p>
+        <p className="rounded-[var(--av-radius-md)] bg-[var(--av-accent-soft)] px-4 py-3 text-[13px] text-[var(--av-accent)]">Ordern läggs på ditt inloggade konto.</p>
       ) : (
         <fieldset className="rounded-[22px] border border-[var(--av-border)] bg-[#f8f8fa] p-4">
           <legend className="px-1 text-[13px] font-semibold text-[#1d1d1f]">Vill du att vi skapar ett konto?</legend>

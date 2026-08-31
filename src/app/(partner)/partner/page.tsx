@@ -5,7 +5,7 @@ import { buyerNextAction } from "@/domain/orderBrief";
 import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
 import { BuyerOrderCard } from "@/ui/order/BuyerOrderCard";
-import { EmptyState, KpiCard, LinkButton, PageHeader, Panel } from "@/ui/shell/primitives";
+import { EmptyState, KpiCard, LinkButton, NextStep, PageHeader } from "@/ui/shell/primitives";
 
 export default async function PartnerHome() {
   const user = await requireRole(["RESELLER", "AQUA_STAFF", "AQUA_ADMIN"]);
@@ -34,19 +34,19 @@ export default async function PartnerHome() {
         subtitle="Ordrar, korrektur och leveranser för er lista."
         action={<LinkButton href="/partner/ordrar/ny">Ny order</LinkButton>}
       />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <NextStep
+        title={next.title}
+        body={next.body}
+        href={`/partner${next.hrefSuffix}`}
+        cta={next.cta}
+        tone={proof > 0 ? "next" : "done"}
+      />
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard label="Aktiva ordrar" value={active} href="/partner/ordrar" />
         <KpiCard label="Väntar på korrektur" value={proof} href="/partner/ordrar" />
         <KpiCard label="På väg" value={shipped} href="/partner/ordrar" />
         <KpiCard label="Fakturor" value={invoices} href="/partner/fakturor" />
       </div>
-      <Panel title="Nästa steg">
-        <p className="text-lg font-semibold">{next.title}</p>
-        <p className="mt-1 text-sm text-[#6b7280]">{next.body}</p>
-        <div className="mt-4">
-          <LinkButton href={`/partner${next.hrefSuffix}`}>{next.cta}</LinkButton>
-        </div>
-      </Panel>
       {orders.length === 0 ? (
         <EmptyState title="Inga ordrar ännu" body="När du lägger en order syns den här. Starta i studion eller beställ från prislistan." />
       ) : (

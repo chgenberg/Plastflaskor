@@ -8,7 +8,7 @@ import { LEAD_STATUS_LABELS, ORDER_STEP_LABELS } from "@/domain/enums";
 import { priceListDisplayName } from "@/domain/priceLists";
 import { Button, DataRow, DataTable, EmptyState, FileLink, LinkButton, PageHeader, Panel, StatusChip } from "@/ui/shell/primitives";
 
-const FIELD = "h-11 w-full rounded-full border border-black/10 bg-white px-4 text-sm text-[#1d1d1f]";
+const FIELD = "h-11 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] bg-[var(--av-surface)] px-4 text-sm text-[var(--av-text)]";
 
 const ADDRESS_TYPE_LABELS: Record<string, string> = {
   BILLING: "Faktura",
@@ -85,31 +85,31 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
         <Panel title="Kunduppgifter">
           <dl className="grid gap-4 text-sm sm:grid-cols-2">
             <div>
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Företag</dt>
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Företag</dt>
               <dd className="mt-1 font-medium">{customer.company?.name ?? customer.name}</dd>
             </div>
             <div>
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Org.nr</dt>
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Org.nr</dt>
               <dd className="mt-1 font-mono">{customer.orgNr ?? customer.company?.orgNr ?? "–"}</dd>
             </div>
             <div>
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">E-post</dt>
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">E-post</dt>
               <dd className="mt-1">{customer.email ?? customer.company?.email ?? "–"}</dd>
             </div>
             <div>
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Telefon</dt>
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Telefon</dt>
               <dd className="mt-1">{customer.phone ?? customer.company?.phone ?? "–"}</dd>
             </div>
             <div>
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Prislista</dt>
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Prislista</dt>
               <dd className="mt-1">{priceListName}</dd>
             </div>
             <div>
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Kundtyp</dt>
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Kundtyp</dt>
               <dd className="mt-1">{buyerKind}{customer.reseller ? ` · ${customer.reseller.company.name}` : ""}</dd>
             </div>
             <div>
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Nästa lead</dt>
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Nästa lead</dt>
               <dd className="mt-1">
                 {nextLead
                   ? `${nextLead.expectedAt.toLocaleDateString("sv-SE", { month: "long", year: "numeric" })} · ${nextLead.sourceOrder.orderNo}`
@@ -121,12 +121,12 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
 
         <Panel title="Leveransadresser">
           {addresses.length === 0 ? (
-            <p className="text-sm text-[#6b7280]">Inga adresser registrerade.</p>
+            <p className="text-sm text-[var(--av-text-muted)]">Inga adresser registrerade.</p>
           ) : (
             <ul className="space-y-3 text-sm">
               {addresses.map((a) => (
                 <li key={`${a.type}-${a.line1}-${a.postalCode}`}>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">
                     {ADDRESS_TYPE_LABELS[a.type] ?? a.type}
                   </p>
                   <p className="mt-1 font-medium">
@@ -142,23 +142,23 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
       <Panel title="Redigera">
         <form action={updateCustomerAction} className="grid gap-3 sm:grid-cols-2">
           <input type="hidden" name="id" value={customer.id} />
-          <label className="text-sm text-[#6b7280]">
+          <label className="text-sm text-[var(--av-text-muted)]">
             Namn
             <input name="name" required defaultValue={customer.name} className={`${FIELD} mt-1`} />
           </label>
-          <label className="text-sm text-[#6b7280]">
+          <label className="text-sm text-[var(--av-text-muted)]">
             Org.nr
             <input name="orgNr" defaultValue={customer.orgNr ?? ""} className={`${FIELD} mt-1`} />
           </label>
-          <label className="text-sm text-[#6b7280]">
+          <label className="text-sm text-[var(--av-text-muted)]">
             E-post
             <input name="email" type="email" defaultValue={customer.email ?? ""} className={`${FIELD} mt-1`} />
           </label>
-          <label className="text-sm text-[#6b7280]">
+          <label className="text-sm text-[var(--av-text-muted)]">
             Telefon
             <input name="phone" type="tel" defaultValue={customer.phone ?? ""} className={`${FIELD} mt-1`} />
           </label>
-          <label className="text-sm text-[#6b7280] sm:col-span-2">
+          <label className="text-sm text-[var(--av-text-muted)] sm:col-span-2">
             Prislista
             <select name="priceListId" defaultValue={customer.priceListId ?? ""} className={`${FIELD} mt-1`}>
               <option value="">Ingen vald</option>
@@ -196,7 +196,7 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
               return (
                 <DataRow key={o.id} href={`/operations/ordrar/${o.orderNo}`}>
                   <td className="px-5 py-3">
-                    <Link href={`/operations/ordrar/${o.orderNo}`} className="font-mono text-[#3B5BAA]">
+                    <Link href={`/operations/ordrar/${o.orderNo}`} className="font-mono text-[var(--av-accent)]">
                       {o.orderNo}
                     </Link>
                   </td>
@@ -232,10 +232,10 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
             {customer.invoices.map((inv) => (
               <DataRow key={inv.id} href={`/operations/ekonomi/${inv.order.orderNo}/fakturera`}>
                 <td className="px-5 py-3 font-mono">
-                  <Link href={`/operations/ekonomi/${inv.order.orderNo}/fakturera`} className="text-[#3B5BAA]">
+                  <Link href={`/operations/ekonomi/${inv.order.orderNo}/fakturera`} className="text-[var(--av-accent)]">
                     {inv.invoiceNo}
                   </Link>
-                  {inv.fortnoxId ? <p className="text-[12px] text-[#6b7280]">{inv.fortnoxId}</p> : null}
+                  {inv.fortnoxId ? <p className="text-[12px] text-[var(--av-text-muted)]">{inv.fortnoxId}</p> : null}
                 </td>
                 <td className="px-5 py-3 font-mono">{inv.order.orderNo}</td>
                 <td className="px-5 py-3">{inv.issuedAt?.toLocaleDateString("sv-SE") ?? "–"}</td>
@@ -251,7 +251,7 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
 
       <Panel title="Återbeställningshistorik">
         {customer.leads.length === 0 ? (
-          <p className="text-sm text-[#6b7280]">Ingen återbeställning registrerad ännu.</p>
+          <p className="text-sm text-[var(--av-text-muted)]">Ingen återbeställning registrerad ännu.</p>
         ) : (
           <ul className="space-y-3 text-sm">
             {customer.leads.map((lead) => (
@@ -260,12 +260,12 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
                   <p className="font-medium">
                     {lead.expectedAt.toLocaleDateString("sv-SE", { month: "long", year: "numeric" })}
                     {" · "}
-                    <Link href={`/operations/ordrar/${lead.sourceOrder.orderNo}`} className="font-mono text-[#3B5BAA]">
+                    <Link href={`/operations/ordrar/${lead.sourceOrder.orderNo}`} className="font-mono text-[var(--av-accent)]">
                       {lead.sourceOrder.orderNo}
                     </Link>
                   </p>
                   {lead === nextLead ? (
-                    <p className="mt-0.5 text-[12px] text-[#3B5BAA]">Nästa återbeställning</p>
+                    <p className="mt-0.5 text-[12px] text-[var(--av-accent)]">Nästa återbeställning</p>
                   ) : null}
                 </div>
                 <StatusChip status={lead.status} label={LEAD_STATUS_LABELS[lead.status] ?? lead.status} />
@@ -277,7 +277,7 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
 
       <Panel title="Tryckfiler och dokument">
         {artwork.length === 0 ? (
-          <p className="text-sm text-[#6b7280]">Inga tidigare tryckfiler eller dokument.</p>
+          <p className="text-sm text-[var(--av-text-muted)]">Inga tidigare tryckfiler eller dokument.</p>
         ) : (
           <ul className="space-y-2 text-sm">
             {artwork.map((a) => (

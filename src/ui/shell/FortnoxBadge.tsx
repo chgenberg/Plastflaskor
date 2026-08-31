@@ -1,6 +1,6 @@
 export function IntegrationBadge({ label }: { label: string }) {
   return (
-    <span className="inline-flex items-center rounded-full bg-[#E8EEFA] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#3B5BAA]">
+    <span className="inline-flex items-center rounded-full bg-[var(--av-accent-soft)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--av-accent)]">
       {label}
     </span>
   );
@@ -19,7 +19,7 @@ export function FortnoxBadge({
     <div className="flex flex-wrap items-center gap-2">
       <IntegrationBadge label={label} />
       {invoiceNo ? (
-        <span className="text-[12px] tabular-nums text-[#6b7280]">
+        <span className="text-[12px] tabular-nums text-[var(--av-text-muted)]">
           Faktura {invoiceNo}
           {fortnoxId ? ` · ${fortnoxId}` : ""}
         </span>

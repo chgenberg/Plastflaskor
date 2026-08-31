@@ -17,18 +17,18 @@ export default async function DocsPage() {
       ) : (
         <div className="space-y-4">
           {docs.map((d) => (
-            <article key={d.id} className="rounded-[22px] bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,.04)]">
+            <article key={d.id} className="av-card p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <span className="inline-flex rounded-full bg-[#E8EEFA] px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#3B5BAA]">
+                  <span className="inline-flex rounded-full bg-[var(--av-accent-soft)] px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--av-accent)]">
                     {DOCUMENT_KIND_LABELS[d.kind] ?? d.kind}
                   </span>
                   <p className="mt-2">
                     <FileLink href={`/api/documents/${d.id}`}>{d.title}</FileLink>
-                    <span className="ml-2 text-sm text-[#6b7280]">v{d.version}</span>
+                    <span className="ml-2 text-sm text-[var(--av-text-muted)]">v{d.version}</span>
                   </p>
                 </div>
-                <span className="font-mono text-sm text-[#6b7280]">{d.orderNo}</span>
+                <span className="font-mono text-sm text-[var(--av-text-muted)]">{d.orderNo}</span>
               </div>
               <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
                 <FileLink href={`/api/documents/${d.id}?inline=1`}>Förhandsvisa</FileLink>

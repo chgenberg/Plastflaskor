@@ -29,8 +29,8 @@ export function AppShell({
   dense?: boolean;
 }) {
   const path = usePathname();
-  const tap = dense ? "min-h-12 px-4 py-3 text-[15px]" : "px-3 py-2 text-[13px]";
-  const showOpsSearch = title === "Operations" || path.startsWith("/operations");
+  const tap = dense ? "min-h-12 px-3 py-3 text-[15px]" : "px-3 py-2 text-[13px]";
+  const showOpsSearch = title === "Operations" || title === "Drift" || path.startsWith("/operations");
 
   function active(href: string) {
     if (href === "/partner" || href === "/operations" || href === "/factory" || href === "/konto") return path === href;
@@ -38,13 +38,13 @@ export function AppShell({
   }
 
   return (
-    <div className="min-h-dvh bg-[#F4F5F7] text-[#1d1d1f] md:flex">
-      <aside className="hidden w-[232px] shrink-0 flex-col border-r border-black/5 bg-white md:flex">
+    <div className="min-h-dvh bg-[var(--av-bg)] text-[var(--av-text)] md:flex">
+      <aside className="hidden w-[232px] shrink-0 flex-col border-r border-[var(--av-border)] bg-[var(--av-surface)] md:flex">
         <div className="px-5 pb-4 pt-6">
           <Link href="/" className="inline-block">
             <Image src="/brand/aqua-visibility-logo.png" alt="aqua visibility" width={120} height={38} className="h-8 w-auto" />
           </Link>
-          <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">{title}</p>
+          <p className="mt-5 text-[12px] font-medium text-[var(--av-text-muted)]">{title}</p>
         </div>
         {showOpsSearch ? (
           <form action="/operations/sok" method="get" className="px-3 pb-3">
@@ -55,8 +55,8 @@ export function AppShell({
               id="ops-search-desktop"
               name="q"
               type="search"
-              placeholder="Sök order, kund, ÅF, faktura, spårning, org.nr…"
-              className="h-10 w-full rounded-full border border-black/10 bg-[#F4F5F7] px-4 text-[13px] outline-none focus:border-[#3B5BAA]/40"
+              placeholder="Sök order, kund, ÅF…"
+              className="h-9 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border)] bg-[var(--av-bg)] px-3 text-[13px] outline-none placeholder:text-[var(--av-text-muted)] focus:border-[var(--av-accent)]/40"
             />
           </form>
         ) : null}
@@ -65,26 +65,26 @@ export function AppShell({
             <Link
               key={n.href}
               href={n.href}
-              className={`flex items-center justify-between rounded-xl ${tap} font-medium ${
-                active(n.href) ? "bg-[#E8EEFA] text-[#3B5BAA]" : "text-[#6b7280] hover:bg-black/[0.04] hover:text-[#1d1d1f]"
+              className={`flex items-center justify-between rounded-[var(--av-radius-md)] ${tap} font-medium ${
+                active(n.href)
+                  ? "bg-[var(--av-accent-soft)] text-[var(--av-accent)]"
+                  : "text-[var(--av-text-secondary)] hover:bg-[var(--av-bg)] hover:text-[var(--av-text)]"
               }`}
             >
               <span>{n.label}</span>
               {n.badge ? (
-                <span className="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-[#5B7FD4] px-1.5 text-[11px] font-semibold text-white">
+                <span className="ml-2 inline-flex min-w-5 items-center justify-center rounded-md bg-[var(--av-accent)] px-1.5 text-[11px] font-semibold text-white">
                   {n.badge}
                 </span>
               ) : null}
             </Link>
           ))}
         </nav>
-        <div className="border-t border-black/5 px-5 py-4">
-          {role ? (
-            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[#6b7280]">{ROLE_LABEL[role] ?? role}</p>
-          ) : null}
-          <p className="mt-1 truncate text-[13px] text-[#1d1d1f]">{email}</p>
+        <div className="border-t border-[var(--av-border)] px-5 py-4">
+          {role ? <p className="text-[11px] font-medium text-[var(--av-text-muted)]">{ROLE_LABEL[role] ?? role}</p> : null}
+          <p className="mt-1 truncate text-[13px] text-[var(--av-text)]">{email}</p>
           <form action={logoutAction} className="mt-3">
-            <button type="submit" className="text-[13px] text-[#6b7280] hover:text-[#1d1d1f]">
+            <button type="submit" className="text-[13px] text-[var(--av-text-muted)] hover:text-[var(--av-text)]">
               Logga ut
             </button>
           </form>
@@ -92,13 +92,13 @@ export function AppShell({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 border-b border-black/5 bg-white/90 px-4 py-3 backdrop-blur md:hidden">
+        <header className="sticky top-0 z-20 border-b border-[var(--av-border)] bg-[var(--av-surface)]/90 px-4 py-3 backdrop-blur md:hidden">
           <div className="flex items-center justify-between">
             <Link href="/">
               <Image src="/brand/aqua-visibility-logo.png" alt="aqua visibility" width={100} height={32} className="h-7 w-auto" />
             </Link>
             <form action={logoutAction}>
-              <button type="submit" className="text-[13px] text-[#6b7280]">
+              <button type="submit" className="text-[13px] text-[var(--av-text-muted)]">
                 Logga ut
               </button>
             </form>
@@ -109,7 +109,7 @@ export function AppShell({
                 key={n.href}
                 href={n.href}
                 className={`shrink-0 rounded-full ${dense ? "px-4 py-2.5 text-[14px]" : "px-3 py-1.5 text-[12px]"} font-medium ${
-                  active(n.href) ? "bg-[#E8EEFA] text-[#3B5BAA]" : "text-[#6b7280]"
+                  active(n.href) ? "bg-[var(--av-accent-soft)] text-[var(--av-accent)]" : "text-[var(--av-text-muted)]"
                 }`}
               >
                 {n.label}
@@ -125,13 +125,13 @@ export function AppShell({
                 id="ops-search-mobile"
                 name="q"
                 type="search"
-                placeholder="Sök order, kund, ÅF, faktura, spårning, org.nr…"
-                className="h-10 w-full rounded-full border border-black/10 bg-[#F4F5F7] px-4 text-[13px] outline-none focus:border-[#3B5BAA]/40"
+                placeholder="Sök order, kund, ÅF…"
+                className="h-10 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border)] bg-[var(--av-bg)] px-3 text-[13px] outline-none"
               />
             </form>
           ) : null}
         </header>
-        <main className={`mx-auto w-full max-w-6xl flex-1 ${dense ? "px-3 py-4 md:px-5" : "px-4 py-8 md:px-8"}`}>{children}</main>
+        <main className={`mx-auto w-full max-w-6xl flex-1 ${dense ? "px-3 py-5 md:px-6" : "px-4 py-8 md:px-8"}`}>{children}</main>
       </div>
     </div>
   );

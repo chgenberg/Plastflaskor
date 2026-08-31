@@ -3,7 +3,7 @@ import { getIntegrations } from "@/server/integrations/composition";
 import { prisma } from "@/server/db";
 import { EmptyState, PageHeader } from "@/ui/shell/primitives";
 
-const CARD = "rounded-[22px] bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,.04)]";
+const CARD = "av-card p-5";
 
 export default async function NotificationsPage() {
   const user = await getSessionUser();
@@ -21,7 +21,7 @@ export default async function NotificationsPage() {
           {items.map((n) => (
             <article key={n.id} className={CARD}>
               <p className="font-medium">{n.title}</p>
-              <p className="mt-1 text-sm text-[#6b7280]">{n.body}</p>
+              <p className="mt-1 text-sm text-[var(--av-text-muted)]">{n.body}</p>
             </article>
           ))}
         </div>

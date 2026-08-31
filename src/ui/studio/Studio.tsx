@@ -289,7 +289,7 @@ export function Studio({
   const qtys = [product.moq, 1000, 2500, 5000].filter((n, i, a) => n >= product.moq && a.indexOf(n) === i);
 
   return (
-    <div className="flex h-dvh flex-col bg-[#F4F5F7] text-[#1d1d1f]">
+    <div className="flex h-dvh flex-col bg-[var(--av-bg)] text-[var(--av-text)]">
       <header className="relative z-50 grid h-20 shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b border-black/5 bg-white/80 px-5 backdrop-blur">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex shrink-0 items-center py-2.5">
@@ -298,11 +298,11 @@ export function Studio({
           <input
             value={project}
             onChange={(e) => setProject(e.target.value)}
-            className="hidden max-w-[220px] truncate bg-transparent text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280] outline-none md:block"
+            className="hidden max-w-[220px] truncate bg-transparent text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)] outline-none md:block"
           />
         </div>
         <div className="flex items-center gap-3">
-          <span className="inline-flex items-center gap-1.5 text-[12px] text-[#6b7280]">
+          <span className="inline-flex items-center gap-1.5 text-[12px] text-[var(--av-text-muted)]">
             <span className={`h-1.5 w-1.5 rounded-full ${saved ? "bg-emerald-500" : "bg-amber-400"}`} />
             Autosparar
           </span>
@@ -333,13 +333,13 @@ export function Studio({
                     className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-black/[0.04]"
                   >
                     <span className="font-medium">{skuLabel(p)}</span>
-                    <span className="mt-0.5 block text-[11px] text-[#6b7280]">{p.name}</span>
+                    <span className="mt-0.5 block text-[11px] text-[var(--av-text-muted)]">{p.name}</span>
                   </button>
                 ))}
               </div>
             ) : null}
           </div>
-          <p className="hidden text-[12px] text-[#6b7280] sm:block">{qty} st</p>
+          <p className="hidden text-[12px] text-[var(--av-text-muted)] sm:block">{qty} st</p>
           <button type="button" onClick={resetDesign} className="hidden h-9 rounded-full border border-black/10 px-3 text-[12px] font-medium sm:inline-flex sm:items-center">
             Återställ
           </button>
@@ -352,7 +352,7 @@ export function Studio({
               Begär offert
             </button>
           )}
-          <button type="button" onClick={next} className="h-9 rounded-full bg-[#5B7FD4] px-5 text-[13px] font-semibold text-white shadow-sm hover:bg-[#4C6FC4]">
+          <button type="button" onClick={next} className="h-9 rounded-full bg-[var(--av-accent)] px-5 text-[13px] font-semibold text-white shadow-sm hover:bg-[var(--av-accent-hover)]">
             Kassa
           </button>
         </div>
@@ -375,7 +375,7 @@ export function Studio({
                 else setView("wrap");
               }}
               className={`flex w-[68px] flex-col items-center gap-1 rounded-2xl py-3 text-[11px] font-medium ${
-                tool === t.id ? "bg-[#E8EEFA] text-[#3B5BAA]" : "text-[#6b7280] hover:bg-black/[0.04]"
+                tool === t.id ? "bg-[var(--av-accent-soft)] text-[var(--av-accent)]" : "text-[var(--av-text-muted)] hover:bg-black/[0.04]"
               }`}
             >
               <ToolIcon id={t.id} />
@@ -385,7 +385,7 @@ export function Studio({
         </aside>
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 overflow-auto p-3 lg:flex-row lg:overflow-hidden">
-          <section className="flex min-h-[420px] min-w-0 flex-1 flex-col rounded-[22px] bg-white shadow-[0_8px_30px_rgba(15,23,42,.04)]">
+          <section className="flex min-h-[420px] min-w-0 flex-1 flex-col rounded-[var(--av-radius-lg)] bg-white shadow-[var(--av-shadow-sm)]">
             <ol className="flex gap-1 overflow-x-auto px-4 pt-3 text-[11px] font-medium">
               {STEPS.map((s, i) => (
                 <li key={s.id} className="flex items-center gap-1">
@@ -393,7 +393,7 @@ export function Studio({
                   <button
                     type="button"
                     onClick={() => goStep(i)}
-                    className={`rounded-full px-2.5 py-1 ${step === i ? "bg-[#E8EEFA] text-[#3B5BAA]" : "text-[#6b7280] hover:bg-black/[0.04]"}`}
+                    className={`rounded-full px-2.5 py-1 ${step === i ? "bg-[var(--av-accent-soft)] text-[var(--av-accent)]" : "text-[var(--av-text-muted)] hover:bg-black/[0.04]"}`}
                   >
                     {s.label}
                   </button>
@@ -465,7 +465,7 @@ export function Studio({
             </div>
           </section>
 
-          <aside className="w-full shrink-0 overflow-y-auto rounded-[22px] bg-white p-4 shadow-[0_8px_30px_rgba(15,23,42,.06)] lg:w-[280px]">
+          <aside className="w-full shrink-0 overflow-y-auto rounded-[var(--av-radius-lg)] bg-white p-4 shadow-[var(--av-shadow-sm)] lg:w-[280px]">
             <Inspector
               tool={tool}
               layers={layers}
@@ -519,7 +519,7 @@ export function Studio({
               if (t.id === "preview") openRealityPane();
               else setView("wrap");
             }}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium ${tool === t.id ? "bg-[#E8EEFA] text-[#3B5BAA]" : "text-[#6b7280]"}`}
+            className={`rounded-full px-3 py-1.5 text-xs font-medium ${tool === t.id ? "bg-[var(--av-accent-soft)] text-[var(--av-accent)]" : "text-[var(--av-text-muted)]"}`}
           >
             {t.label}
           </button>
@@ -583,14 +583,14 @@ function Inspector({
   return (
     <div className="space-y-5 text-sm">
       <section>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">Lager</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Lager</p>
         <ul className="mt-2 space-y-1">
           {[...layers].reverse().map((l) => (
             <li key={l.id}>
               <button
                 type="button"
                 onClick={() => onSelect(l.id)}
-                className={`w-full rounded-xl px-3 py-2 text-left ${selected.id === l.id ? "bg-[#E8EEFA] text-[#3B5BAA]" : "hover:bg-black/[0.04]"}`}
+                className={`w-full rounded-xl px-3 py-2 text-left ${selected.id === l.id ? "bg-[var(--av-accent-soft)] text-[var(--av-accent)]" : "hover:bg-black/[0.04]"}`}
               >
                 {l.name}
               </button>
@@ -601,7 +601,7 @@ function Inspector({
 
       {tool === "text" || selected.type === "text" ? (
         <label className="block">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">Text</span>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Text</span>
           <input
             value={layers.find((l) => l.type === "text")?.text ?? ""}
             onChange={(e) => {
@@ -616,7 +616,7 @@ function Inspector({
 
       {selected.type === "qr" || tool === "upload" ? (
         <label className="block">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">QR-länk</span>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">QR-länk</span>
           <input
             value={layers.find((l) => l.type === "qr")?.text ?? ""}
             onChange={(e) => {
@@ -631,8 +631,8 @@ function Inspector({
 
       {tool === "upload" ? (
         <div className="space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">Ladda upp tryckfil</p>
-          <label className="flex h-36 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-black/15 px-4 text-center text-[13px] text-[#6b7280]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Ladda upp tryckfil</p>
+          <label className="flex h-36 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-black/15 px-4 text-center text-[13px] text-[var(--av-text-muted)]">
             <input
               type="file"
               accept=".png,.jpg,.jpeg,.svg,.webp,.pdf,.ai"
@@ -650,16 +650,16 @@ function Inspector({
                 reader.readAsDataURL(file);
               }}
             />
-            <span className="font-medium text-[#1d1d1f]">
+            <span className="font-medium text-[var(--av-text)]">
               {selected.type === "logo" ? "Ladda upp logotyp" : "Ladda upp tryckfil"}
             </span>
             <span className="mt-1 text-[12px]">PNG, JPG, SVG, PDF eller AI</span>
           </label>
-          <p className="text-[12px] text-[#6b7280]">Primär väg: ladda upp färdig tryckfil. Canvas finns kvar för justering.</p>
+          <p className="text-[12px] text-[var(--av-text-muted)]">Primär väg: ladda upp färdig tryckfil. Canvas finns kvar för justering.</p>
         </div>
       ) : null}
       {printFiles.length ? (
-        <ul className="space-y-1 text-[12px] text-[#6b7280]">
+        <ul className="space-y-1 text-[12px] text-[var(--av-text-muted)]">
           {printFiles.map((name) => (
             <li key={name}>Tryckfil: {name}</li>
           ))}
@@ -668,7 +668,7 @@ function Inspector({
 
       {tool === "colors" ? (
         <label className="block">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">Textfärg</span>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Textfärg</span>
           <input
             type="color"
             value={layers.find((l) => l.type === "text")?.color ?? "#1d1d1f"}
@@ -684,12 +684,12 @@ function Inspector({
       {tool === "bottle" ? (
         <div className="space-y-3">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">Mugg (låst)</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Mugg (låst)</p>
             <p className="mt-1.5 text-sm">
               {product?.slug.includes("dv") ? "Dubbelvägg" : "Enkelvägg"}
               {product?.slug.includes("eco") ? " · ECO" : ""}
             </p>
-            <p className="mt-1 text-[12px] text-[#6b7280]">
+            <p className="mt-1 text-[12px] text-[var(--av-text-muted)]">
               Tryckyta {wrap.widthMm} × {wrap.heightMm} mm + {wrap.bleedMm} mm bleed
             </p>
           </div>
@@ -705,14 +705,14 @@ function Inspector({
             </select>
           </Field>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">Ytfinish</p>
-            <div className="mt-2 grid grid-cols-2 gap-1 rounded-full bg-[#F4F5F7] p-1">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Ytfinish</p>
+            <div className="mt-2 grid grid-cols-2 gap-1 rounded-full bg-[var(--av-bg)] p-1">
               {(["matte", "gloss"] as const).map((f) => (
                 <button
                   key={f}
                   type="button"
                   onClick={() => onFinish(f)}
-                  className={`rounded-full py-1.5 text-xs font-medium ${finish === f ? "bg-white shadow-sm" : "text-[#6b7280]"}`}
+                  className={`rounded-full py-1.5 text-xs font-medium ${finish === f ? "bg-white shadow-sm" : "text-[var(--av-text-muted)]"}`}
                 >
                   {f === "matte" ? "Matt" : "Blank"}
                 </button>
@@ -720,7 +720,7 @@ function Inspector({
             </div>
           </div>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">Obligatoriska tryckelement</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Obligatoriska tryckelement</p>
             <ul className="mt-2 space-y-1.5 text-sm">
               {(product?.printRequirements ?? []).map((r) => (
                 <li key={r.code}>
@@ -738,17 +738,17 @@ function Inspector({
                 </li>
               ))}
             </ul>
-            <p className="mt-2 text-[12px] text-[#6b7280]">Kryssa i när elementet är placerat på tryckytan.</p>
+            <p className="mt-2 text-[12px] text-[var(--av-text-muted)]">Kryssa i när elementet är placerat på tryckytan.</p>
           </div>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">Antal</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Antal</p>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {qtys.map((n) => (
                 <button
                   key={n}
                   type="button"
                   onClick={() => onQty(n)}
-                  className={`rounded-full px-3 py-1.5 text-xs ${qty === n ? "bg-[#5B7FD4] text-white" : "bg-black/[0.04]"}`}
+                  className={`rounded-full px-3 py-1.5 text-xs ${qty === n ? "bg-[var(--av-accent)] text-white" : "bg-black/[0.04]"}`}
                 >
                   {n} st
                 </button>
@@ -759,7 +759,7 @@ function Inspector({
       ) : null}
 
       <section>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">Placering</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Placering</p>
         <div className="mt-2 grid grid-cols-3 gap-2">
           <Num label="Position" value={Math.round(selected.x)} onChange={(v) => onLayerChange(selected.id, { x: v })} />
           <Num label="Skala" value={Number(selected.scale.toFixed(1))} step={0.1} onChange={(v) => onLayerChange(selected.id, { scale: v })} />
@@ -768,14 +768,14 @@ function Inspector({
       </section>
 
       <section>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">AI-hjälp</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">AI-hjälp</p>
         <div className="mt-2 space-y-1.5">
           <AiBtn onClick={onOpenReality}>Se i verkligheten</AiBtn>
           <AiBtn onClick={onCenter}>Centrera motiv</AiBtn>
           <AiBtn onClick={onMatchColors}>Matcha varumärkesfärger</AiBtn>
           <AiBtn onClick={onOptimize}>Optimera layout</AiBtn>
           <AiBtn onClick={onReset}>Återställ design</AiBtn>
-          <Link href="/designa/ai" className="block rounded-xl px-3 py-2 text-[13px] text-[#3B5BAA] hover:bg-[#E8EEFA]">
+          <Link href="/designa/ai" className="block rounded-xl px-3 py-2 text-[13px] text-[var(--av-accent)] hover:bg-[var(--av-accent-soft)]">
             Öppna AI-studio (tillval) →
           </Link>
         </div>
@@ -787,7 +787,7 @@ function Inspector({
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="block">
-      <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">{label}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">{label}</span>
       <div className="mt-1.5">{children}</div>
     </label>
   );
@@ -796,7 +796,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 function Num({ label, value, onChange, step = 1 }: { label: string; value: number; onChange: (v: number) => void; step?: number }) {
   return (
     <label className="block">
-      <span className="text-[10px] text-[#6b7280]">{label}</span>
+      <span className="text-[10px] text-[var(--av-text-muted)]">{label}</span>
       <input
         type="number"
         step={step}
@@ -832,25 +832,25 @@ function PaneToggle({
 }) {
   return (
     <div className="flex justify-center pt-4">
-      <div className="inline-flex rounded-full bg-[#F4F5F7] p-1 text-[12px] font-medium">
+      <div className="inline-flex rounded-full bg-[var(--av-bg)] p-1 text-[12px] font-medium">
         <button
           type="button"
           onClick={onWrap}
-          className={`rounded-full px-4 py-1.5 ${active === "wrap" ? "bg-white text-[#1d1d1f] shadow-sm" : "text-[#6b7280]"}`}
+          className={`rounded-full px-4 py-1.5 ${active === "wrap" ? "bg-white text-[var(--av-text)] shadow-sm" : "text-[var(--av-text-muted)]"}`}
         >
           Tryckyta
         </button>
         <button
           type="button"
           onClick={onAngles}
-          className={`rounded-full px-4 py-1.5 ${active === "vinklar" ? "bg-white text-[#1d1d1f] shadow-sm" : "text-[#6b7280]"}`}
+          className={`rounded-full px-4 py-1.5 ${active === "vinklar" ? "bg-white text-[var(--av-text)] shadow-sm" : "text-[var(--av-text-muted)]"}`}
         >
           3D / vinklar
         </button>
         <button
           type="button"
           onClick={onReality}
-          className={`rounded-full px-4 py-1.5 ${active === "verklighet" ? "bg-white text-[#1d1d1f] shadow-sm" : "text-[#6b7280]"}`}
+          className={`rounded-full px-4 py-1.5 ${active === "verklighet" ? "bg-white text-[var(--av-text)] shadow-sm" : "text-[var(--av-text-muted)]"}`}
         >
           {loading ? "Skapar…" : "Se i verkligheten"}
         </button>

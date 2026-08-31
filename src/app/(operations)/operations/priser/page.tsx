@@ -29,32 +29,32 @@ export default async function PriceListsAdmin() {
       ) : (
         <div className="grid gap-5">
           {lists.map((list) => (
-            <section key={list.id} className="overflow-hidden rounded-[22px] bg-white shadow-[0_8px_30px_rgba(15,23,42,.04)]">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 px-5 py-4">
+            <section key={list.id} className="overflow-hidden av-card">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--av-border)] px-5 py-4">
                 <div>
                   <h2 className="text-[17px] font-semibold tracking-tight">
                     {priceListDisplayName(list.name)}
                   </h2>
-                  <p className="mt-1 text-[12px] text-[#6b7280]">{list.currency}</p>
+                  <p className="mt-1 text-[12px] text-[var(--av-text-muted)]">{list.currency}</p>
                 </div>
               </div>
-              <div className="grid gap-3 border-b border-black/5 px-5 py-4 sm:grid-cols-3">
+              <div className="grid gap-3 border-b border-[var(--av-border)] px-5 py-4 sm:grid-cols-3">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">ÅF</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">ÅF</p>
                   <p className="mt-1 text-[22px] font-semibold tabular-nums tracking-tight">{list._count.resellers}</p>
                 </div>
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">Slutkunder</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Slutkunder</p>
                   <p className="mt-1 text-[22px] font-semibold tabular-nums tracking-tight">{list._count.customers}</p>
                 </div>
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">Rader totalt</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Rader totalt</p>
                   <p className="mt-1 text-[22px] font-semibold tabular-nums tracking-tight">{list._count.items}</p>
                 </div>
               </div>
               {list.items.length === 0 ? (
                 <div className="p-5">
-                  <p className="text-sm text-[#6b7280]">Inga pappersmugg-rader på den här listan.</p>
+                  <p className="text-sm text-[var(--av-text-muted)]">Inga pappersmugg-rader på den här listan.</p>
                 </div>
               ) : (
                 <DataTable
@@ -74,7 +74,7 @@ export default async function PriceListsAdmin() {
                             <input type="hidden" name="id" value={row.id} />
                           </form>
                           <p className="font-medium">{row.variant.product.name}</p>
-                          <p className="text-[12px] text-[#6b7280]">{row.variant.name}</p>
+                          <p className="text-[12px] text-[var(--av-text-muted)]">{row.variant.name}</p>
                         </td>
                         <td className="px-5 py-2.5 text-right">
                           <input
@@ -84,7 +84,7 @@ export default async function PriceListsAdmin() {
                             min={1}
                             required
                             defaultValue={row.minQty}
-                            className="ml-auto w-24 rounded-xl border border-black/10 px-3 py-2 text-right tabular-nums"
+                            className="ml-auto w-24 rounded-xl border border-[var(--av-border-strong)] px-3 py-2 text-right tabular-nums"
                           />
                         </td>
                         <td className="px-5 py-2.5 text-right">
@@ -96,7 +96,7 @@ export default async function PriceListsAdmin() {
                             step="0.01"
                             required
                             defaultValue={row.unitPriceExVat.toFixed(2)}
-                            className="ml-auto w-28 rounded-xl border border-black/10 px-3 py-2 text-right tabular-nums text-[#3B5BAA]"
+                            className="ml-auto w-28 rounded-xl border border-[var(--av-border-strong)] px-3 py-2 text-right tabular-nums text-[var(--av-accent)]"
                           />
                         </td>
                         <td className="px-5 py-2.5">

@@ -38,14 +38,14 @@ export function OrderConfirmationPreview({
 
   return (
     <Panel title={locked ? "Orderbekräftelse" : "Förhandsvisning av orderbekräftelse"}>
-      {spec ? <VisualSpecCard spec={spec} compact /> : null}
+      {spec ? <VisualSpecCard spec={spec} /> : null}
       <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
         <div>
-          <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Bekräftat leveransdatum</dt>
+          <dt className="av-label">Bekräftat leveransdatum</dt>
           <dd className="mt-1 font-medium">{confirmedDate ?? "Välj datum nedan"}</dd>
         </div>
         <div>
-          <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Förväntad återbeställning</dt>
+          <dt className="av-label">Förväntad återbeställning</dt>
           <dd className="mt-1 font-medium">{horizon ?? "Anges innan OB skickas"}</dd>
         </div>
       </dl>
@@ -59,10 +59,10 @@ export function OrderConfirmationPreview({
           ))}
         </ul>
       ) : (
-        <p className="mt-4 text-sm text-[#6b7280]">Inga extrakostnader tillagda.</p>
+        <p className="mt-4 text-sm text-[var(--av-text-muted)]">Inga extrakostnader tillagda.</p>
       )}
       {showPrices && snapshot ? (
-        <div className="mt-4 space-y-1 border-t border-black/5 pt-4 text-sm">
+        <div className="mt-4 space-y-1 border-t border-[var(--av-border)] pt-4 text-sm">
           {snapshot.lines.map((l) => (
             <p key={l.name} className="flex justify-between gap-4">
               <span>
@@ -71,11 +71,11 @@ export function OrderConfirmationPreview({
               <span className="tabular-nums">{sek(l.lineExVat)}</span>
             </p>
           ))}
-          <p className="flex justify-between gap-4 text-[#6b7280]">
+          <p className="flex justify-between gap-4 text-[var(--av-text-muted)]">
             <span>Varor</span>
             <span className="tabular-nums">{sek(goods ?? 0)}</span>
           </p>
-          <p className="flex justify-between gap-4 text-[#6b7280]">
+          <p className="flex justify-between gap-4 text-[var(--av-text-muted)]">
             <span>Tillägg</span>
             <span className="tabular-nums">{sek(extrasEx)}</span>
           </p>
@@ -84,7 +84,7 @@ export function OrderConfirmationPreview({
             <span className="tabular-nums">{sek(total ?? 0)}</span>
           </p>
           {snapshot.amountIncVat != null ? (
-            <p className="flex justify-between gap-4 text-[#6b7280]">
+            <p className="flex justify-between gap-4 text-[var(--av-text-muted)]">
               <span>Totalt inkl. moms</span>
               <span className="tabular-nums">{sek(snapshot.amountIncVat)}</span>
             </p>
@@ -93,7 +93,7 @@ export function OrderConfirmationPreview({
       ) : showPrices && extrasEx ? (
         <p className="mt-3 text-sm font-medium">Tillägg: {sek(extrasEx)} ex moms</p>
       ) : null}
-      {locked ? <p className="mt-4 text-sm text-[#6b7280]">{lockedCopy}</p> : null}
+      {locked ? <p className="mt-4 text-sm text-[var(--av-text-muted)]">{lockedCopy}</p> : null}
     </Panel>
   );
 }

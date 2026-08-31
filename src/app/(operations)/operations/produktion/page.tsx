@@ -74,7 +74,7 @@ export default async function ProductionBoard({ searchParams }: { searchParams: 
           <Link
             key={g.id}
             href={`/operations/produktion?group=${g.id}`}
-            className={`rounded-full px-3 py-1.5 text-sm ${group === g.id ? "bg-[#E8EEFA] font-medium text-[#3B5BAA]" : "text-[#6b7280]"}`}
+            className={`rounded-full px-3 py-1.5 text-sm ${group === g.id ? "bg-[var(--av-accent-soft)] font-medium text-[var(--av-accent)]" : "text-[var(--av-text-muted)]"}`}
           >
             {g.label}
           </Link>
@@ -91,7 +91,7 @@ export default async function ProductionBoard({ searchParams }: { searchParams: 
       ) : (
         [...grouped.entries()].map(([key, rows]) => (
           <div key={key} className="space-y-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">{key}</p>
+            <p className="text-[15px] font-semibold tracking-tight">{key}</p>
             <div className="grid gap-3">
               {rows.map((j) => {
                 const item = j.order.items[0];
@@ -104,18 +104,18 @@ export default async function ProductionBoard({ searchParams }: { searchParams: 
                   <Link
                     key={j.id}
                     href={`/operations/ordrar/${j.order.orderNo}`}
-                    className="block rounded-[22px] bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,.04)]"
+                    className="block av-card p-5"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <p className="font-mono text-[#3B5BAA]">{j.order.orderNo}</p>
+                        <p className="font-mono text-[var(--av-accent)]">{j.order.orderNo}</p>
                         <p className="mt-1 font-medium">
                           {spec?.productName ?? item?.variant.product.name ?? "–"}
                           {item ? ` · ${item.qty.toLocaleString("sv-SE")} st` : ""}
                         </p>
                         {spec ? (
                           <div className="mt-2">
-                            <VisualSpecCard spec={spec} dense />
+                            <VisualSpecCard spec={spec} compact />
                           </div>
                         ) : null}
                       </div>

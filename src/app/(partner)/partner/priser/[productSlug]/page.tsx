@@ -38,7 +38,7 @@ export default async function PartnerProductPrice({ params }: { params: Promise<
         action={<LinkButton href={`/designa/${product.slug}`}>Designa / Beställ</LinkButton>}
       />
       <p className="text-sm">
-        <Link href="/partner/priser" className="text-[#3B5BAA]">
+        <Link href="/partner/priser" className="text-[var(--av-accent)]">
           ← Alla priser
         </Link>
       </p>

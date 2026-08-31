@@ -30,7 +30,7 @@ export default async function FactoryDocs() {
             {docs.map((d) => (
               <li key={d.id} className="flex justify-between gap-4 px-5 py-3 text-sm">
                 <FileLink href={`/api/documents/${d.id}`}>{d.title}</FileLink>
-                <span className="font-mono text-[#6b7280]">{d.order?.orderNo}</span>
+                <span className="font-mono text-[var(--av-text-muted)]">{d.order?.orderNo}</span>
               </li>
             ))}
           </ul>

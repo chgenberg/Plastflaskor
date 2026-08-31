@@ -13,7 +13,7 @@ export type InvoiceRow = {
   pdfId?: string | null;
 };
 
-const CARD = "rounded-[22px] bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,.04)]";
+const CARD = "av-card p-5";
 
 function fmtDate(value?: Date | string | null) {
   if (!value) return "–";
@@ -32,8 +32,8 @@ export function InvoiceTable({ rows, showCustomer }: { rows: InvoiceRow[]; showC
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="font-mono text-sm font-medium">{r.invoiceNo}</p>
-                <p className="mt-0.5 font-mono text-sm text-[#6b7280]">{r.orderNo}</p>
-                {showCustomer ? <p className="mt-0.5 text-sm text-[#6b7280]">{r.customer}</p> : null}
+                <p className="mt-0.5 font-mono text-sm text-[var(--av-text-muted)]">{r.orderNo}</p>
+                {showCustomer ? <p className="mt-0.5 text-sm text-[var(--av-text-muted)]">{r.customer}</p> : null}
               </div>
               <StatusChip
                 status={r.status === "PAID" ? "PAID" : "INVOICED"}
@@ -41,7 +41,7 @@ export function InvoiceTable({ rows, showCustomer }: { rows: InvoiceRow[]; showC
                 requestedDate={label === "Förfallen" ? "2000-01-01" : null}
               />
             </div>
-            <p className="mt-4 text-sm text-[#6b7280]">{fmtDate(r.issuedAt ?? r.dueAt)}</p>
+            <p className="mt-4 text-sm text-[var(--av-text-muted)]">{fmtDate(r.issuedAt ?? r.dueAt)}</p>
             <p className="mt-1 text-sm tabular-nums">{r.amountIncVat.toLocaleString("sv-SE")} kr</p>
             {r.pdfId ? (
               <div className="mt-4">

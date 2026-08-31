@@ -6,10 +6,10 @@ import { listAllOrders } from "@/server/services/order.service";
 import { getFortnoxConnection } from "@/server/integrations/status";
 import { markInvoicePaid } from "@/actions";
 import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
-import { Button, EmptyState, KpiCard, LinkButton, PageHeader, StatusChip } from "@/ui/shell/primitives";
+import { Button, EmptyState, KpiCard, LinkButton, PageHeader, SectionTitle, StatusChip } from "@/ui/shell/primitives";
 import { FortnoxBadge } from "@/ui/shell/FortnoxBadge";
 
-const CARD = "rounded-[22px] bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,.04)]";
+const CARD = "av-card p-5";
 
 export default async function FinancePage() {
   const user = await getSessionUser();
@@ -41,7 +41,7 @@ export default async function FinancePage() {
         <EmptyState title="Inget att fakturera" body="När en order är levererad eller redo för faktura syns den här." />
       ) : (
         <section className="space-y-4">
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">Redo att faktureras</h2>
+          <SectionTitle>Redo att faktureras</SectionTitle>
           {ready.map((o) => {
             const value = o.items.reduce((s, i) => s + i.unitPriceExVat * i.qty, 0);
             const item = o.items[0];
@@ -55,7 +55,7 @@ export default async function FinancePage() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="font-mono text-sm font-medium">{o.orderNo}</p>
-                    <p className="mt-0.5 text-sm text-[#6b7280]">{o.reseller?.company.name ?? o.customer.name}</p>
+                    <p className="mt-0.5 text-sm text-[var(--av-text-muted)]">{o.reseller?.company.name ?? o.customer.name}</p>
                   </div>
                   <StatusChip
                     status={o.currentStatus}
@@ -68,11 +68,11 @@ export default async function FinancePage() {
                     <VisualSpecCard spec={spec} compact />
                   </div>
                 ) : (
-                  <p className="mt-4 text-sm text-[#6b7280]">
+                  <p className="mt-4 text-sm text-[var(--av-text-muted)]">
                     {item?.qty} × {item?.variant.product.name}
                   </p>
                 )}
-                <p className="mt-4 text-sm tabular-nums text-[#6b7280]">{value.toLocaleString("sv-SE")} kr</p>
+                <p className="mt-4 text-sm tabular-nums text-[var(--av-text-muted)]">{value.toLocaleString("sv-SE")} kr</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <LinkButton href={`/operations/ordrar/${o.orderNo}`} variant="secondary">
                     Öppna
@@ -86,7 +86,7 @@ export default async function FinancePage() {
       )}
       {waiting.length === 0 ? null : (
         <section className="space-y-4">
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">Väntar betalning</h2>
+          <SectionTitle>Väntar betalning</SectionTitle>
           {waiting.map((o) => {
             const value = o.items.reduce((s, i) => s + i.unitPriceExVat * i.qty, 0);
             const item = o.items[0];
@@ -100,8 +100,8 @@ export default async function FinancePage() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="font-mono text-sm font-medium">{o.invoice?.invoiceNo ?? o.orderNo}</p>
-                    <p className="mt-0.5 text-sm text-[#6b7280]">{o.reseller?.company.name ?? o.customer.name}</p>
-                    <p className="mt-0.5 font-mono text-sm text-[#6b7280]">{o.orderNo}</p>
+                    <p className="mt-0.5 text-sm text-[var(--av-text-muted)]">{o.reseller?.company.name ?? o.customer.name}</p>
+                    <p className="mt-0.5 font-mono text-sm text-[var(--av-text-muted)]">{o.orderNo}</p>
                   </div>
                   <StatusChip
                     status={o.currentStatus}
@@ -114,7 +114,7 @@ export default async function FinancePage() {
                     <VisualSpecCard spec={spec} dense />
                   </div>
                 ) : null}
-                <p className="mt-4 text-sm tabular-nums text-[#6b7280]">{value.toLocaleString("sv-SE")} kr</p>
+                <p className="mt-4 text-sm tabular-nums text-[var(--av-text-muted)]">{value.toLocaleString("sv-SE")} kr</p>
                 {o.invoice ? (
                   <div className="mt-2">
                     <FortnoxBadge label={fortnox.label} invoiceNo={o.invoice.invoiceNo} fortnoxId={o.invoice.fortnoxId} />
@@ -129,7 +129,7 @@ export default async function FinancePage() {
                       </Button>
                     </form>
                   ) : (
-                    <span className="text-sm text-[#6b7280]">Väntar</span>
+                    <span className="text-sm text-[var(--av-text-muted)]">Väntar</span>
                   )}
                 </div>
               </article>

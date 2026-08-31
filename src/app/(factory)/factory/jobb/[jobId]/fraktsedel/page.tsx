@@ -40,41 +40,41 @@ export default async function WaybillPage({
     <div className="mx-auto max-w-xl space-y-8">
       <PageHeader title="Fraktsedel" subtitle={job.order.orderNo} />
       <Panel>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Fraktsedel</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Fraktsedel</p>
         <p className="mt-2 font-mono text-lg">{ship.trackingNo ?? "–"}</p>
         <dl className="mt-6 space-y-3 text-sm">
           <div>
-            <dt className="text-[#6b7280]">Mottagare</dt>
+            <dt className="text-[var(--av-text-muted)]">Mottagare</dt>
             <dd>{job.order.customer.name}</dd>
           </div>
           <div>
-            <dt className="text-[#6b7280]">Adress</dt>
+            <dt className="text-[var(--av-text-muted)]">Adress</dt>
             <dd>
               {addr.line1}, {addr.postalCode} {addr.city}
             </dd>
           </div>
           <div>
-            <dt className="text-[#6b7280]">Ordernummer</dt>
+            <dt className="text-[var(--av-text-muted)]">Ordernummer</dt>
             <dd className="font-mono">{job.order.orderNo}</dd>
           </div>
           <div>
-            <dt className="text-[#6b7280]">Antal</dt>
+            <dt className="text-[var(--av-text-muted)]">Antal</dt>
             <dd>{item?.qty != null ? `${item.qty.toLocaleString("sv-SE")} st` : "–"}</dd>
           </div>
           <div>
-            <dt className="text-[#6b7280]">Kolli</dt>
+            <dt className="text-[var(--av-text-muted)]">Kolli</dt>
             <dd>{ship.packages ?? "–"}</dd>
           </div>
           <div>
-            <dt className="text-[#6b7280]">Vikt</dt>
+            <dt className="text-[var(--av-text-muted)]">Vikt</dt>
             <dd>{`${ship.weightKg} kg`}</dd>
           </div>
           <div>
-            <dt className="text-[#6b7280]">Transportör</dt>
+            <dt className="text-[var(--av-text-muted)]">Transportör</dt>
             <dd>{ship.carrier ?? "–"}</dd>
           </div>
           <div>
-            <dt className="text-[#6b7280]">Spårning</dt>
+            <dt className="text-[var(--av-text-muted)]">Spårning</dt>
             <dd className="font-mono">{ship.trackingNo ?? "–"}</dd>
           </div>
         </dl>

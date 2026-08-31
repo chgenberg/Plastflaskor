@@ -20,30 +20,30 @@ export function RepeatOrderForm({
   return (
     <div className="space-y-6">
       {spec ? <VisualSpecCard spec={spec} /> : null}
-      <p className="text-sm text-[#6b7280]">Samma tryckfil och spec kopieras. Bara antal och kommentar kan ändras.</p>
+      <p className="text-sm text-[var(--av-text-muted)]">Samma tryckfil och spec kopieras. Bara antal och kommentar kan ändras.</p>
       <form action={repeatOrderAction} className="space-y-4">
         <input type="hidden" name="sourceOrderId" value={sourceOrderId} />
         {prices ? (
           <RepeatFields defaultQty={defaultQty} prices={prices} moq={moq} />
         ) : (
           <label className="block text-sm">
-            <span className="text-[#6b7280]">Antal</span>
+            <span className="text-[var(--av-text-muted)]">Antal</span>
             <input
               name="qty"
               type="number"
               defaultValue={Math.max(defaultQty, moq)}
               min={moq}
-              className="mt-1 w-full rounded-xl border border-black/10 px-3 py-2"
+              className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2"
               required
             />
           </label>
         )}
         <label className="block text-sm">
-          <span className="text-[#6b7280]">Kommentar</span>
+          <span className="text-[var(--av-text-muted)]">Kommentar</span>
           <textarea
             name="notes"
             placeholder="Önskemål / kommentar"
-            className="mt-1 w-full rounded-xl border border-black/10 px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2 text-sm"
             rows={3}
           />
         </label>

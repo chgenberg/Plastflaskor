@@ -31,7 +31,7 @@ export function RepeatFields({
           name="qty"
           value={qty}
           onChange={(e) => setQty(Number(e.target.value))}
-          className="mt-1 h-11 w-full rounded-xl border border-black/10 px-3"
+          className="mt-1 h-11 w-full rounded-xl border border-[var(--av-border-strong)] px-3"
         >
           {tiers.map((n) => (
             <option key={n} value={n}>
@@ -40,7 +40,7 @@ export function RepeatFields({
           ))}
         </select>
       </label>
-      <p className="text-sm text-[#6b7280]">
+      <p className="text-sm text-[var(--av-text-muted)]">
         {unit != null
           ? `Nettopris vid ${qty} st: ${unit.toFixed(2)} kr/st · ${(unit * qty).toLocaleString("sv-SE")} kr`
           : `Kontakta oss för pris vid ${qty} st.`}

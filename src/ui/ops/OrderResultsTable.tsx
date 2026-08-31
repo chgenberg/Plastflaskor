@@ -4,7 +4,7 @@ import { isOverdue } from "@/domain/orderBrief";
 import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
 import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
-import { StatusChip } from "@/ui/shell/primitives";
+import { LinkButton, StatusChip } from "@/ui/shell/primitives";
 
 type ResultOrder = {
   id: string;
@@ -24,11 +24,9 @@ type ResultOrder = {
   }[];
 };
 
-const CARD = "rounded-[22px] bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,.04)]";
-
 export function OrderResultsTable({ orders, hrefBase = "/operations/ordrar" }: { orders: ResultOrder[]; hrefBase?: string }) {
   return (
-    <div className="space-y-4">
+    <div className="grid gap-3 lg:grid-cols-2">
       {orders.map((o) => {
         const href = `${hrefBase}/${o.orderNo}`;
         const item = o.items[0];
@@ -40,38 +38,41 @@ export function OrderResultsTable({ orders, hrefBase = "/operations/ordrar" }: {
           imageSrc: item ? imageForProduct(item.variant.product.slug) : null,
         });
         return (
-          <article key={o.id} className={CARD}>
+          <article key={o.id} className="av-card p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <Link href={href} className="font-mono text-sm font-medium text-[#3B5BAA]">
+                <Link href={href} className="av-mono text-[13px] font-medium text-[var(--av-accent)]">
                   {o.orderNo}
                 </Link>
-                <p className="mt-0.5 text-sm">{o.customer.name}</p>
-                <p className="mt-0.5 text-sm text-[#6b7280]">{o.reseller?.company.name ?? "Direktkund"}</p>
+                <p className="mt-0.5 text-[14px] font-medium">{o.customer.name}</p>
+                <p className="mt-0.5 text-[13px] text-[var(--av-text-muted)]">{o.reseller?.company.name ?? "Direktkund"}</p>
               </div>
               <StatusChip status={o.currentStatus} label={ORDER_STEP_LABELS[o.currentStatus as OrderStatusCode]} requestedDate={o.requestedDate} />
             </div>
-            <p className="mt-4 font-medium">
-              {spec?.productName ?? item?.variant.product.name ?? "–"}
-              {item ? ` · ${item.qty.toLocaleString("sv-SE")} st` : ""}
-            </p>
             {spec ? (
-              <div className="mt-1">
-                <VisualSpecCard spec={spec} dense />
+              <div className="mt-4">
+                <VisualSpecCard spec={spec} compact />
               </div>
-            ) : null}
-            <p className="mt-4 text-sm">
-              <span className={late ? "font-medium text-[var(--av-status-blocked-fg)]" : "text-[#6b7280]"}>{o.requestedDate ?? "–"}</span>
+            ) : (
+              <p className="mt-4 font-medium">
+                {item?.variant.product.name ?? "–"}
+                {item ? ` · ${item.qty.toLocaleString("sv-SE")} st` : ""}
+              </p>
+            )}
+            <p className="mt-4 text-[14px]">
+              <span className={late ? "font-medium text-[var(--av-status-blocked-fg)]" : "font-medium text-[var(--av-text)]"}>
+                {o.requestedDate ? `Leverans ${o.requestedDate}` : "Inget leveransdatum"}
+              </span>
               {o.deliveryRequirement ? (
-                <span
-                  className="ml-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--av-status-blocked-fg)]"
-                  title={o.deliveryRequirement}
-                >
-                  Leveranskrav
-                </span>
+                <span className="ml-2 text-[12px] font-medium text-[var(--av-status-blocked-fg)]">Leveranskrav</span>
               ) : null}
-              {flagged ? <span className="ml-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--av-status-blocked-fg)]">Flagga</span> : null}
+              {flagged ? <span className="ml-2 text-[12px] font-medium text-[var(--av-status-blocked-fg)]">Flagga</span> : null}
             </p>
+            <div className="mt-4">
+              <LinkButton href={href} variant="secondary">
+                Öppna order
+              </LinkButton>
+            </div>
           </article>
         );
       })}

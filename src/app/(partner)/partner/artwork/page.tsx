@@ -22,16 +22,16 @@ export default async function ArtworkPage() {
             <Panel key={d.id}>
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">Design</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Design</p>
                   <h2 className="mt-1 text-lg font-semibold tracking-tight">{d.projectName}</h2>
                 </div>
                 <StatusChip status={d.status} label={DESIGN_STATUS_LABELS[d.status] ?? "Utkast"} />
               </div>
               {d.order?.orderNo ? (
-                <p className="mt-3 font-mono text-sm text-[#6b7280]">{d.order.orderNo}</p>
+                <p className="mt-3 font-mono text-sm text-[var(--av-text-muted)]">{d.order.orderNo}</p>
               ) : null}
               {d.files.length === 0 ? (
-                <p className="mt-3 text-sm text-[#6b7280]">Inga filer.</p>
+                <p className="mt-3 text-sm text-[var(--av-text-muted)]">Inga filer.</p>
               ) : (
                 <ul className="mt-3 space-y-1 text-sm">
                   {d.files.map((f) => (

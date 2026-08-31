@@ -9,7 +9,7 @@ import { approveArtworkAction, approveFactoryDateAction, confirmDeliveryAction, 
 import { DocumentUpload } from "@/ui/shell/DocumentUpload";
 import { OrderConfirmationPreview } from "@/ui/order/OrderConfirmationPreview";
 import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
-import { Button, FileLink, LinkButton, PageHeader, Panel, StatusChip } from "@/ui/shell/primitives";
+import { Button, Field, FileLink, LinkButton, NextStep, PageHeader, Panel, StatusChip, Timeline, controlClass } from "@/ui/shell/primitives";
 import { EXTRA_KINDS } from "@/domain/extras";
 
 export default async function OpsOrderDetail({ params }: { params: Promise<{ orderNo: string }> }) {
@@ -42,48 +42,36 @@ export default async function OpsOrderDetail({ params }: { params: Promise<{ ord
   const sendingOb = order.currentStatus === "ARTWORK_CUSTOMER_APPROVAL";
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-7">
       <PageHeader
         title={order.customer.name}
         subtitle={`${order.orderNo} · ${order.buyerType === "CUSTOMER" ? "Direktkund" : `ÅF: ${order.reseller?.company.name ?? "–"}`}`}
       />
+      <NextStep title={brief.now} body={`${brief.owner}. ${brief.must}`} tone={brief.overdue ? "blocked" : "next"} />
       <div className="grid gap-5 lg:grid-cols-[280px_1fr]">
         <Panel title="Status">
-          <ol className="space-y-2 text-sm">
-            {ORDER_STEPS.map((s, i) => (
-              <li key={s} className="flex items-center gap-2">
-                <span className={`h-2 w-2 rounded-full ${i < idx ? "bg-[#16a34a]" : i === idx ? "bg-[#d97706]" : "bg-[#d4d4d8]"}`} />
-                <span className={i === idx ? "font-medium" : "text-[#6b7280]"}>{ORDER_STEP_LABELS[s]}</span>
-              </li>
-            ))}
-          </ol>
+          <Timeline
+            steps={ORDER_STEPS.map((s, i) => ({
+              id: s,
+              label: ORDER_STEP_LABELS[s],
+              done: i < idx,
+              current: i === idx,
+            }))}
+          />
         </Panel>
         <div className="space-y-5">
           {order.currentStatus === "AQUA_REVIEW" ? (
             <Panel title="Granska och acceptera order">
               <dl className="grid gap-3 text-sm sm:grid-cols-2">
-                <div>
-                  <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Produkt</dt>
-                  <dd className="mt-1 font-medium">{item?.variant.product.name ?? "–"}</dd>
-                </div>
-                <div>
-                  <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Antal</dt>
-                  <dd className="mt-1 font-medium tabular-nums">{item ? `${item.qty.toLocaleString("sv-SE")} st` : "–"}</dd>
-                </div>
-                <div>
-                  <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Pris</dt>
-                  <dd className="mt-1 font-medium tabular-nums">{value.toLocaleString("sv-SE")} kr ex moms</dd>
-                </div>
-                <div>
-                  <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Preliminärt datum</dt>
-                  <dd className="mt-1 font-medium">{order.preliminaryDate ?? "Beräknas från ledtid"}</dd>
-                </div>
+                <Field label="Produkt">{item?.variant.product.name ?? "–"}</Field>
+                <Field label="Antal">{item ? `${item.qty.toLocaleString("sv-SE")} st` : "–"}</Field>
+                <Field label="Pris">{value.toLocaleString("sv-SE")} kr ex moms</Field>
+                <Field label="Preliminärt datum">{order.preliminaryDate ?? "Beräknas från ledtid"}</Field>
                 <div className="sm:col-span-2">
-                  <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Leveranskrav</dt>
-                  <dd className="mt-1 font-medium">{order.deliveryRequirement ?? "Inget särskilt krav"}</dd>
+                  <Field label="Leveranskrav">{order.deliveryRequirement ?? "Inget särskilt krav"}</Field>
                 </div>
               </dl>
-              <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Kontrollera innan du accepterar</p>
+              <p className="av-label mt-5">Kontrollera innan du accepterar</p>
               <ul className="mt-2 space-y-1.5 text-sm">
                 {[
                   "Tryckfilens format och upplösning",
@@ -93,7 +81,7 @@ export default async function OpsOrderDetail({ params }: { params: Promise<{ ord
                   "Leveransadress och fakturareferens",
                 ].map((check) => (
                   <li key={check} className="flex gap-2">
-                    <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#d4d4d8]" />
+                    <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--av-gray-200)]" />
                     {check}
                   </li>
                 ))}
@@ -130,7 +118,7 @@ export default async function OpsOrderDetail({ params }: { params: Promise<{ ord
                   return (
                     <label key={k.kind} className="text-sm">
                       {k.label}
-                      <input name={`extra_${k.kind}`} type="number" step="0.01" defaultValue={existing?.amountExVat ?? ""} className="mt-1 w-full rounded-xl border border-black/10 px-3 py-2" />
+                      <input name={`extra_${k.kind}`} type="number" step="0.01" defaultValue={existing?.amountExVat ?? ""} className={`${controlClass} mt-1`} />
                     </label>
                   );
                 })}
@@ -152,11 +140,11 @@ export default async function OpsOrderDetail({ params }: { params: Promise<{ ord
                 <input type="hidden" name="orderNo" value={order.orderNo} />
                 <label className="block text-sm">
                   Bekräftat leveransdatum
-                  <input name="confirmedDate" type="date" defaultValue={order.preliminaryDate ?? ""} className="mt-1 w-full rounded-xl border border-black/10 px-3 py-2" required />
+                  <input name="confirmedDate" type="date" defaultValue={order.preliminaryDate ?? ""} className={`${controlClass} mt-1`} required />
                 </label>
                 <label className="block text-sm">
                   Förväntad återbeställning
-                  <select name="repeatHorizon" className="mt-1 w-full rounded-xl border border-black/10 px-3 py-2">
+                  <select name="repeatHorizon" className={`${controlClass} mt-1`}>
                     {REPEAT_HORIZONS.map((m) => (
                       <option key={m} value={m}>
                         {m === 0 ? "Ingen förväntad repeat" : `${m} månader`}
@@ -172,7 +160,7 @@ export default async function OpsOrderDetail({ params }: { params: Promise<{ ord
               <form action={approveFactoryDateAction} className="mt-5 space-y-2">
                 <input type="hidden" name="orderNo" value={order.orderNo} />
                 <p className="text-sm">Tryckeriet föreslår {order.factoryReadyEstimate}.</p>
-                <input name="date" type="date" defaultValue={order.factoryReadyEstimate} className="rounded-xl border border-black/10 px-3 py-2 text-sm" />
+                <input name="date" type="date" defaultValue={order.factoryReadyEstimate} className={controlClass} />
                 <Button type="submit">Godkänn leveransdatum</Button>
               </form>
             ) : null}
@@ -195,11 +183,11 @@ export default async function OpsOrderDetail({ params }: { params: Promise<{ ord
               <form action={setFactoryDeadlineAction} className="mt-5 space-y-2">
                 <input type="hidden" name="orderNo" value={order.orderNo} />
                 {order.factoryDeadline ? (
-                  <p className="text-sm text-[#6b7280]">Nuvarande deadline: {order.factoryDeadline}</p>
+                  <p className="text-sm text-[var(--av-text-muted)]">Nuvarande deadline: {order.factoryDeadline}</p>
                 ) : null}
                 <label className="block text-sm">
                   Senaste utskick / produktionsdeadline
-                  <input name="date" type="date" defaultValue={order.factoryDeadline ?? ""} className="mt-1 w-full rounded-xl border border-black/10 px-3 py-2" />
+                  <input name="date" type="date" defaultValue={order.factoryDeadline ?? ""} className={`${controlClass} mt-1`} />
                 </label>
                 <Button type="submit">Sätt deadline för tryckeriet</Button>
               </form>
@@ -213,31 +201,16 @@ export default async function OpsOrderDetail({ params }: { params: Promise<{ ord
           </Panel>
           <Panel title="Fem frågor">
             <dl className="grid gap-3 text-sm sm:grid-cols-2">
-              <div>
-                <dt className="text-[11px] uppercase tracking-[0.14em] text-[#6b7280]">Vad händer nu?</dt>
-                <dd className="mt-1 font-medium">{brief.now}</dd>
-              </div>
-              <div>
-                <dt className="text-[11px] uppercase tracking-[0.14em] text-[#6b7280]">Vad måste hända?</dt>
-                <dd className="mt-1 font-medium">{brief.must}</dd>
-              </div>
-              <div>
-                <dt className="text-[11px] uppercase tracking-[0.14em] text-[#6b7280]">Vem väntar vi på?</dt>
-                <dd className="mt-1 font-medium">{brief.waiting}</dd>
-              </div>
-              <div>
-                <dt className="text-[11px] uppercase tracking-[0.14em] text-[#6b7280]">När?</dt>
-                <dd className="mt-1 font-medium">{order.aquaApprovedDelivery ?? brief.when}</dd>
-              </div>
-              <div>
-                <dt className="text-[11px] uppercase tracking-[0.14em] text-[#6b7280]">Vem äger nästa steg?</dt>
-                <dd className="mt-1 font-medium">{brief.owner || "—"}</dd>
-              </div>
+              <Field label="Vad händer nu?">{brief.now}</Field>
+              <Field label="Vad måste hända?">{brief.must}</Field>
+              <Field label="Vem väntar vi på?">{brief.waiting}</Field>
+              <Field label="När?">{order.aquaApprovedDelivery ?? brief.when}</Field>
+              <Field label="Vem äger nästa steg?">{brief.owner || "—"}</Field>
             </dl>
           </Panel>
           <Panel title="Tryckfil">
             {order.designs.length === 0 ? (
-              <p className="text-sm text-[#6b7280]">Ingen tryckfil kopplad.</p>
+              <p className="text-sm text-[var(--av-text-muted)]">Ingen tryckfil kopplad.</p>
             ) : (
               <ul className="space-y-3 text-sm">
                 {order.designs.map((d) => (
@@ -266,7 +239,7 @@ export default async function OpsOrderDetail({ params }: { params: Promise<{ ord
             <DocumentUpload orderId={order.id} returnTo={`/operations/ordrar/${order.orderNo}`} allowFinance />
           </Panel>
           <Panel title="Eventlogg">
-            <ol className="space-y-2 text-sm text-[#6b7280]">
+            <ol className="space-y-2 text-sm text-[var(--av-text-muted)]">
               {events.map((e) => (
                 <li key={e.id}>
                   {e.occurredAt.toLocaleString("sv-SE")} – {eventLabel(e.toStatus)}

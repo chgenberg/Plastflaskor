@@ -79,46 +79,46 @@ export default async function InvoicePage({
         ) : null}
         <dl className="space-y-3 text-sm">
           <div>
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Kund / ÅF</dt>
+            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Kund / ÅF</dt>
             <dd className="mt-1">{order.reseller?.company.name ?? order.customer.name}</dd>
           </div>
           <div>
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Organisationsnummer</dt>
+            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Organisationsnummer</dt>
             <dd className="mt-1">{order.reseller?.company.orgNr ?? order.customer.orgNr ?? "–"}</dd>
           </div>
           <div>
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Fakturaadress</dt>
+            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Fakturaadress</dt>
             <dd className="mt-1">
               {billing.line1}, {billing.postalCode} {billing.city}
             </dd>
           </div>
           <div>
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">E-post</dt>
+            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">E-post</dt>
             <dd className="mt-1">{order.reseller?.company.email ?? order.customer.email ?? "–"}</dd>
           </div>
           <div>
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Produkter</dt>
+            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Produkter</dt>
             <dd className="mt-1">
               {order.items[0]?.qty} × {order.items[0]?.variant.product.name}
             </dd>
           </div>
           <div>
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">À-pris</dt>
+            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">À-pris</dt>
             <dd className="mt-1 tabular-nums">{order.items[0]?.unitPriceExVat.toFixed(2)} kr</dd>
           </div>
           <div>
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Frakt</dt>
+            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Frakt</dt>
             <dd className="mt-1">
               {freight ? `${freight.carrier} · ${freight.packages} kolli · ${freight.weightKg} kg` : "Enligt avtal / 0 kr i demo"}
             </dd>
           </div>
           <div>
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Betalningsvillkor</dt>
+            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Betalningsvillkor</dt>
             <dd className="mt-1">30 dagar</dd>
           </div>
           {order.invoice?.invoiceNo ? (
             <div>
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Fortnox</dt>
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Fortnox</dt>
               <dd className="mt-1 font-mono">
                 {order.invoice.invoiceNo}
                 {order.invoice.fortnoxId ? ` · ${order.invoice.fortnoxId}` : ""}
@@ -126,18 +126,18 @@ export default async function InvoicePage({
             </div>
           ) : null}
         </dl>
-        <div className="mt-6 space-y-2 border-t border-black/5 pt-4 text-sm">
+        <div className="mt-6 space-y-2 border-t border-[var(--av-border)] pt-4 text-sm">
           {snapshot.extras.map((e) => (
-            <p key={e.kind} className="flex justify-between gap-4 text-[#6b7280]">
+            <p key={e.kind} className="flex justify-between gap-4 text-[var(--av-text-muted)]">
               <span>{e.label}</span>
               <span className="tabular-nums">{e.amountExVat.toLocaleString("sv-SE")} kr</span>
             </p>
           ))}
-          <p className="flex justify-between gap-4 text-[#6b7280]">
+          <p className="flex justify-between gap-4 text-[var(--av-text-muted)]">
             <span>Varor</span>
             <span className="tabular-nums">{snapshot.goodsExVat.toLocaleString("sv-SE")} kr</span>
           </p>
-          <p className="flex justify-between gap-4 text-[#6b7280]">
+          <p className="flex justify-between gap-4 text-[var(--av-text-muted)]">
             <span>Tillägg</span>
             <span className="tabular-nums">{snapshot.extrasExVat.toLocaleString("sv-SE")} kr</span>
           </p>
@@ -170,7 +170,7 @@ export default async function InvoicePage({
             </Button>
           </form>
         ) : (
-          <p className="mt-6 text-sm text-[#6b7280]">Faktura utfärdad. Väntar på betalning.</p>
+          <p className="mt-6 text-sm text-[var(--av-text-muted)]">Faktura utfärdad. Väntar på betalning.</p>
         )}
       </Panel>
     </div>

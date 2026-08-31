@@ -49,15 +49,15 @@ export function RealityView({
   return (
     <div className="relative flex h-full flex-col">
       {showBar ? (
-        <div className="mx-4 mt-2 rounded-2xl bg-[#E8EEFA] px-4 py-3">
-          <div className="flex items-center justify-between text-[13px] font-semibold text-[#3B5BAA]">
+        <div className="mx-4 mt-2 rounded-2xl bg-[var(--av-accent-soft)] px-4 py-3">
+          <div className="flex items-center justify-between text-[13px] font-semibold text-[var(--av-accent)]">
             <span>Skapar bilden i verkligheten…</span>
             <span>{pct}%</span>
           </div>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-white">
-            <div className="h-full rounded-full bg-[#5B7FD4] transition-[width] duration-150 ease-out" style={{ width: `${pct}%` }} />
+            <div className="h-full rounded-full bg-[var(--av-accent)] transition-[width] duration-150 ease-out" style={{ width: `${pct}%` }} />
           </div>
-          <p className="mt-1.5 text-[12px] text-[#6b7280]">Din uppladdade tryckfilen trycks på muggen. Det tar oftast 10–20 sekunder.</p>
+          <p className="mt-1.5 text-[12px] text-[var(--av-text-muted)]">Din uppladdade tryckfilen trycks på muggen. Det tar oftast 10–20 sekunder.</p>
         </div>
       ) : null}
 
@@ -70,9 +70,9 @@ export function RealityView({
             className={`max-h-full w-full rounded-2xl object-contain shadow-[0_16px_50px_rgba(15,23,42,.12)] ${loading ? "opacity-40" : ""}`}
           />
         ) : (
-          <div className="flex aspect-[4/5] w-full flex-col items-center justify-center rounded-2xl bg-[#F4F5F7] px-6 text-center">
-            <p className="text-[15px] font-semibold text-[#1d1d1f]">Se produkten i verkligheten</p>
-            <p className="mt-2 text-[13px] leading-relaxed text-[#6b7280]">
+          <div className="flex aspect-[4/5] w-full flex-col items-center justify-center rounded-2xl bg-[var(--av-bg)] px-6 text-center">
+            <p className="text-[15px] font-semibold text-[var(--av-text)]">Se produkten i verkligheten</p>
+            <p className="mt-2 text-[13px] leading-relaxed text-[var(--av-text-muted)]">
               Först tryckytan med din logotyp. Sedan Generera — vi startar inte förrän du klickar.
             </p>
           </div>
@@ -80,14 +80,14 @@ export function RealityView({
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2 px-4 pb-4">
-        <button type="button" onClick={onBack} className="h-9 rounded-full px-3 text-[13px] text-[#6b7280] hover:bg-black/[0.04]">
+        <button type="button" onClick={onBack} className="h-9 rounded-full px-3 text-[13px] text-[var(--av-text-muted)] hover:bg-black/[0.04]">
           ← Tillbaka till tryckytan
         </button>
         <button
           type="button"
           onClick={onGenerate}
           disabled={loading}
-          className="h-10 rounded-full bg-[#5B7FD4] px-5 text-[13px] font-semibold text-white disabled:opacity-60"
+          className="h-10 rounded-full bg-[var(--av-accent)] px-5 text-[13px] font-semibold text-white disabled:opacity-60"
         >
           {loading ? "Skapar…" : imageUrl ? (stale ? "Uppdatera bilden" : "Generera igen") : "Generera"}
         </button>

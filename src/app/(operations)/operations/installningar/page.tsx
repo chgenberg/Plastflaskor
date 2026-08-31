@@ -39,20 +39,20 @@ export default function OpsSettings() {
       />
       <div className="grid gap-4 sm:grid-cols-2">
         {INTEGRATIONS.map((item) => (
-          <section key={item.id} className="rounded-[22px] bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,.04)]">
+          <section key={item.id} className="av-card p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <h2 className="text-[17px] font-semibold tracking-tight">{item.title}</h2>
               <IntegrationBadge label={MOCK_LABEL} />
             </div>
-            <p className="mt-3 text-sm leading-relaxed text-[#6b7280]">{item.body}</p>
+            <p className="mt-3 text-sm leading-relaxed text-[var(--av-text-muted)]">{item.body}</p>
           </section>
         ))}
       </div>
       <Panel title="Kommunikation">
-        <p className="text-sm leading-relaxed text-[#1d1d1f]">
+        <p className="text-sm leading-relaxed text-[var(--av-text)]">
           Ingen intern chatt (Word §54). Kontakt går via e-post och notiser — inte en inbyggd chatt.
         </p>
-        <p className="mt-2 text-sm leading-relaxed text-[#6b7280]">
+        <p className="mt-2 text-sm leading-relaxed text-[var(--av-text-muted)]">
           Pappersmuggar. Tryckfil i två steg. OB låser spec och pris. Ett tryckeri.
         </p>
       </Panel>

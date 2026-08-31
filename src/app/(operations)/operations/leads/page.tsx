@@ -36,7 +36,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
               key={b.id}
               href={b.id === "all" ? "/operations/leads" : `/operations/leads?bucket=${b.id}`}
               className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm ${
-                active ? "bg-[#E8EEFA] font-medium text-[#3B5BAA]" : "bg-white text-[#6b7280] shadow-[0_8px_30px_rgba(15,23,42,.04)]"
+                active ? "bg-[var(--av-accent-soft)] font-medium text-[var(--av-accent)]" : "bg-[var(--av-surface)] text-[var(--av-text-muted)] shadow-[var(--av-shadow-sm)]"
               }`}
             >
               {b.label}
@@ -63,40 +63,40 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
               <Panel key={lead.id}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">Företag</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Företag</p>
                     <h2 className="mt-1 text-lg font-semibold tracking-tight">{lead.customer.name}</h2>
                   </div>
                   <StatusChip status={lead.status} label={LEAD_STATUS_LABELS[lead.status] ?? lead.status} />
                 </div>
                 <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Förväntad månad</dt>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Förväntad månad</dt>
                     <dd className="mt-1 font-medium capitalize">
                       {lead.expectedAt.toLocaleDateString("sv-SE", { month: "long", year: "numeric" })}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Föregående order</dt>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Föregående order</dt>
                     <dd className="mt-1 font-mono">{lead.sourceOrder.orderNo}</dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Produkt</dt>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Produkt</dt>
                     <dd className="mt-1 font-medium">{item?.variant.product.name ?? "–"}</dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Variant</dt>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Variant</dt>
                     <dd className="mt-1">{item?.variant.name ?? "–"}</dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Antal</dt>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Antal</dt>
                     <dd className="mt-1 tabular-nums">{item?.qty?.toLocaleString("sv-SE") ?? "–"}</dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Föregående värde</dt>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Föregående värde</dt>
                     <dd className="mt-1 tabular-nums">{value.toLocaleString("sv-SE")} kr</dd>
                   </div>
                   <div className="sm:col-span-2">
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Kontakt</dt>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Kontakt</dt>
                     <dd className="mt-1">{email ?? "–"}</dd>
                   </div>
                 </dl>

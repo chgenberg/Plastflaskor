@@ -31,9 +31,9 @@ export default async function PartnerOrders({
   return (
     <div className="space-y-8">
       <PageHeader title="Ordrar" subtitle="Filtrera på produkt, datum, status, leverans och artwork." />
-      <form className="grid gap-3 rounded-[22px] bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,.04)] sm:grid-cols-2 lg:grid-cols-3">
-        <input name="q" defaultValue={q} placeholder="Sök kund, ordernummer" className="h-11 rounded-full border border-black/10 px-4 text-sm" />
-        <select name="product" defaultValue={product ?? ""} className="h-11 rounded-full border border-black/10 px-4 text-sm">
+      <form className="grid gap-3 av-card p-5 sm:grid-cols-2 lg:grid-cols-3">
+        <input name="q" defaultValue={q} placeholder="Sök kund, ordernummer" className="h-11 rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-4 text-sm" />
+        <select name="product" defaultValue={product ?? ""} className="h-11 rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-4 text-sm">
           <option value="">Alla produkter</option>
           {products.map((p) => (
             <option key={p} value={p}>
@@ -41,7 +41,7 @@ export default async function PartnerOrders({
             </option>
           ))}
         </select>
-        <select name="status" defaultValue={status ?? ""} className="h-11 rounded-full border border-black/10 px-4 text-sm">
+        <select name="status" defaultValue={status ?? ""} className="h-11 rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-4 text-sm">
           <option value="">Alla statusar</option>
           {statuses.map((s) => (
             <option key={s} value={s}>
@@ -49,13 +49,13 @@ export default async function PartnerOrders({
             </option>
           ))}
         </select>
-        <label className="text-sm text-[#6b7280]">
+        <label className="text-sm text-[var(--av-text-muted)]">
           Från
-          <input type="date" name="from" defaultValue={from} className="mt-1 h-11 w-full rounded-full border border-black/10 px-4 text-sm text-[#1d1d1f]" />
+          <input type="date" name="from" defaultValue={from} className="mt-1 h-11 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-4 text-sm text-[var(--av-text)]" />
         </label>
-        <label className="text-sm text-[#6b7280]">
+        <label className="text-sm text-[var(--av-text-muted)]">
           Till
-          <input type="date" name="to" defaultValue={to} className="mt-1 h-11 w-full rounded-full border border-black/10 px-4 text-sm text-[#1d1d1f]" />
+          <input type="date" name="to" defaultValue={to} className="mt-1 h-11 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-4 text-sm text-[var(--av-text)]" />
         </label>
         <div className="flex flex-wrap items-center gap-4 text-sm">
           <label className="flex items-center gap-2">
@@ -66,7 +66,7 @@ export default async function PartnerOrders({
             <input type="checkbox" name="artwork" value="1" defaultChecked={artwork === "1"} />
             Har tryckfil
           </label>
-          <button type="submit" className="h-11 rounded-full bg-[#5B7FD4] px-5 text-sm font-semibold text-white">
+          <button type="submit" className="h-11 rounded-full bg-[var(--av-accent)] px-5 text-sm font-semibold text-white">
             Filtrera
           </button>
         </div>

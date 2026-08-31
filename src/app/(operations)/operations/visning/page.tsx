@@ -46,8 +46,8 @@ export default function SupplierDemoPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         {SURFACES.map((s) => (
           <Panel key={s.href} title={s.title}>
-            <p className="text-sm text-[#6b7280]">{s.body}</p>
-            <p className="mt-3 font-mono text-[13px] text-[#1d1d1f]">{s.account}</p>
+            <p className="text-sm text-[var(--av-text-muted)]">{s.body}</p>
+            <p className="mt-3 font-mono text-[13px] text-[var(--av-text)]">{s.account}</p>
             <div className="mt-4">
               <LinkButton href={s.href}>Öppna</LinkButton>
             </div>

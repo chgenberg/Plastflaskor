@@ -6,7 +6,7 @@ import { buyerNextAction } from "@/domain/orderBrief";
 import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
 import { BuyerOrderCard } from "@/ui/order/BuyerOrderCard";
-import { EmptyState, KpiCard, LinkButton, PageHeader, Panel } from "@/ui/shell/primitives";
+import { EmptyState, KpiCard, LinkButton, NextStep, PageHeader } from "@/ui/shell/primitives";
 
 export default async function KontoHome() {
   const user = await requireRole(["CUSTOMER", "AQUA_STAFF", "AQUA_ADMIN"]);
@@ -24,19 +24,19 @@ export default async function KontoHome() {
         subtitle="Era pappersmuggar — status, korrektur och fakturor."
         action={<LinkButton href="/konto/ordrar/ny">Ny order</LinkButton>}
       />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <NextStep
+        title={next.title}
+        body={next.body}
+        href={`/konto${next.hrefSuffix}`}
+        cta={next.cta}
+        tone={proof > 0 ? "next" : "done"}
+      />
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard label="Aktiva ordrar" value={active} href="/konto/ordrar" />
         <KpiCard label="Väntar på ditt godkännande" value={proof} href="/konto/ordrar" />
         <KpiCard label="På väg" value={shipped} href="/konto/ordrar" />
         <KpiCard label="Fakturor" value={invoices} href="/konto/fakturor" />
       </div>
-      <Panel title="Nästa steg">
-        <p className="text-lg font-semibold">{next.title}</p>
-        <p className="mt-1 text-sm text-[#6b7280]">{next.body}</p>
-        <div className="mt-4">
-          <LinkButton href={`/konto${next.hrefSuffix}`}>{next.cta}</LinkButton>
-        </div>
-      </Panel>
       {orders.length === 0 ? (
         <EmptyState title="Inga ordrar ännu" body="Skapa en ny order eller starta från en tidigare mugg i studion." />
       ) : (
@@ -69,8 +69,8 @@ export default async function KontoHome() {
           })}
         </div>
       )}
-      <p className="text-sm text-[#6b7280]">
-        Behöver ni en tryckfil? <Link href="/designa" className="text-[#3B5BAA]">Öppna designern</Link>
+      <p className="text-sm text-[var(--av-text-muted)]">
+        Behöver ni en tryckfil? <Link href="/designa" className="font-medium text-[var(--av-accent)]">Öppna designern</Link>
       </p>
     </div>
   );

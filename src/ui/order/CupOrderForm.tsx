@@ -97,8 +97,8 @@ export function CupOrderForm({
     <form action={placeBuyerOrderAction} className="space-y-4">
       {showCustomerSelect && customers?.length ? (
         <label className="block text-sm">
-          <span className="text-[#6b7280]">Kund</span>
-          <select name="customerId" className="mt-1 w-full rounded-xl border border-black/10 px-3 py-2" required>
+          <span className="text-[var(--av-text-muted)]">Kund</span>
+          <select name="customerId" className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2" required>
             {customers.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
@@ -110,9 +110,9 @@ export function CupOrderForm({
       <input type="hidden" name="variantId" value={selected?.id ?? ""} />
       <div className="grid gap-3 sm:grid-cols-3">
         <label className="block text-sm">
-          <span className="text-[#6b7280]">Storlek</span>
+          <span className="text-[var(--av-text-muted)]">Storlek</span>
           <select
-            className="mt-1 w-full rounded-xl border border-black/10 px-3 py-2"
+            className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2"
             value={volumeMl ?? ""}
             onChange={(e) => applySize(Number(e.target.value))}
           >
@@ -124,9 +124,9 @@ export function CupOrderForm({
           </select>
         </label>
         <label className="block text-sm">
-          <span className="text-[#6b7280]">Vägg</span>
+          <span className="text-[var(--av-text-muted)]">Vägg</span>
           <select
-            className="mt-1 w-full rounded-xl border border-black/10 px-3 py-2"
+            className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2"
             value={resolvedWall}
             onChange={(e) => applyWall(e.target.value as "enkel" | "dubbel")}
           >
@@ -138,9 +138,9 @@ export function CupOrderForm({
           </select>
         </label>
         <label className="block text-sm">
-          <span className="text-[#6b7280]">ECO</span>
+          <span className="text-[var(--av-text-muted)]">ECO</span>
           <select
-            className="mt-1 w-full rounded-xl border border-black/10 px-3 py-2"
+            className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2"
             value={resolvedEco ? "ja" : "nej"}
             onChange={(e) => applyEco(e.target.value === "ja")}
           >
@@ -153,43 +153,43 @@ export function CupOrderForm({
         </label>
       </div>
       {prelim ? (
-        <p className="text-sm text-[#6b7280]">
+        <p className="text-sm text-[var(--av-text-muted)]">
           Preliminärt leveransdatum: {prelim} — inte slutgiltigt. AquaVisibility bekräftar i orderbekräftelsen.
         </p>
       ) : null}
       <label className="block text-sm">
-        <span className="text-[#6b7280]">Antal</span>
+        <span className="text-[var(--av-text-muted)]">Antal</span>
         <input
           name="qty"
           type="number"
           min={selected?.moq ?? 500}
           value={qty}
           onChange={(e) => setQty(Number(e.target.value) || selected?.moq || 500)}
-          className="mt-1 w-full rounded-xl border border-black/10 px-3 py-2"
+          className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2"
           required
         />
       </label>
       {line != null ? (
-        <p className="rounded-2xl bg-[#f4f5f7] px-4 py-3 text-sm">
+        <p className="rounded-2xl bg-[var(--av-bg)] px-4 py-3 text-sm">
           <span className="font-semibold tabular-nums">{line.toLocaleString("sv-SE")} kr ex moms</span>
-          <span className="ml-2 text-[#6b7280]">
+          <span className="ml-2 text-[var(--av-text-muted)]">
             {unit?.toFixed(2)} kr/st · {qty.toLocaleString("sv-SE")} st
           </span>
         </p>
       ) : (
-        <p className="text-sm text-[#6b7280]">Kontakta AquaVisibility för pris vid detta antal.</p>
+        <p className="text-sm text-[var(--av-text-muted)]">Kontakta AquaVisibility för pris vid detta antal.</p>
       )}
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block text-sm">
-          <span className="text-[#6b7280]">Ytfinish</span>
-          <select name="finish" className="mt-1 w-full rounded-xl border border-black/10 px-3 py-2">
+          <span className="text-[var(--av-text-muted)]">Ytfinish</span>
+          <select name="finish" className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2">
             <option value="matte">Matt</option>
             <option value="glossy">Glans</option>
           </select>
         </label>
         <label className="block text-sm">
-          <span className="text-[#6b7280]">Lock</span>
-          <select name="lid" className="mt-1 w-full rounded-xl border border-black/10 px-3 py-2">
+          <span className="text-[var(--av-text-muted)]">Lock</span>
+          <select name="lid" className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2">
             <option value="none">Utan lock</option>
             <option value="white">Vitt lock</option>
             <option value="black">Svart lock</option>
@@ -198,8 +198,8 @@ export function CupOrderForm({
       </div>
       {addresses.length ? (
         <label className="block text-sm">
-          <span className="text-[#6b7280]">Leveransadress</span>
-          <select name="addressId" className="mt-1 w-full rounded-xl border border-black/10 px-3 py-2">
+          <span className="text-[var(--av-text-muted)]">Leveransadress</span>
+          <select name="addressId" className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2">
             {addresses.map((a) => (
               <option key={a.id} value={a.id}>
                 {a.line1}, {a.city}
@@ -209,33 +209,33 @@ export function CupOrderForm({
         </label>
       ) : (
         <div className="grid gap-3 sm:grid-cols-3">
-          <input name="line1" placeholder="Adress" className="rounded-xl border border-black/10 px-3 py-2 text-sm" />
-          <input name="postalCode" placeholder="Postnr" className="rounded-xl border border-black/10 px-3 py-2 text-sm" />
-          <input name="city" placeholder="Ort" className="rounded-xl border border-black/10 px-3 py-2 text-sm" />
+          <input name="line1" placeholder="Adress" className="rounded-xl border border-[var(--av-border-strong)] px-3 py-2 text-sm" />
+          <input name="postalCode" placeholder="Postnr" className="rounded-xl border border-[var(--av-border-strong)] px-3 py-2 text-sm" />
+          <input name="city" placeholder="Ort" className="rounded-xl border border-[var(--av-border-strong)] px-3 py-2 text-sm" />
         </div>
       )}
-      <input name="invoiceRef" placeholder="Fakturareferens" className="w-full rounded-xl border border-black/10 px-3 py-2 text-sm" />
+      <input name="invoiceRef" placeholder="Fakturareferens" className="w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2 text-sm" />
       <label className="block text-sm">
-        <span className="text-[#6b7280]">Önskat leveransdatum</span>
-        <input name="requestedDate" type="date" className="mt-1 w-full rounded-xl border border-black/10 px-3 py-2" />
-        <p className="mt-1 text-[12px] text-[#6b7280]">
+        <span className="text-[var(--av-text-muted)]">Önskat leveransdatum</span>
+        <input name="requestedDate" type="date" className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2" />
+        <p className="mt-1 text-[12px] text-[var(--av-text-muted)]">
           Preliminärt — inte slutgiltigt. AquaVisibility bekräftar datum i orderbekräftelsen.
         </p>
       </label>
       <label className="block text-sm">
-        <span className="text-[#6b7280]">Viktigt leveranskrav</span>
+        <span className="text-[var(--av-text-muted)]">Viktigt leveranskrav</span>
         <textarea
           name="deliveryRequirement"
           placeholder="T.ex. eventdatum som inte får missas"
-          className="mt-1 w-full rounded-xl border border-black/10 px-3 py-2 text-sm"
+          className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2 text-sm"
           rows={2}
         />
       </label>
-      <textarea name="notes" placeholder="Kommentar" className="w-full rounded-xl border border-black/10 px-3 py-2 text-sm" rows={2} />
+      <textarea name="notes" placeholder="Kommentar" className="w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2 text-sm" rows={2} />
       <label className="block text-sm">
-        <span className="text-[#6b7280]">Tryckfil (PNG, JPG, SVG, PDF, AI)</span>
+        <span className="text-[var(--av-text-muted)]">Tryckfil (PNG, JPG, SVG, PDF, AI)</span>
         <input type="file" name="artwork" accept=".png,.jpg,.jpeg,.svg,.pdf,.ai" className="mt-1 block w-full text-sm" />
-        <p className="mt-1 text-[12px] text-[#6b7280]">
+        <p className="mt-1 text-[12px] text-[var(--av-text-muted)]">
           Valfritt. Ni kan också ladda upp efter att ordern skickats, eller designa i studion.
         </p>
       </label>

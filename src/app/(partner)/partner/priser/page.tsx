@@ -44,7 +44,7 @@ export default async function PricesPage() {
             <Panel
               key={name}
               title={
-                <Link href={`/partner/priser/${items[0].variant.product.slug}`} className="text-[#1d1d1f] hover:text-[#3B5BAA]">
+                <Link href={`/partner/priser/${items[0].variant.product.slug}`} className="text-[var(--av-text)] hover:text-[var(--av-accent)]">
                   {name}
                 </Link>
               }

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { VisualSpec } from "@/domain/visualSpec";
 import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
-import { StatusChip } from "@/ui/shell/primitives";
+import { LinkButton, StatusChip } from "@/ui/shell/primitives";
 
 export function BuyerOrderCard({
   href,
@@ -25,13 +25,13 @@ export function BuyerOrderCard({
   actionLabel?: string | null;
 }) {
   return (
-    <article className="rounded-[22px] bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,.04)]">
+    <article className="av-card p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <Link href={href} className="font-mono text-sm font-medium text-[#3B5BAA]">
+          <Link href={href} className="av-mono text-[13px] font-medium text-[var(--av-accent)]">
             {orderNo}
           </Link>
-          {customer ? <p className="mt-0.5 text-sm text-[#6b7280]">{customer}</p> : null}
+          {customer ? <p className="mt-0.5 text-[13px] text-[var(--av-text-muted)]">{customer}</p> : null}
         </div>
         <StatusChip status={status} label={statusLabel} />
       </div>
@@ -40,13 +40,13 @@ export function BuyerOrderCard({
           <VisualSpecCard spec={spec} compact />
         </div>
       ) : null}
-      <p className="mt-4 text-sm text-[#6b7280]">{delivery ?? "Leverans bekräftas av AquaVisibility"}</p>
-      <div className="mt-4 flex flex-wrap items-center gap-4">
-        <Link href={href} className="text-sm font-medium text-[#3B5BAA]">
+      <p className="mt-4 text-[14px] font-medium text-[var(--av-text)]">{delivery ?? "Leverans bekräftas av AquaVisibility"}</p>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <LinkButton href={href} variant="secondary">
           Öppna order
-        </Link>
+        </LinkButton>
         {actionHref && actionLabel ? (
-          <Link href={actionHref} className="text-sm font-medium text-[#3B5BAA]">
+          <Link href={actionHref} className="text-[13px] font-medium text-[var(--av-accent)]">
             {actionLabel}
           </Link>
         ) : null}

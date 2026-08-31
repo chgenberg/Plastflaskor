@@ -3,9 +3,9 @@ import { prisma } from "@/server/db";
 import { listCustomers } from "@/server/services/customer.service";
 import { createCustomerAction } from "@/actions/opsMasters";
 import { priceListDisplayName } from "@/domain/priceLists";
-import { Button, DataRow, DataTable, EmptyState, PageHeader, Panel } from "@/ui/shell/primitives";
+import { Button, EmptyState, PageHeader, Panel, controlClass } from "@/ui/shell/primitives";
 
-const FIELD = "h-11 w-full rounded-full border border-black/10 bg-white px-4 text-sm";
+const FIELD = controlClass;
 
 export default async function CustomersPage({
   searchParams,
@@ -23,7 +23,7 @@ export default async function CustomersPage({
     <div className="space-y-8">
       <PageHeader title="Kunder" subtitle="Direktkunder och ÅF-kunder." />
 
-      <form action="/operations/kunder" method="get" className="grid gap-3 rounded-[22px] bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,.04)] sm:grid-cols-[1fr_auto]">
+      <form action="/operations/kunder" method="get" className="av-card grid gap-3 p-5 sm:grid-cols-[1fr_auto]">
         <input
           name="q"
           defaultValue={term}
@@ -35,25 +35,25 @@ export default async function CustomersPage({
 
       <Panel title="Ny direktkund">
         <form action={createCustomerAction} className="grid gap-3 sm:grid-cols-2">
-          <label className="text-sm text-[#6b7280]">
+          <label className="text-sm text-[var(--av-text-muted)]">
             Namn
-            <input name="name" required className={`${FIELD} mt-1 text-[#1d1d1f]`} />
+            <input name="name" required className={`${FIELD} mt-1 text-[var(--av-text)]`} />
           </label>
-          <label className="text-sm text-[#6b7280]">
+          <label className="text-sm text-[var(--av-text-muted)]">
             Org.nr
-            <input name="orgNr" className={`${FIELD} mt-1 text-[#1d1d1f]`} />
+            <input name="orgNr" className={`${FIELD} mt-1 text-[var(--av-text)]`} />
           </label>
-          <label className="text-sm text-[#6b7280]">
+          <label className="text-sm text-[var(--av-text-muted)]">
             E-post
-            <input name="email" type="email" className={`${FIELD} mt-1 text-[#1d1d1f]`} />
+            <input name="email" type="email" className={`${FIELD} mt-1 text-[var(--av-text)]`} />
           </label>
-          <label className="text-sm text-[#6b7280]">
+          <label className="text-sm text-[var(--av-text-muted)]">
             Telefon
-            <input name="phone" type="tel" className={`${FIELD} mt-1 text-[#1d1d1f]`} />
+            <input name="phone" type="tel" className={`${FIELD} mt-1 text-[var(--av-text)]`} />
           </label>
-          <label className="text-sm text-[#6b7280] sm:col-span-2">
+          <label className="text-sm text-[var(--av-text-muted)] sm:col-span-2">
             Prislista
-            <select name="priceListId" className={`${FIELD} mt-1 text-[#1d1d1f]`}>
+            <select name="priceListId" className={`${FIELD} mt-1 text-[var(--av-text)]`}>
               <option value="">Ingen vald</option>
               {priceLists.map((list) => (
                 <option key={list.id} value={list.id}>
@@ -62,17 +62,17 @@ export default async function CustomersPage({
               ))}
             </select>
           </label>
-          <label className="text-sm text-[#6b7280] sm:col-span-2">
+          <label className="text-sm text-[var(--av-text-muted)] sm:col-span-2">
             Adress
-            <input name="line1" className={`${FIELD} mt-1 text-[#1d1d1f]`} />
+            <input name="line1" className={`${FIELD} mt-1 text-[var(--av-text)]`} />
           </label>
-          <label className="text-sm text-[#6b7280]">
+          <label className="text-sm text-[var(--av-text-muted)]">
             Postnr
-            <input name="postalCode" className={`${FIELD} mt-1 text-[#1d1d1f]`} />
+            <input name="postalCode" className={`${FIELD} mt-1 text-[var(--av-text)]`} />
           </label>
-          <label className="text-sm text-[#6b7280]">
+          <label className="text-sm text-[var(--av-text-muted)]">
             Ort
-            <input name="city" className={`${FIELD} mt-1 text-[#1d1d1f]`} />
+            <input name="city" className={`${FIELD} mt-1 text-[var(--av-text)]`} />
           </label>
           <div className="sm:col-span-2">
             <Button type="submit">Skapa direktkund</Button>
@@ -86,26 +86,19 @@ export default async function CustomersPage({
           body={term ? `Inget matchade “${term}”.` : "När kunder skapas syns de här."}
         />
       ) : (
-        <Panel padded={false}>
-          <DataTable headers={[{ label: "Kund" }, { label: "Org.nr" }, { label: "Prislista" }, { label: "Ordrar", align: "right" }, { label: "Nästa lead" }]}>
-            {customers.map((c) => (
-              <DataRow key={c.id} href={`/operations/kunder/${c.id}`}>
-                <td className="px-5 py-3">
-                  <Link href={`/operations/kunder/${c.id}`} className="font-medium text-[#3B5BAA]">
-                    {c.name}
-                  </Link>
-                  <p className="text-[12px] text-[#6b7280]">{c.reseller?.company.name ?? "Direktkund"}</p>
-                </td>
-                <td className="px-5 py-3 font-mono text-sm">{c.orgNr ?? "–"}</td>
-                <td className="px-5 py-3">{priceListDisplayName(c.priceList?.name ?? c.reseller?.priceList.name)}</td>
-                <td className="px-5 py-3 text-right tabular-nums">{c.orders.length}</td>
-                <td className="px-5 py-3 text-sm text-[#6b7280]">
-                  {c.leads[0]?.expectedAt.toLocaleDateString("sv-SE") ?? "–"}
-                </td>
-              </DataRow>
-            ))}
-          </DataTable>
-        </Panel>
+        <div className="grid gap-3 md:grid-cols-2">
+          {customers.map((c) => (
+            <Link key={c.id} href={`/operations/kunder/${c.id}`} className="av-card block p-5 transition hover:border-[var(--av-border-strong)]">
+              <p className="text-[16px] font-semibold tracking-tight">{c.name}</p>
+              <p className="mt-1 text-[13px] text-[var(--av-text-muted)]">{c.reseller?.company.name ?? "Direktkund"}</p>
+              <p className="mt-3 av-mono text-[13px] text-[var(--av-text-secondary)]">{c.orgNr ?? "Inget org.nr"}</p>
+              <p className="mt-1 text-[13px]">{priceListDisplayName(c.priceList?.name ?? c.reseller?.priceList.name)}</p>
+              <p className="mt-3 text-[13px] text-[var(--av-text-muted)]">
+                {c.orders.length} ordrar · nästa lead {c.leads[0]?.expectedAt.toLocaleDateString("sv-SE") ?? "–"}
+              </p>
+            </Link>
+          ))}
+        </div>
       )}
     </div>
   );
