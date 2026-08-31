@@ -79,46 +79,46 @@ export default async function InvoicePage({
         ) : null}
         <dl className="space-y-3 text-sm">
           <div>
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Kund / ÅF</dt>
+            <dt className="av-label">Kund / ÅF</dt>
             <dd className="mt-1">{order.reseller?.company.name ?? order.customer.name}</dd>
           </div>
           <div>
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Organisationsnummer</dt>
+            <dt className="av-label">Organisationsnummer</dt>
             <dd className="mt-1">{order.reseller?.company.orgNr ?? order.customer.orgNr ?? "–"}</dd>
           </div>
           <div>
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Fakturaadress</dt>
+            <dt className="av-label">Fakturaadress</dt>
             <dd className="mt-1">
               {billing.line1}, {billing.postalCode} {billing.city}
             </dd>
           </div>
           <div>
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">E-post</dt>
+            <dt className="av-label">E-post</dt>
             <dd className="mt-1">{order.reseller?.company.email ?? order.customer.email ?? "–"}</dd>
           </div>
           <div>
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Produkter</dt>
+            <dt className="av-label">Produkter</dt>
             <dd className="mt-1">
               {order.items[0]?.qty} × {order.items[0]?.variant.product.name}
             </dd>
           </div>
           <div>
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">À-pris</dt>
+            <dt className="av-label">À-pris</dt>
             <dd className="mt-1 tabular-nums">{order.items[0]?.unitPriceExVat.toFixed(2)} kr</dd>
           </div>
           <div>
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Frakt</dt>
+            <dt className="av-label">Frakt</dt>
             <dd className="mt-1">
               {freight ? `${freight.carrier} · ${freight.packages} kolli · ${freight.weightKg} kg` : "Enligt avtal / 0 kr i demo"}
             </dd>
           </div>
           <div>
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Betalningsvillkor</dt>
+            <dt className="av-label">Betalningsvillkor</dt>
             <dd className="mt-1">30 dagar</dd>
           </div>
           {order.invoice?.invoiceNo ? (
             <div>
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Fortnox</dt>
+              <dt className="av-label">Fortnox</dt>
               <dd className="mt-1 font-mono">
                 {order.invoice.invoiceNo}
                 {order.invoice.fortnoxId ? ` · ${order.invoice.fortnoxId}` : ""}

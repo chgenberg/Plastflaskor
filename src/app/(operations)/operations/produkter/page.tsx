@@ -112,7 +112,7 @@ export default async function ProductsAdmin() {
                 </div>
               </div>
               <div className="mt-6">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Tryckkrav</p>
+                <p className="av-label">Tryckkrav</p>
                 <ul className="mt-3 space-y-2">
                   {requirements.map((r) => (
                     <li

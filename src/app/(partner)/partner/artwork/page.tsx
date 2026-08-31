@@ -22,7 +22,7 @@ export default async function ArtworkPage() {
             <Panel key={d.id}>
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Design</p>
+                  <p className="av-label">Design</p>
                   <h2 className="mt-1 text-lg font-semibold tracking-tight">{d.projectName}</h2>
                 </div>
                 <StatusChip status={d.status} label={DESIGN_STATUS_LABELS[d.status] ?? "Utkast"} />

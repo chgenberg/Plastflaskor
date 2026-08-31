@@ -40,15 +40,15 @@ export default async function PriceListsAdmin() {
               </div>
               <div className="grid gap-3 border-b border-[var(--av-border)] px-5 py-4 sm:grid-cols-3">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">ÅF</p>
+                  <p className="av-label">ÅF</p>
                   <p className="mt-1 text-[22px] font-semibold tabular-nums tracking-tight">{list._count.resellers}</p>
                 </div>
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Slutkunder</p>
+                  <p className="av-label">Slutkunder</p>
                   <p className="mt-1 text-[22px] font-semibold tabular-nums tracking-tight">{list._count.customers}</p>
                 </div>
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Rader totalt</p>
+                  <p className="av-label">Rader totalt</p>
                   <p className="mt-1 text-[22px] font-semibold tabular-nums tracking-tight">{list._count.items}</p>
                 </div>
               </div>

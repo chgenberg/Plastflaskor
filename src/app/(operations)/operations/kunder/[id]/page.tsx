@@ -85,31 +85,31 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
         <Panel title="Kunduppgifter">
           <dl className="grid gap-4 text-sm sm:grid-cols-2">
             <div>
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Företag</dt>
+              <dt className="av-label">Företag</dt>
               <dd className="mt-1 font-medium">{customer.company?.name ?? customer.name}</dd>
             </div>
             <div>
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Org.nr</dt>
+              <dt className="av-label">Org.nr</dt>
               <dd className="mt-1 font-mono">{customer.orgNr ?? customer.company?.orgNr ?? "–"}</dd>
             </div>
             <div>
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">E-post</dt>
+              <dt className="av-label">E-post</dt>
               <dd className="mt-1">{customer.email ?? customer.company?.email ?? "–"}</dd>
             </div>
             <div>
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Telefon</dt>
+              <dt className="av-label">Telefon</dt>
               <dd className="mt-1">{customer.phone ?? customer.company?.phone ?? "–"}</dd>
             </div>
             <div>
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Prislista</dt>
+              <dt className="av-label">Prislista</dt>
               <dd className="mt-1">{priceListName}</dd>
             </div>
             <div>
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Kundtyp</dt>
+              <dt className="av-label">Kundtyp</dt>
               <dd className="mt-1">{buyerKind}{customer.reseller ? ` · ${customer.reseller.company.name}` : ""}</dd>
             </div>
             <div>
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Nästa lead</dt>
+              <dt className="av-label">Nästa lead</dt>
               <dd className="mt-1">
                 {nextLead
                   ? `${nextLead.expectedAt.toLocaleDateString("sv-SE", { month: "long", year: "numeric" })} · ${nextLead.sourceOrder.orderNo}`
@@ -126,7 +126,7 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
             <ul className="space-y-3 text-sm">
               {addresses.map((a) => (
                 <li key={`${a.type}-${a.line1}-${a.postalCode}`}>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">
+                  <p className="av-label">
                     {ADDRESS_TYPE_LABELS[a.type] ?? a.type}
                   </p>
                   <p className="mt-1 font-medium">

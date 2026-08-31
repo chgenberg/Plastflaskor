@@ -63,40 +63,40 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
               <Panel key={lead.id}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Företag</p>
+                    <p className="av-label">Företag</p>
                     <h2 className="mt-1 text-lg font-semibold tracking-tight">{lead.customer.name}</h2>
                   </div>
                   <StatusChip status={lead.status} label={LEAD_STATUS_LABELS[lead.status] ?? lead.status} />
                 </div>
                 <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Förväntad månad</dt>
+                    <dt className="av-label">Förväntad månad</dt>
                     <dd className="mt-1 font-medium capitalize">
                       {lead.expectedAt.toLocaleDateString("sv-SE", { month: "long", year: "numeric" })}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Föregående order</dt>
+                    <dt className="av-label">Föregående order</dt>
                     <dd className="mt-1 font-mono">{lead.sourceOrder.orderNo}</dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Produkt</dt>
+                    <dt className="av-label">Produkt</dt>
                     <dd className="mt-1 font-medium">{item?.variant.product.name ?? "–"}</dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Variant</dt>
+                    <dt className="av-label">Variant</dt>
                     <dd className="mt-1">{item?.variant.name ?? "–"}</dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Antal</dt>
+                    <dt className="av-label">Antal</dt>
                     <dd className="mt-1 tabular-nums">{item?.qty?.toLocaleString("sv-SE") ?? "–"}</dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Föregående värde</dt>
+                    <dt className="av-label">Föregående värde</dt>
                     <dd className="mt-1 tabular-nums">{value.toLocaleString("sv-SE")} kr</dd>
                   </div>
                   <div className="sm:col-span-2">
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Kontakt</dt>
+                    <dt className="av-label">Kontakt</dt>
                     <dd className="mt-1">{email ?? "–"}</dd>
                   </div>
                 </dl>

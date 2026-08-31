@@ -40,7 +40,7 @@ export default async function WaybillPage({
     <div className="mx-auto max-w-xl space-y-8">
       <PageHeader title="Fraktsedel" subtitle={job.order.orderNo} />
       <Panel>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Fraktsedel</p>
+        <p className="av-label">Fraktsedel</p>
         <p className="mt-2 font-mono text-lg">{ship.trackingNo ?? "–"}</p>
         <dl className="mt-6 space-y-3 text-sm">
           <div>

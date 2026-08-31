@@ -35,18 +35,18 @@ export default async function ShippedPage() {
               <Panel key={s.id}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Order</p>
+                    <p className="av-label">Order</p>
                     <p className="mt-1 font-mono text-lg font-semibold">{s.order.orderNo}</p>
                   </div>
                   <StatusChip status={s.status} label={current?.label ?? "Skapad"} />
                 </div>
                 <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2">
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Transportör</dt>
+                    <dt className="av-label">Transportör</dt>
                     <dd className="mt-1 font-medium">{s.carrier}</dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Spårning</dt>
+                    <dt className="av-label">Spårning</dt>
                     <dd className="mt-1 font-mono text-[var(--av-text-muted)]">{s.trackingNo}</dd>
                   </div>
                 </dl>

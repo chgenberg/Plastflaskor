@@ -298,7 +298,7 @@ export function Studio({
           <input
             value={project}
             onChange={(e) => setProject(e.target.value)}
-            className="hidden max-w-[220px] truncate bg-transparent text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)] outline-none md:block"
+            className="hidden max-w-[220px] truncate bg-transparent av-label outline-none md:block"
           />
         </div>
         <div className="flex items-center gap-3">
@@ -583,7 +583,7 @@ function Inspector({
   return (
     <div className="space-y-5 text-sm">
       <section>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Lager</p>
+        <p className="av-label">Lager</p>
         <ul className="mt-2 space-y-1">
           {[...layers].reverse().map((l) => (
             <li key={l.id}>
@@ -601,7 +601,7 @@ function Inspector({
 
       {tool === "text" || selected.type === "text" ? (
         <label className="block">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Text</span>
+          <span className="av-label">Text</span>
           <input
             value={layers.find((l) => l.type === "text")?.text ?? ""}
             onChange={(e) => {
@@ -616,7 +616,7 @@ function Inspector({
 
       {selected.type === "qr" || tool === "upload" ? (
         <label className="block">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">QR-länk</span>
+          <span className="av-label">QR-länk</span>
           <input
             value={layers.find((l) => l.type === "qr")?.text ?? ""}
             onChange={(e) => {
@@ -631,7 +631,7 @@ function Inspector({
 
       {tool === "upload" ? (
         <div className="space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Ladda upp tryckfil</p>
+          <p className="av-label">Ladda upp tryckfil</p>
           <label className="flex h-36 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-black/15 px-4 text-center text-[13px] text-[var(--av-text-muted)]">
             <input
               type="file"
@@ -668,7 +668,7 @@ function Inspector({
 
       {tool === "colors" ? (
         <label className="block">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Textfärg</span>
+          <span className="av-label">Textfärg</span>
           <input
             type="color"
             value={layers.find((l) => l.type === "text")?.color ?? "#1d1d1f"}
@@ -684,7 +684,7 @@ function Inspector({
       {tool === "bottle" ? (
         <div className="space-y-3">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Mugg (låst)</p>
+            <p className="av-label">Mugg (låst)</p>
             <p className="mt-1.5 text-sm">
               {product?.slug.includes("dv") ? "Dubbelvägg" : "Enkelvägg"}
               {product?.slug.includes("eco") ? " · ECO" : ""}
@@ -705,7 +705,7 @@ function Inspector({
             </select>
           </Field>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Ytfinish</p>
+            <p className="av-label">Ytfinish</p>
             <div className="mt-2 grid grid-cols-2 gap-1 rounded-full bg-[var(--av-bg)] p-1">
               {(["matte", "gloss"] as const).map((f) => (
                 <button
@@ -720,7 +720,7 @@ function Inspector({
             </div>
           </div>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Obligatoriska tryckelement</p>
+            <p className="av-label">Obligatoriska tryckelement</p>
             <ul className="mt-2 space-y-1.5 text-sm">
               {(product?.printRequirements ?? []).map((r) => (
                 <li key={r.code}>
@@ -741,7 +741,7 @@ function Inspector({
             <p className="mt-2 text-[12px] text-[var(--av-text-muted)]">Kryssa i när elementet är placerat på tryckytan.</p>
           </div>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Antal</p>
+            <p className="av-label">Antal</p>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {qtys.map((n) => (
                 <button
@@ -759,7 +759,7 @@ function Inspector({
       ) : null}
 
       <section>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Placering</p>
+        <p className="av-label">Placering</p>
         <div className="mt-2 grid grid-cols-3 gap-2">
           <Num label="Position" value={Math.round(selected.x)} onChange={(v) => onLayerChange(selected.id, { x: v })} />
           <Num label="Skala" value={Number(selected.scale.toFixed(1))} step={0.1} onChange={(v) => onLayerChange(selected.id, { scale: v })} />
@@ -768,7 +768,7 @@ function Inspector({
       </section>
 
       <section>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">AI-hjälp</p>
+        <p className="av-label">AI-hjälp</p>
         <div className="mt-2 space-y-1.5">
           <AiBtn onClick={onOpenReality}>Se i verkligheten</AiBtn>
           <AiBtn onClick={onCenter}>Centrera motiv</AiBtn>
@@ -787,7 +787,7 @@ function Inspector({
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="block">
-      <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">{label}</span>
+      <span className="av-label">{label}</span>
       <div className="mt-1.5">{children}</div>
     </label>
   );

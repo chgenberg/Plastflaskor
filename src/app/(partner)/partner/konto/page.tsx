@@ -22,19 +22,19 @@ export default async function AccountPage() {
           <Panel>
             <dl className="space-y-4 text-sm">
               <div>
-                <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Bolag</dt>
+                <dt className="av-label">Bolag</dt>
                 <dd className="mt-1">{reseller.company.name}</dd>
               </div>
               <div>
-                <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Org.nr</dt>
+                <dt className="av-label">Org.nr</dt>
                 <dd className="mt-1">{reseller.company.orgNr}</dd>
               </div>
               <div>
-                <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Prislista</dt>
+                <dt className="av-label">Prislista</dt>
                 <dd className="mt-1">{priceListDisplayName(reseller.priceList.name)}</dd>
               </div>
               <div>
-                <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--av-text-muted)]">Kontakt Aqua</dt>
+                <dt className="av-label">Kontakt Aqua</dt>
                 <dd className="mt-1">info@aquavisibility.se · 08-400 204 80</dd>
               </div>
             </dl>

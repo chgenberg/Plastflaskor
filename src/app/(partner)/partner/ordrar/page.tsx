@@ -1,6 +1,6 @@
 import { requireRole } from "@/server/rbac";
 import { listOrdersForReseller } from "@/server/services/order.service";
-import { EmptyState, PageHeader } from "@/ui/shell/primitives";
+import { Button, EmptyState, PageHeader } from "@/ui/shell/primitives";
 import { BUYER_STATUS, RESELLER_STATUS, eventLabel } from "@/domain/enums";
 import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
@@ -66,9 +66,7 @@ export default async function PartnerOrders({
             <input type="checkbox" name="artwork" value="1" defaultChecked={artwork === "1"} />
             Har tryckfil
           </label>
-          <button type="submit" className="h-11 rounded-full bg-[var(--av-accent)] px-5 text-sm font-semibold text-white">
-            Filtrera
-          </button>
+          <Button type="submit">Filtrera</Button>
         </div>
       </form>
       {!user.resellerId ? (

@@ -65,7 +65,7 @@ export default async function JobPage({ params }: { params: Promise<{ jobId: str
           Leverans: {addr.line1}, {addr.postalCode} {addr.city}
         </p>
         <div className="mt-4 space-y-1.5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--av-text-muted)]">Slutgiltig tryckfil</p>
+          <p className="av-label">Slutgiltig tryckfil</p>
           {finalFiles.length === 0 ? (
             <p className="text-sm text-[var(--av-text-muted)]">Ingen slutgiltig tryckfil ännu.</p>
           ) : (
