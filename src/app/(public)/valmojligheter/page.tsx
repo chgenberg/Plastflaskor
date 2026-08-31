@@ -16,41 +16,41 @@ export default function OptionsPage() {
       </ul>
       <div className="mt-10 space-y-5 text-[var(--av-text-secondary)]">
         <p>
-          <strong className="text-[#1d1d1f]">Antal</strong> Vår produktion är mångsidig. Ni har möjlighet att köpa från
+          <strong className="text-[var(--av-text)]">Antal</strong> Vår produktion är mångsidig. Ni har möjlighet att köpa från
           270 flaskor med egen etikett. Detta innebär att även event med få deltagare kan erbjudas kundanpassad
           vattenflaska.
         </p>
         <EditorialShot src={PAGE_IMAGES.valAntal} alt="Från 270 flaskor" className="aspect-[16/10]" />
         <p>
-          <strong className="text-[#1d1d1f]">Flaska – Burk</strong> Våra standardflaskor är 33 cl och 50 cl. Vår
+          <strong className="text-[var(--av-text)]">Flaska – Burk</strong> Våra standardflaskor är 33 cl och 50 cl. Vår
           Energidryck kommer i en aluminiumburk på 25 cl
         </p>
         <p>
-          <strong className="text-[#1d1d1f]">Etikett</strong> Det är etiketten som skall kommunicera just Ert budskap.
+          <strong className="text-[var(--av-text)]">Etikett</strong> Det är etiketten som skall kommunicera just Ert budskap.
           Här finns det många kreativa lösningar som vi gärna berättar mer om. Våra standardetiketter är av
           miljöriktigt material som går att välja mellan vit eller transparent bakgrund med fyrfärgstryck.
         </p>
         <EditorialShot src={PAGE_IMAGES.valEtikett} alt="Pappersetikett och transparent etikett" className="aspect-[16/10]" />
         <p>
-          <strong className="text-[#1d1d1f]">Hållbarhet</strong> Stilla vatten 18 månader. Kolsyrat vatten 9 månader.
+          <strong className="text-[var(--av-text)]">Hållbarhet</strong> Stilla vatten 18 månader. Kolsyrat vatten 9 månader.
           Läsk 9 månader. Energidryck 12-24 månader.
         </p>
         <p>
-          <strong className="text-[#1d1d1f]">Kork</strong> Ett bra sätt att ge flaskan en längre livstid är att förse
+          <strong className="text-[var(--av-text)]">Kork</strong> Ett bra sätt att ge flaskan en längre livstid är att förse
           den med en sk sportkork. Skruvkork finns i svart, vit, blå och röd. Sportkork finns i svart, vit och blå.
         </p>
         <EditorialShot src={PAGE_IMAGES.valKork} alt="Skruvkork och sportkork" className="aspect-[16/10]" />
         <p>
-          <strong className="text-[#1d1d1f]">Leveranstid</strong> Är det bråttom och Ni behöver få fram en produktion
+          <strong className="text-[var(--av-text)]">Leveranstid</strong> Är det bråttom och Ni behöver få fram en produktion
           snabbt? Ring oss!
         </p>
         <p>
-          <strong className="text-[#1d1d1f]">Streckkod och pantsymbol</strong> Alla våra etiketter är försedda med
+          <strong className="text-[var(--av-text)]">Streckkod och pantsymbol</strong> Alla våra etiketter är försedda med
           pantsymbol och streckkod. Detta för att flaskan efter sin förbrukning skall kunna pantas och skickas tillbaka
           till Returpack. Panten är 1 kr.
         </p>
         <div>
-          <p className="font-semibold text-[#1d1d1f]">Beställa. Följande krävs för en komplett order:</p>
+          <p className="font-semibold text-[var(--av-text)]">Beställa. Följande krävs för en komplett order:</p>
           <ol className="mt-2 list-decimal space-y-1 pl-5">
             <li>Storlek på flaskan?</li>
             <li>Kolsyrat eller stilla vatten?</li>

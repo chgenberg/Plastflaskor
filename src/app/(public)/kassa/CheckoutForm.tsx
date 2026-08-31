@@ -103,45 +103,45 @@ export function CheckoutForm({
 
       <label className="block text-sm">
         Företag
-        <input required name="company" defaultValue={defaults.company} className="mt-1 h-12 w-full rounded-full border border-[var(--av-border)] px-4" />
+        <input required name="company" defaultValue={defaults.company} className="mt-1 h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-4" />
       </label>
       <label className="block text-sm">
         E-post
-        <input required type="email" name="email" defaultValue={defaults.email} className="mt-1 h-12 w-full rounded-full border border-[var(--av-border)] px-4" />
+        <input required type="email" name="email" defaultValue={defaults.email} className="mt-1 h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-4" />
       </label>
       <label className="block text-sm">
         Telefon
-        <input name="phone" className="mt-1 h-12 w-full rounded-full border border-[var(--av-border)] px-4" />
+        <input name="phone" className="mt-1 h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-4" />
       </label>
       <label className="block text-sm">
         Antal
-        <input name="qty" type="number" min={preview.moq} defaultValue={preview.qty} className="mt-1 h-12 w-full rounded-full border border-[var(--av-border)] px-4" />
+        <input name="qty" type="number" min={preview.moq} defaultValue={preview.qty} className="mt-1 h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-4" />
       </label>
       <label className="block text-sm">
         Adress
-        <input required name="line1" placeholder="Gata och nummer" className="mt-1 h-12 w-full rounded-full border border-[var(--av-border)] px-4" />
+        <input required name="line1" placeholder="Gata och nummer" className="mt-1 h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-4" />
       </label>
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block text-sm">
           Postnummer
-          <input required name="postalCode" className="mt-1 h-12 w-full rounded-full border border-[var(--av-border)] px-4" />
+          <input required name="postalCode" className="mt-1 h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-4" />
         </label>
         <label className="block text-sm">
           Ort
-          <input required name="city" className="mt-1 h-12 w-full rounded-full border border-[var(--av-border)] px-4" />
+          <input required name="city" className="mt-1 h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-4" />
         </label>
       </div>
 
       {loggedIn ? (
         <p className="rounded-[var(--av-radius-md)] bg-[var(--av-accent-soft)] px-4 py-3 text-[13px] text-[var(--av-accent)]">Ordern läggs på ditt inloggade konto.</p>
       ) : (
-        <fieldset className="rounded-[22px] border border-[var(--av-border)] bg-[#f8f8fa] p-4">
-          <legend className="px-1 text-[13px] font-semibold text-[#1d1d1f]">Vill du att vi skapar ett konto?</legend>
-          <p className="text-[13px] leading-relaxed text-[#6b7280]">
+        <fieldset className="rounded-[var(--av-radius-md)] border border-[var(--av-border)] bg-[var(--av-bg)] p-4">
+          <legend className="px-1 text-[13px] font-semibold text-[var(--av-text)]">Vill du att vi skapar ett konto?</legend>
+          <p className="text-[13px] leading-relaxed text-[var(--av-text-muted)]">
             Kryssa i rutan om du vill ha ett ÅF-konto. Då kommer du rakt in i portalen efter köpet. Lämnar du den tom
             skapas ingen inloggning.
           </p>
-          <label className="mt-3 flex items-start gap-3 text-sm text-[#1d1d1f]">
+          <label className="mt-3 flex items-start gap-3 text-sm text-[var(--av-text)]">
             <input
               type="checkbox"
               name="createAccount"
@@ -154,8 +154,8 @@ export function CheckoutForm({
           {createAccount ? (
             <label className="mt-4 block text-sm">
               Välj lösenord
-              <input required minLength={8} type="password" name="password" className="mt-1 h-12 w-full rounded-full border border-[var(--av-border)] bg-white px-4" />
-              <span className="mt-1 block text-[12px] text-[#6b7280]">Minst 8 tecken. Använd samma e-post som ovan.</span>
+              <input required minLength={8} type="password" name="password" className="mt-1 h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] bg-[var(--av-surface)] px-4" />
+              <span className="mt-1 block text-[12px] text-[var(--av-text-muted)]">Minst 8 tecken. Använd samma e-post som ovan.</span>
             </label>
           ) : null}
         </fieldset>
@@ -164,7 +164,7 @@ export function CheckoutForm({
       <div className="rounded-[22px] border border-[#635BFF]/20 bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
         <div className="flex items-center justify-between">
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#635BFF]">Stripe · testläge</p>
-          <span className="text-[11px] text-[#6b7280]">Ingen affär sker</span>
+          <span className="text-[11px] text-[var(--av-text-muted)]">Ingen affär sker</span>
         </div>
         <label className="mt-3 block text-sm">
           Kortnummer
@@ -189,7 +189,7 @@ export function CheckoutForm({
             <input required name="cardCvc" placeholder="123" inputMode="numeric" autoComplete="cc-csc" maxLength={4} className="mt-1 h-12 w-full rounded-xl border border-[var(--av-border)] px-4 font-mono" />
           </label>
         </div>
-        <p className="mt-3 text-[12px] text-[#6b7280]">Använd Stripe-testkortet 4242 4242 4242 4242, valfritt datum och CVC. Kortet debiteras inte.</p>
+        <p className="mt-3 text-[12px] text-[var(--av-text-muted)]">Använd Stripe-testkortet 4242 4242 4242 4242, valfritt datum och CVC. Kortet debiteras inte.</p>
       </div>
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}

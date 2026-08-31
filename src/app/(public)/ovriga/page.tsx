@@ -16,7 +16,7 @@ export default async function OvrigaPage() {
         {products.map((p) => {
           const img = imageForProduct(p.slug);
           return (
-            <article key={p.id} className="overflow-hidden rounded-[28px] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
+            <article key={p.id} className="av-card overflow-hidden">
               {img ? (
                 <Link href={`/produkter/${p.categorySlug}/${p.slug}`} className="relative block aspect-[4/5]">
                   <Image src={img} alt={p.name} fill className="object-cover" sizes="50vw" />
@@ -26,7 +26,7 @@ export default async function OvrigaPage() {
                 <h2 className="av-serif text-2xl tracking-[-0.01em]">{p.name}</h2>
                 <p className="mt-2 text-sm text-[var(--av-text-secondary)]">{p.oneLiner}</p>
                 <div className="mt-6 flex gap-4 text-sm font-medium">
-                  <Link href={`/produkter/${p.categorySlug}/${p.slug}`} className="text-[#1d1d1f]">
+                  <Link href={`/produkter/${p.categorySlug}/${p.slug}`} className="text-[var(--av-accent)]">
                     Läs mer →
                   </Link>
                   {p.studioEnabled ? <Link href={`/designa/${p.slug}`}>Designa</Link> : null}

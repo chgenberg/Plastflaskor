@@ -35,24 +35,24 @@ export default async function CheckoutThanksPage({
       <p className="mt-4 text-[var(--av-text-secondary)]">
         Testdebitering validerad — order mottagen, orderbekräftelse med korrektur inom 24h.
       </p>
-      <div className="mt-8 rounded-[28px] bg-white p-7 text-sm shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
-        <p className="font-medium text-[#1d1d1f]">{item?.variant.product.name}</p>
-        <p className="mt-1 text-[#6b7280]">{item?.qty} st</p>
-        <p className="mt-4 text-[#1d1d1f]">
+      <div className="av-card mt-8 p-7 text-sm">
+        <p className="font-medium text-[var(--av-text)]">{item?.variant.product.name}</p>
+        <p className="mt-1 text-[var(--av-text-muted)]">{item?.qty} st</p>
+        <p className="mt-4 text-[var(--av-text)]">
           Status: {statusLabel} — väntar på Aqua
         </p>
-        <p className="mt-4 text-[#6b7280]">
+        <p className="mt-4 text-[var(--av-text-muted)]">
           {order.customer.name}
           {order.customer.email ? ` · ${order.customer.email}` : ""}
         </p>
-        <p className="mt-4 text-[13px] leading-relaxed text-[#6b7280]">
+        <p className="mt-4 text-[13px] leading-relaxed text-[var(--av-text-muted)]">
           Referens {order.orderNo}. Ingen faktura har skapats. Aqua skickar orderbekräftelse med
           korrektur när ordern är granskad.
         </p>
       </div>
       <p className="mt-6 text-sm text-[var(--av-text-secondary)]">
         Vill du följa ordern i portalen nästa gång? Kryssa i kontorutan i kassan.{" "}
-        <Link href="/login" className="font-medium text-[#1d1d1f]">
+        <Link href="/login" className="font-medium text-[var(--av-accent)]">
           Logga in
         </Link>
       </p>

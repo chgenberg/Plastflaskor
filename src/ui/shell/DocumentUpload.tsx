@@ -31,7 +31,7 @@ export function DocumentUpload({
         Fil
         <input required type="file" name="file" className="mt-1 block w-full text-sm" />
       </label>
-      <button type="submit" className="inline-flex h-10 items-center rounded-full bg-[var(--av-accent)] px-4 text-sm font-semibold text-white">
+      <button type="submit" className="inline-flex h-10 items-center rounded-[var(--av-radius-md)] bg-[var(--av-accent)] px-4 text-sm font-semibold text-white hover:bg-[var(--av-accent-hover)]">
         Ladda upp
       </button>
     </form>

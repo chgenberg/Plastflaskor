@@ -15,30 +15,30 @@ export default async function QuotePage({ searchParams }: { searchParams: Promis
         Vill du testa hela köpet med dummyfaktura och Stripe-testkort?{" "}
         <Link
           href={`/kassa${product ? `?product=${product}` : ""}${design ? `${product ? "&" : "?"}design=${design}` : ""}`}
-          className="font-medium text-[#1d1d1f]"
+          className="font-medium text-[var(--av-accent)]"
         >
           Gå till kassan
         </Link>
         .
       </p>
       <EditorialShot src={PAGE_IMAGES.offertProv} alt="Prov för offert" />
-      <form action={quoteAction} className="mt-8 space-y-4 rounded-[28px] bg-white p-7 shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
+      <form action={quoteAction} className="av-card mt-8 space-y-4 p-7">
         <input type="hidden" name="designId" value={design ?? ""} />
         <label className="block text-sm">
           Företag
-          <input required name="company" className="mt-1 h-12 w-full rounded-full border border-[var(--av-border)] px-4" />
+          <input required name="company" className="mt-1 h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-4" />
         </label>
         <label className="block text-sm">
           E-post
-          <input required type="email" name="email" className="mt-1 h-12 w-full rounded-full border border-[var(--av-border)] px-4" />
+          <input required type="email" name="email" className="mt-1 h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-4" />
         </label>
         <label className="block text-sm">
           Telefon
-          <input name="phone" className="mt-1 h-12 w-full rounded-full border border-[var(--av-border)] px-4" />
+          <input name="phone" className="mt-1 h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-4" />
         </label>
         <label className="block text-sm">
           Produkt
-          <select name="productId" defaultValue={product} className="mt-1 h-12 w-full rounded-full border border-[var(--av-border)] px-4">
+          <select name="productId" defaultValue={product} className="mt-1 h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-4">
             {products.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
@@ -48,17 +48,17 @@ export default async function QuotePage({ searchParams }: { searchParams: Promis
         </label>
         <label className="block text-sm">
           Antal
-          <input name="qty" type="number" defaultValue={qty ?? 270} className="mt-1 h-12 w-full rounded-full border border-[var(--av-border)] px-4" />
+          <input name="qty" type="number" defaultValue={qty ?? 270} className="mt-1 h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-4" />
         </label>
         <label className="block text-sm">
           Ort
-          <input name="city" className="mt-1 h-12 w-full rounded-full border border-[var(--av-border)] px-4" />
+          <input name="city" className="mt-1 h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-4" />
         </label>
         <label className="block text-sm">
           Meddelande
-          <textarea name="message" className="mt-1 w-full rounded-3xl border border-[var(--av-border)] p-4" rows={4} />
+          <textarea name="message" className="mt-1 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] p-4" rows={4} />
         </label>
-        <button className="h-[52px] w-full rounded-full bg-[#1d1d1f] text-sm font-semibold text-white">Skicka offertförfrågan</button>
+        <button className="h-12 w-full rounded-[var(--av-radius-md)] bg-[var(--av-accent)] text-sm font-semibold text-white hover:bg-[var(--av-accent-hover)]">Skicka offertförfrågan</button>
       </form>
     </main>
   );

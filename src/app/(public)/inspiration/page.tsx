@@ -19,7 +19,7 @@ export default function InspirationPage() {
       </p>
       <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {SHOTS.map((s) => (
-          <figure key={s.src} className="overflow-hidden rounded-[28px] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
+          <figure key={s.src} className="av-card overflow-hidden">
             <EditorialShot src={s.src} alt={s.alt} className="aspect-[4/5] rounded-none" />
             <figcaption className="px-6 py-4 text-sm font-medium">{s.title}</figcaption>
           </figure>

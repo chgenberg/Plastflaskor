@@ -79,15 +79,15 @@ export function PublicNav({ email }: { email?: string | null }) {
           aria-label="Meny"
           aria-expanded={mobileOpen}
           onClick={() => setMobileOpen((v) => !v)}
-          className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#1d1d1f] shadow-[0_2px_12px_rgba(0,0,0,0.08)] md:hidden"
+          className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-[var(--av-radius-md)] bg-[var(--av-surface)] text-[var(--av-text)] shadow-[var(--av-shadow-sm)] md:hidden"
         >
           <span className="flex flex-col gap-[5px]">
-            <span className="block h-[1.5px] w-4 bg-[#1d1d1f]" />
-            <span className="block h-[1.5px] w-4 bg-[#1d1d1f]" />
+            <span className="block h-[1.5px] w-4 bg-[var(--av-text)]" />
+            <span className="block h-[1.5px] w-4 bg-[var(--av-text)]" />
           </span>
         </button>
 
-        <nav className="pointer-events-auto absolute left-1/2 top-3 hidden h-[72px] -translate-x-1/2 items-center gap-1 rounded-full bg-white px-3 shadow-[0_2px_16px_rgba(0,0,0,0.08)] md:flex">
+        <nav className="pointer-events-auto absolute left-1/2 top-3 hidden h-[72px] -translate-x-1/2 items-center gap-1 rounded-[var(--av-radius-lg)] border border-[var(--av-border)] bg-[var(--av-surface)] px-3 shadow-[var(--av-shadow-sm)] md:flex">
           {LEFT.map((item) => (
             <NavParent key={item.label} item={item} open={open} setOpen={setOpen} align="left" />
           ))}
@@ -108,8 +108,8 @@ export function PublicNav({ email }: { email?: string | null }) {
           ))}
         </nav>
 
-        <div className="pointer-events-auto ml-auto flex h-12 min-w-[168px] items-center justify-center gap-2 rounded-full bg-white px-5 shadow-[0_2px_12px_rgba(0,0,0,0.08)] md:absolute md:right-4 md:top-3 md:ml-0 md:h-[72px] md:min-w-[240px] md:px-7">
-          <Link href="/kassa" aria-label="Beställ" className="flex h-10 w-10 items-center justify-center rounded-full text-[#1d1d1f] hover:bg-black/[0.05]">
+        <div className="pointer-events-auto ml-auto flex h-12 min-w-[168px] items-center justify-center gap-2 rounded-[var(--av-radius-lg)] border border-[var(--av-border)] bg-[var(--av-surface)] px-5 shadow-[var(--av-shadow-sm)] md:absolute md:right-4 md:top-3 md:ml-0 md:h-[72px] md:min-w-[240px] md:px-7">
+          <Link href="/kassa" aria-label="Beställ" className="flex h-10 w-10 items-center justify-center rounded-[var(--av-radius-md)] text-[var(--av-text)] hover:bg-[var(--av-bg)]">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
               <path d="M6 8h12l-1.1 9.2a1.6 1.6 0 0 1-1.6 1.4H8.7a1.6 1.6 0 0 1-1.6-1.4L6 8Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
               <path d="M9 8V7.2A3 3 0 0 1 12 4.2 3 3 0 0 1 15 7.2V8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
@@ -117,26 +117,26 @@ export function PublicNav({ email }: { email?: string | null }) {
           </Link>
           {email ? (
             <form action={logoutAction}>
-              <button type="submit" className="flex h-10 items-center rounded-full px-3 text-[13px] font-medium text-[#1d1d1f] hover:bg-black/[0.05]">
+              <button type="submit" className="flex h-10 items-center rounded-[var(--av-radius-md)] px-3 text-[13px] font-medium text-[var(--av-text)] hover:bg-[var(--av-bg)]">
                 Logga ut
               </button>
             </form>
           ) : (
-            <Link href="/login" aria-label="Logga in" className="flex h-10 w-10 items-center justify-center rounded-full text-[#1d1d1f] hover:bg-black/[0.05]">
+            <Link href="/login" aria-label="Logga in" className="flex h-10 w-10 items-center justify-center rounded-[var(--av-radius-md)] text-[var(--av-text)] hover:bg-[var(--av-bg)]">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <circle cx="12" cy="8" r="3.2" stroke="currentColor" strokeWidth="1.6" />
                 <path d="M5 19.2c1.6-3 4-4.5 7-4.5s5.4 1.5 7 4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
               </svg>
             </Link>
           )}
-          <Link href="/designa" className="hidden h-10 items-center rounded-full bg-[#1d1d1f] px-5 text-[13px] font-semibold text-white hover:text-white sm:flex">
+          <Link href="/designa" className="hidden h-10 items-center rounded-[var(--av-radius-md)] bg-[var(--av-accent)] px-5 text-[13px] font-semibold text-white hover:bg-[var(--av-accent-hover)] sm:flex">
             Starta design
           </Link>
         </div>
       </div>
 
       {mobileOpen ? (
-        <div className="pointer-events-auto mx-4 mt-3 max-h-[70vh] overflow-auto rounded-3xl bg-white p-4 text-[#1d1d1f] shadow-[0_8px_24px_rgba(10,10,10,0.08)] md:hidden">
+        <div className="pointer-events-auto av-card mx-4 mt-3 max-h-[70vh] overflow-auto p-4 text-[var(--av-text)] md:hidden">
           <Link href="/" className="mb-4 flex items-center" onClick={() => setMobileOpen(false)}>
             <Image src="/brand/aqua-visibility-logo.png" alt="aqua visibility" width={160} height={52} className="h-12 w-auto" />
           </Link>
@@ -144,7 +144,7 @@ export function PublicNav({ email }: { email?: string | null }) {
             {ALL.map((item) => (
               <MobileGroup key={item.label} item={item} onNavigate={() => setMobileOpen(false)} />
             ))}
-            <Link href="/designa" onClick={() => setMobileOpen(false)} className="mt-3 rounded-full bg-[#1d1d1f] px-4 py-3 text-center text-sm font-semibold text-white hover:text-white">
+            <Link href="/designa" onClick={() => setMobileOpen(false)} className="mt-3 rounded-[var(--av-radius-md)] bg-[var(--av-accent)] px-4 py-3 text-center text-sm font-semibold text-white">
               Starta design
             </Link>
           </div>
@@ -189,7 +189,7 @@ function NavParent({
         aria-expanded={shown}
         aria-controls={id}
         onClick={() => setOpen(shown ? null : item.label)}
-        className="inline-flex items-center gap-1 rounded-full px-3 py-2 text-[13px] font-medium text-[#1d1d1f] hover:bg-black/[0.05] xl:px-4"
+        className="inline-flex items-center gap-1 rounded-[var(--av-radius-md)] px-3 py-2 text-[13px] font-medium text-[var(--av-text)] hover:bg-[var(--av-bg)] xl:px-4"
       >
         {item.label}
         <svg width="10" height="10" viewBox="0 0 12 12" aria-hidden className={`transition-transform ${shown ? "rotate-180" : ""}`}>
@@ -200,14 +200,14 @@ function NavParent({
         <div
           className={`absolute top-full z-50 min-w-[220px] pt-2 ${align === "right" ? "right-0" : "left-0"}`}
         >
-          <div id={id} role="menu" className="rounded-2xl bg-white py-2 text-[#1d1d1f] shadow-[0_12px_32px_rgba(0,0,0,0.1)]">
+          <div id={id} role="menu" className="av-card py-2 text-[var(--av-text)]">
             {item.children.map((child) => (
               <Link
                 key={child.href + child.label}
                 href={child.href}
                 role="menuitem"
                 onClick={() => setOpen(null)}
-                className="block px-4 py-2.5 text-[13px] font-medium text-[#1d1d1f] hover:bg-[#f5f5f7]"
+                className="block px-4 py-2.5 text-[13px] font-medium text-[var(--av-text)] hover:bg-[var(--av-bg)]"
               >
                 {child.label}
               </Link>
@@ -227,10 +227,10 @@ function MobileGroup({ item, onNavigate }: { item: Parent; onNavigate: () => voi
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#1d1d1f]"
+        className="flex w-full items-center justify-between rounded-[var(--av-radius-md)] px-3 py-2.5 text-left text-sm font-semibold text-[var(--av-text)]"
       >
         {item.label}
-        <span className={`text-[#766a62] transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
+        <span className={`text-[var(--av-text-muted)] transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
       </button>
       {open ? (
         <div className="mb-2 ml-3 flex flex-col border-l border-black/10 pl-3">
@@ -239,7 +239,7 @@ function MobileGroup({ item, onNavigate }: { item: Parent; onNavigate: () => voi
               key={child.href + child.label}
               href={child.href}
               onClick={onNavigate}
-              className="rounded-lg px-2 py-2 text-sm text-[#1d1d1f] hover:bg-[#f5f5f7]"
+              className="rounded-[var(--av-radius-md)] px-2 py-2 text-sm text-[var(--av-text)] hover:bg-[var(--av-bg)]"
             >
               {child.label}
             </Link>

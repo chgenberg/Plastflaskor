@@ -38,23 +38,23 @@ export default async function ProductPage({ params }: { params: Promise<{ catego
   return (
     <main className="mx-auto max-w-3xl px-4 pb-20 pt-36">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#766a62]">{category}</p>
+      <p className="av-label">{category}</p>
       <PageIntro title={item.name} />
       <p className="mt-4 text-lg text-[var(--av-text-secondary)]">{item.oneLiner}</p>
       {img ? (
-        <div className="relative mt-8 aspect-[4/5] overflow-hidden rounded-[28px]">
+        <div className="relative mt-8 aspect-[4/5] overflow-hidden rounded-[var(--av-radius-lg)]">
           <Image src={img} alt={item.name} fill className="object-cover" sizes="720px" priority />
         </div>
       ) : null}
-      <dl className="mt-10 grid gap-4 rounded-[28px] bg-white p-7 text-sm shadow-[0_2px_12px_rgba(0,0,0,0.05)] sm:grid-cols-2">
+      <dl className="av-card mt-10 grid gap-4 p-7 text-sm sm:grid-cols-2">
         {facts.map((row) => (
           <div key={row.label}>
-            <dt className="text-[11px] uppercase tracking-[0.14em] text-[#766a62]">{row.label}</dt>
+            <dt className="av-label">{row.label}</dt>
             <dd className="mt-1 font-medium">{row.value}</dd>
           </div>
         ))}
       </dl>
-      <pre className="mt-4 whitespace-pre-wrap rounded-[28px] bg-white p-7 text-sm leading-relaxed text-[var(--av-text-secondary)] shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
+      <pre className="av-card mt-4 whitespace-pre-wrap p-7 text-sm leading-relaxed text-[var(--av-text-secondary)]">
         {item.specText}
       </pre>
       <div className="mt-8 flex flex-wrap gap-3">
@@ -71,7 +71,7 @@ export default async function ProductPage({ params }: { params: Promise<{ catego
       {showResellerCta ? (
         <p className="mt-5 text-sm text-[var(--av-text-secondary)]">
           Är du återförsäljare?{" "}
-          <Link href="/login?next=/partner/priser" className="font-medium text-[#1d1d1f]">
+          <Link href="/login?next=/partner/priser" className="font-medium text-[var(--av-accent)]">
             Logga in för priser
           </Link>
         </p>

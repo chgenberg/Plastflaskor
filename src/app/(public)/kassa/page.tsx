@@ -32,10 +32,10 @@ export default async function CheckoutPage({
         Priser visas efter inloggning. Logga in som kund eller ÅF för att slutföra.
       </p>
 
-      <aside className="mt-8 rounded-[28px] bg-white p-6 shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#766a62]">Sammanfattning</p>
-        <p className="mt-2 font-medium text-[#1d1d1f]">{preview.product.name}</p>
-        <dl className="mt-4 space-y-1.5 text-sm text-[#6b7280]">
+      <aside className="av-card mt-8 p-6">
+        <p className="av-label">Sammanfattning</p>
+        <p className="mt-2 font-medium text-[var(--av-text)]">{preview.product.name}</p>
+        <dl className="mt-4 space-y-1.5 text-sm text-[var(--av-text-muted)]">
           <div className="flex justify-between">
             <dt>Lista</dt>
             <dd>{preview.listName}</dd>
@@ -52,7 +52,7 @@ export default async function CheckoutPage({
                 <dt>Ex moms</dt>
                 <dd>{preview.amountExVat?.toFixed(2)} kr</dd>
               </div>
-              <div className="flex justify-between font-semibold text-[#1d1d1f]">
+              <div className="flex justify-between font-semibold text-[var(--av-text)]">
                 <dt>Att betala</dt>
                 <dd>{preview.amountIncVat?.toFixed(2)} kr</dd>
               </div>
@@ -61,7 +61,7 @@ export default async function CheckoutPage({
         </dl>
       </aside>
 
-      <div className="mt-6 rounded-[28px] bg-white p-7 shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
+      <div className="av-card mt-6 p-7">
         <CheckoutForm
           loggedIn={loggedIn}
           defaults={{ company: user?.name ?? "", email: user?.email ?? "" }}

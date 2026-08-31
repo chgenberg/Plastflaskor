@@ -34,7 +34,7 @@ export default async function ProductsIndex() {
           const c = CATEGORY_META[slug];
           if (!c) return null;
           return (
-            <Link key={c.slug} href={`/produkter/${c.slug}`} className="group overflow-hidden rounded-[28px] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
+            <Link key={c.slug} href={`/produkter/${c.slug}`} className="av-card group overflow-hidden">
               {cover[c.slug] ? (
                 <div className="relative aspect-[16/10]">
                   <Image src={cover[c.slug]} alt={c.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="50vw" />

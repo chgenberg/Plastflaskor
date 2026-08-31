@@ -12,18 +12,18 @@ const TICKER = [
 ];
 
 function TickerDot() {
-  return <span className="mx-8 inline-block h-[3px] w-[3px] -translate-y-[2px] rounded-full bg-[#766a62]/40 align-middle" />;
+  return <span className="mx-8 inline-block h-[3px] w-[3px] -translate-y-[2px] rounded-full bg-[var(--av-text-muted)]/40 align-middle" />;
 }
 
 export function PublicTicker() {
   const loop = [...TICKER, ...TICKER];
   return (
-    <div className="relative z-50 overflow-hidden border-b border-[#e6e6e6]/60 bg-[#f5f5f7] py-[7px]">
+    <div className="relative z-50 overflow-hidden border-b border-[var(--av-border)] bg-[var(--av-bg)] py-[7px]">
       <div className="av-marquee flex w-max whitespace-nowrap">
         {[0, 1].map((copy) => (
           <span key={copy} className="flex shrink-0 items-center">
             {loop.map((item, i) => (
-              <span key={`${copy}-${i}`} className="text-[10px] font-medium uppercase tracking-[0.18em] text-[#766a62]">
+              <span key={`${copy}-${i}`} className="text-[11px] font-medium text-[var(--av-text-muted)]">
                 {item}
                 <TickerDot />
               </span>
@@ -55,7 +55,7 @@ export function PublicFooter() {
           </p>
         </div>
         <div className="text-sm">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#766a62]">Kontakt</p>
+          <p className="av-label">Kontakt</p>
           <p className="mt-3 text-[var(--av-text-secondary)]">+46 (0)8 400 204 80</p>
           <p className="text-[var(--av-text-secondary)]">info@aquavisibility.se</p>
           <p className="mt-3 text-[var(--av-text-secondary)]">
@@ -65,7 +65,7 @@ export function PublicFooter() {
           </p>
         </div>
         <div className="text-sm">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#766a62]">Sidor</p>
+          <p className="av-label">Sidor</p>
           <div className="mt-3 flex flex-col gap-2 text-[var(--av-text-secondary)]">
             <Link href="/aterforsaljare">För återförsäljare</Link>
             <Link href="/kassa">Beställ</Link>
@@ -74,7 +74,7 @@ export function PublicFooter() {
           </div>
         </div>
       </div>
-      <p className="border-t border-[var(--av-border)] py-5 text-center text-[11px] uppercase tracking-[0.14em] text-[#766a62]">
+      <p className="border-t border-[var(--av-border)] py-5 text-center text-[12px] text-[var(--av-text-muted)]">
         Copyright 2026 © Aqua Visibility
       </p>
     </footer>

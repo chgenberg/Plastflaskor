@@ -28,10 +28,10 @@ export default async function HomePage() {
     <main>
       <section className="relative overflow-hidden px-4 pb-8 pt-32 text-center md:pt-36">
         <Badge>aqua visibility</Badge>
-        <h1 className="av-serif mx-auto mt-6 max-w-4xl text-5xl leading-[1.05] tracking-[-0.01em] text-[#1d1d1f] md:text-7xl">
+        <h1 className="av-serif mx-auto mt-6 max-w-4xl text-5xl leading-[1.05] tracking-[-0.01em] text-[var(--av-text)] md:text-7xl">
           Behöver ni <em className="italic text-[var(--av-accent-italic)]">svalka?</em>
         </h1>
-        <p className="mt-5 text-[13px] font-medium uppercase tracking-[0.22em] text-[#766a62]">Lugn, vi hjälper er!</p>
+        <p className="mt-5 text-[13px] font-medium text-[var(--av-text-muted)]">Lugn, vi hjälper er!</p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <PillLink href="/produkter">Se produkter →</PillLink>
           <PillLink href="/designa" variant="ghost">
@@ -39,7 +39,7 @@ export default async function HomePage() {
           </PillLink>
         </div>
 
-        <ul className="mx-auto mt-10 flex max-w-3xl flex-col items-center justify-center gap-6 text-[12px] text-[#766a62] sm:flex-row sm:gap-10">
+        <ul className="mx-auto mt-10 flex max-w-3xl flex-col items-center justify-center gap-6 text-[12px] text-[var(--av-text-muted)] sm:flex-row sm:gap-10">
           <li className="flex items-center gap-2">
             <TruckIcon />
             Från 270 flaskor
@@ -62,7 +62,7 @@ export default async function HomePage() {
           ].map((c) => (
             <div
               key={c.src}
-              className="absolute overflow-hidden rounded-full ring-4 ring-[#f5f5f7]"
+              className="absolute overflow-hidden rounded-full ring-4 ring-[var(--av-bg)]"
               style={{
                 width: c.i === 1 ? "min(38vw, 340px)" : "min(30vw, 260px)",
                 height: c.i === 1 ? "min(38vw, 340px)" : "min(30vw, 260px)",
@@ -89,20 +89,20 @@ export default async function HomePage() {
           { label: "Kyl", href: "/produkter/kyl", src: imageForProduct("profilerbar-kyl")! },
         ].map((c) => (
           <Link key={c.href} href={c.href} className="group">
-            <div className="relative aspect-[4/5] overflow-hidden rounded-[24px] bg-[#eee] shadow-sm transition-shadow duration-500 group-hover:shadow-xl group-hover:shadow-black/[0.08]">
+            <div className="relative aspect-[4/5] overflow-hidden rounded-[var(--av-radius-lg)] bg-[var(--av-gray-100)] shadow-[var(--av-shadow-sm)] transition-shadow duration-500 group-hover:shadow-[var(--av-shadow-md)]">
               <Image src={c.src} alt={c.label} fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="(max-width: 1024px) 50vw, 25vw" />
-              <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 pb-[3px] pt-[5px] text-[10px] font-semibold uppercase tracking-[0.14em] text-[#1d1d1f] shadow-sm backdrop-blur-sm">
+              <span className="absolute left-4 top-4 rounded-md bg-[var(--av-surface)]/90 px-2.5 py-1 text-[12px] font-medium text-[var(--av-text)] backdrop-blur-sm">
                 {c.label}
               </span>
             </div>
             <h2 className="av-serif mt-4 text-2xl tracking-[-0.01em]">{c.label}</h2>
-            <p className="mt-1 text-sm text-[#766a62] transition-colors group-hover:text-[#1d1d1f]">Se sortimentet →</p>
+            <p className="mt-1 text-sm text-[var(--av-text-muted)] transition-colors group-hover:text-[var(--av-text)]">Se sortimentet →</p>
           </Link>
         ))}
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-16">
-        <div className="relative aspect-[16/9] overflow-hidden rounded-[32px] md:aspect-[21/9]">
+        <div className="relative aspect-[16/9] overflow-hidden rounded-[var(--av-radius-lg)] md:aspect-[21/9]">
           <Image src={PAGE_IMAGES.produkterHero} alt="Sortiment med egen etikett" fill className="object-cover" sizes="1100px" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent" />
           <p className="absolute bottom-6 left-6 max-w-md text-left text-sm font-medium text-white md:bottom-10 md:left-10 md:text-base">
@@ -154,7 +154,7 @@ export default async function HomePage() {
               "Vi erbjuder custom-anpassade produkter och försöker alltid anpassa antalet efter era behov och önskemål. Ni har möjlighet att köpa från 270 flaskor med egen etikett. Det gör det enklare för dig att nå ut med ditt budskap till dina kunder!",
             ],
           ].map(([t, b]) => (
-            <article key={t} className="rounded-[28px] bg-white p-8 shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
+            <article key={t} className="av-card p-8">
               <h3 className="av-serif text-2xl tracking-[-0.01em]">{t}</h3>
               <p className="mt-4 text-sm leading-relaxed text-[var(--av-text-secondary)]">{b}</p>
             </article>
@@ -190,7 +190,7 @@ export default async function HomePage() {
         <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           {featured.map((p) => (
             <Link key={p.id} href={`/produkter/${p.categorySlug}/${p.slug}`} className="group">
-              <div className="relative aspect-[4/5] overflow-hidden rounded-[24px]">
+              <div className="relative aspect-[4/5] overflow-hidden rounded-[var(--av-radius-lg)]">
                 <Image
                   src={imageForProduct(p.slug) ?? IMG.massa}
                   alt={p.name}
@@ -199,7 +199,7 @@ export default async function HomePage() {
                   sizes="25vw"
                 />
               </div>
-              <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#766a62]">{p.categorySlug}</p>
+              <p className="av-label mt-4">{p.categorySlug}</p>
               <h3 className="av-serif mt-2 text-xl tracking-[-0.01em]">{p.name}</h3>
               <p className="mt-2 text-sm text-[var(--av-text-secondary)]">{p.oneLiner}</p>
             </Link>
@@ -215,8 +215,8 @@ export default async function HomePage() {
             spännande produkter
           </p>
           <form className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:flex-row">
-            <input className="h-[52px] flex-1 rounded-full border border-[var(--av-border)] bg-[#f5f5f7] px-5" placeholder="E-post" />
-            <button className="h-[52px] rounded-full bg-[#1d1d1f] px-6 text-sm font-semibold text-white" type="button">
+            <input className="h-12 flex-1 rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] bg-[var(--av-bg)] px-4" placeholder="E-post" />
+            <button className="h-12 rounded-[var(--av-radius-md)] bg-[var(--av-accent)] px-6 text-sm font-semibold text-white" type="button">
               Anmäl
             </button>
           </form>
