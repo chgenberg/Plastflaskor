@@ -6,7 +6,7 @@ import { safeInternalPath } from "@/domain/safePath";
 export async function POST(req: Request) {
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (user.role !== "RESELLER" && user.role !== "CUSTOMER" && user.role !== "AQUA_STAFF" && user.role !== "AQUA_ADMIN") {
+  if (user.role !== "CUSTOMER" && user.role !== "AQUA_STAFF" && user.role !== "AQUA_ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const form = await req.formData();

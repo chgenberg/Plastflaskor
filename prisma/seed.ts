@@ -9,6 +9,10 @@ const STATUSES: OrderStatus[] = [
   "ARTWORK_AQUA_REVIEW",
   "ARTWORK_CUSTOMER_APPROVAL",
   "CONFIRMED",
+  "LABEL_PRODUCTION",
+  "LABELS_DISPATCHED",
+  "LABELS_RECEIVED",
+  "PRODUCTION_SCHEDULED",
   "IN_PRODUCTION",
   "READY_TO_SHIP",
   "SHIPPED",
@@ -20,34 +24,15 @@ const STATUSES: OrderStatus[] = [
 
 const PRINT_REQS = [
   { code: "volume", label: "Volym", required: true },
-  { code: "producer", label: "Producentuppgifter", required: true },
-  { code: "recycling", label: "Återvinning / FSC / OK Compost", required: true },
-  { code: "food_contact", label: "Livsmedelsgodkännande", required: true },
-  { code: "product_name", label: "Produktnamn", required: false },
+  { code: "ean", label: "EAN", required: true },
+  { code: "pant", label: "Pant", required: true },
+  { code: "producer", label: "Producent", required: true },
+  { code: "ingredients", label: "Ingredienser / produktinformation", required: true },
+  { code: "product_name", label: "Produktnamn", required: true },
+  { code: "mandatory", label: "Obligatorisk information", required: true },
 ];
 
-const RESELLERS = [
-  ["NORD-001", "Nordtryck AB", "556101-0001", "STANDARD"],
-  ["SKAN-002", "Skåneprofilen AB", "556102-0002", "STANDARD"],
-  ["VAST-003", "Västkustreklam AB", "556103-0003", "STANDARD"],
-  ["MALA-004", "Mälardalens Merch AB", "556104-0004", "STANDARD"],
-  ["GOTL-005", "Gotlandspromotion AB", "556105-0005", "STANDARD"],
-  ["SMAL-006", "Smålands Profiltryck AB", "556106-0006", "STANDARD"],
-  ["NORR-007", "Norrlands Vattenprofil AB", "556107-0007", "STANDARD"],
-  ["ORES-008", "Öresund Merchandise AB", "556108-0008", "STANDARD"],
-  ["UPPS-009", "Uppsalaprofilen AB", "556109-0009", "SILVER"],
-  ["JONK-010", "Jönköpings Reklamtryck AB", "556110-0010", "SILVER"],
-  ["LINK-011", "Linköpings Profilhus AB", "556111-0011", "SILVER"],
-  ["KARL-012", "Karlstad Merchandise AB", "556112-0012", "SILVER"],
-  ["UMEA-013", "Umeå Branding AB", "556113-0013", "SILVER"],
-  ["LULE-014", "Luleå Profil AB", "556114-0014", "SILVER"],
-  ["OREB-015", "Örebro Eventtryck AB", "556115-0015", "GOLD"],
-  ["VAXO-016", "Växjö Profilcenter AB", "556116-0016", "GOLD"],
-  ["HELS-017", "Helsingborgs Merch AB", "556117-0017", "GOLD"],
-  ["SUND-018", "Sundsvalls Reklam AB", "556118-0018", "GOLD"],
-  ["HALM-019", "Halmstad Profil AB", "556119-0019", "SPECIAL"],
-  ["KALM-020", "Kalmar Kusttryck AB", "556120-0020", "SPECIAL"],
-] as const;
+const PRICE_CYCLE = ["STANDARD", "SILVER", "GOLD", "SPECIAL"] as const;
 
 const CUSTOMERS = [
   "Fikastunden Café AB",
@@ -508,9 +493,13 @@ async function main() {
     "Document",
     "Invoice",
     "Shipment",
+    "ArtworkApproval",
+    "ArtworkVersion",
     "ArtworkFile",
     "Design",
     "Label",
+    "RepeatOpportunity",
+    "PrintRequirement",
     "ProductionJob",
     "OrderItem",
     "Order",
@@ -567,6 +556,9 @@ async function main() {
         environmentText: p.environmentText,
         sortOrder: p.sortOrder,
         isPublic: [
+          "naturligt-mineralvatten-33cl",
+          "naturligt-mineralvatten-50cl",
+          "vatten-fran-svensk-kalla-33cl",
           "energidryck-med-egen-etikett",
           "lask-med-egen-etikett",
           "pappersmugg-eco-ev-12cl",
@@ -593,7 +585,7 @@ async function main() {
       include: { variants: true },
     });
     createdProducts.push(product);
-    if (p.category === "PAPER_CUP") {
+    if (p.category === "WATER" || p.category === "PAPER_CUP") {
       await prisma.printRequirement.createMany({
         data: PRINT_REQS.map((r, i) => ({
           productId: product.id,
@@ -646,117 +638,69 @@ async function main() {
   const orbCompany = await prisma.company.create({
     data: { orgNr: "559801-1002", name: "AquaFill Örebro AB", email: "orebro@aquafill.se" },
   });
-  const gbg = await prisma.factory.create({ data: { companyId: gbgCompany.id, name: "AquaFill Göteborg", code: "GBG" } });
-  const orb = await prisma.factory.create({ data: { companyId: orbCompany.id, name: "AquaFill Örebro", code: "ORB" } });
+  const bottlerAddr = await prisma.address.create({
+    data: {
+      companyId: gbgCompany.id,
+      type: "SHIPPING",
+      line1: "Källvägen 4",
+      postalCode: "795 32",
+      city: "Rättvik",
+    },
+  });
+  const labelAddr = await prisma.address.create({
+    data: {
+      companyId: orbCompany.id,
+      type: "SHIPPING",
+      line1: "Etikettgatan 8",
+      postalCode: "417 56",
+      city: "Göteborg",
+    },
+  });
+  const gbg = await prisma.factory.create({
+    data: {
+      companyId: gbgCompany.id,
+      name: "Tollagården Tappning",
+      code: "BOT",
+      kind: "bottler",
+      addressId: bottlerAddr.id,
+    },
+  });
+  const orb = await prisma.factory.create({
+    data: {
+      companyId: orbCompany.id,
+      name: "LabelPrint Göteborg",
+      code: "LBL",
+      kind: "label",
+      addressId: labelAddr.id,
+    },
+  });
 
   const aquaCo = await prisma.company.create({
     data: { orgNr: "556800-2048", name: "Aqua Visibility AB", email: "info@aquavisibility.se", phone: "08-400 204 80" },
   });
 
-  const resellerRows = [];
-  for (const [code, name, orgNr, listCode] of RESELLERS) {
-    const company = await prisma.company.create({
-      data: { orgNr, name, email: `order@${code.toLowerCase()}.se` },
-    });
-    const reseller = await prisma.reseller.create({
-      data: { companyId: company.id, priceListId: listByCode[listCode as PriceListCode].id, code },
-    });
-    const addr = await prisma.address.create({
-      data: {
-        companyId: company.id,
-        type: "SHIPPING",
-        line1: "Industrivägen 12",
-        postalCode: "111 22",
-        city: name.split(" ")[0],
-      },
-    });
-    resellerRows.push({ reseller, company, addr });
-  }
-
-  const leadCompany = await prisma.company.create({
-    data: { orgNr: "000000-0000", name: "Publika offerter", email: "leads@aquavisibility.se" },
-  });
-  await prisma.reseller.create({
-    data: { companyId: leadCompany.id, priceListId: listByCode.STANDARD.id, code: "PUBLIC-LEAD" },
-  });
-
   const customers = [];
   for (let i = 0; i < CUSTOMERS.length; i++) {
-    const host = resellerRows[i % resellerRows.length];
     const c = await prisma.customer.create({
       data: {
-        resellerId: host.reseller.id,
+        priceListId: listByCode[PRICE_CYCLE[i % PRICE_CYCLE.length]].id,
         name: CUSTOMERS[i],
         orgNr: i < 20 ? `5599${String(100000 + i).slice(1)}` : undefined,
         email: `kontakt@kund${i + 1}.se`,
       },
     });
-    customers.push({ customer: c, reseller: host.reseller, addr: host.addr });
+    const addr = await prisma.address.create({
+      data: {
+        customerId: c.id,
+        type: "SHIPPING",
+        line1: "Storgatan 1",
+        postalCode: "111 22",
+        city: CUSTOMERS[i].split(" ")[0],
+      },
+    });
+    customers.push({ customer: c, addr });
   }
 
-  const standardUser = await prisma.user.create({
-    data: {
-      email: "reseller.standard@demo.aqua",
-      name: "Kim Standard",
-      passwordHash,
-      role: "RESELLER",
-      companyId: resellerRows[0].company.id,
-      resellerId: resellerRows[0].reseller.id,
-    },
-  });
-  const goldUser = await prisma.user.create({
-    data: {
-      email: "reseller.gold@demo.aqua",
-      name: "Nova Gold",
-      passwordHash,
-      role: "RESELLER",
-      companyId: resellerRows[14].company.id,
-      resellerId: resellerRows[14].reseller.id,
-    },
-  });
-  const sampleProduct = createdProducts[0];
-  if (sampleProduct) {
-    await prisma.design.create({
-      data: {
-        userId: standardUser.id,
-        productId: sampleProduct.id,
-        projectName: "Kim sommar Standard",
-        source: "reseller_order",
-        status: "SUBMITTED",
-        quantity: 1080,
-        optionsJson: "{}",
-        files: {
-          create: {
-            fileName: "kim-standard-etikett.pdf",
-            mimeType: "application/pdf",
-            storageKey: "artwork/kim-standard-etikett.pdf",
-            kind: "original",
-            uploadedById: standardUser.id,
-          },
-        },
-      },
-    });
-    await prisma.design.create({
-      data: {
-        userId: goldUser.id,
-        productId: sampleProduct.id,
-        projectName: "Nova Gold sommar",
-        source: "reseller_order",
-        status: "SUBMITTED",
-        quantity: 2500,
-        optionsJson: "{}",
-        files: {
-          create: {
-            fileName: "nova-gold-etikett.pdf",
-            mimeType: "application/pdf",
-            storageKey: "artwork/nova-gold-etikett.pdf",
-            kind: "original",
-            uploadedById: goldUser.id,
-          },
-        },
-      },
-    });
-  }
   const staff = await prisma.user.create({
     data: {
       email: "staff@demo.aqua",
@@ -777,12 +721,22 @@ async function main() {
   });
   await prisma.user.create({
     data: {
-      email: "factory@demo.aqua",
-      name: "Kim Fabrik",
+      email: "bottler@demo.aqua",
+      name: "Kim Bottler",
       passwordHash,
-      role: "FACTORY",
+      role: "BOTTLER",
       factoryId: gbg.id,
       companyId: gbgCompany.id,
+    },
+  });
+  await prisma.user.create({
+    data: {
+      email: "labels@demo.aqua",
+      name: "Liv Etikett",
+      passwordHash,
+      role: "LABEL",
+      factoryId: orb.id,
+      companyId: orbCompany.id,
     },
   });
   const directCo = await prisma.company.create({
@@ -806,7 +760,7 @@ async function main() {
       city: "Göteborg",
     },
   });
-  await prisma.user.create({
+  const kundUser = await prisma.user.create({
     data: {
       email: "kund@demo.aqua",
       name: "Sara Kund",
@@ -816,11 +770,34 @@ async function main() {
       customerId: directCustomer.id,
     },
   });
+  const sampleProduct = createdProducts.find((p) => p.category === "WATER") ?? createdProducts[0];
+  if (sampleProduct) {
+    await prisma.design.create({
+      data: {
+        userId: kundUser.id,
+        productId: sampleProduct.id,
+        projectName: "Sara sommar",
+        source: "customer_order",
+        status: "SUBMITTED",
+        quantity: 2500,
+        optionsJson: "{}",
+        files: {
+          create: {
+            fileName: "sara-etikett.pdf",
+            mimeType: "application/pdf",
+            storageKey: "artwork/sara-etikett.pdf",
+            kind: "original",
+            uploadedById: kundUser.id,
+          },
+        },
+      },
+    });
+  }
 
   const allVariants = createdProducts
-    .filter((p) => p.category === "PAPER_CUP")
+    .filter((p) => p.category === "WATER")
     .flatMap((p) => p.variants.map((v) => ({ variant: v, product: p })));
-  const qtys = [500, 1000, 2500, 5000, 1080];
+  const qtys = [270, 540, 1080, 2500, 5000];
   const createdOrderIds: string[] = [];
 
   for (let i = 0; i < 50; i++) {
@@ -828,37 +805,35 @@ async function main() {
     const pair = customers[i % customers.length];
     const pv = allVariants[i % allVariants.length];
     const qty = qtys[i % qtys.length];
-    const factory = i % 2 === 0 ? gbg : orb;
+    const factory = gbg;
     const orderNo = `AV-${10450 + i}`;
     const createdAt = new Date(2026, 6, 1 + (i % 40));
-    const opt = JSON.parse(pv.variant.optionsJson || "{}") as { wall?: string; eco?: string };
+    const opt = JSON.parse(pv.variant.optionsJson || "{}") as { waterType?: string; cap?: string; color?: string };
     const visual = {
       productName: pv.product.name,
       qty,
-      volumeLabel: pv.variant.volumeMl ? `${Math.round(pv.variant.volumeMl / 10)} cl` : "",
-      wall: opt.wall === "dubbel" ? "Dubbelvägg" : "Enkelvägg",
-      eco: opt.eco === "ja",
-      finish: "Matt",
-      lid: "Utan lock",
+      volumeLabel: pv.variant.volumeMl ? `${Math.round(pv.variant.volumeMl / 10)} CL` : "",
+      waterType: opt.waterType?.includes("kolsyr") ? "KOLSYRAT" : "STILLA",
+      bottleColor: "TRANSPARENT FLASKA",
+      cap: opt.cap === "white" ? "VIT KAPSYL" : "SVART KAPSYL",
     };
     const idx = STATUSES.indexOf(status);
     const locked = idx >= 4;
     const order = await prisma.order.create({
       data: {
         orderNo,
-        buyerType: "RESELLER",
-        resellerId: pair.reseller.id,
+        buyerType: "CUSTOMER",
         customerId: pair.customer.id,
         currentStatus: status,
         shippingAddressId: pair.addr.id,
         factoryId: factory.id,
-        source: i % 5 === 0 && i > 4 ? "repeat" : "reseller_order",
+        source: i % 5 === 0 && i > 4 ? "repeat" : "customer_order",
         sourceOrderId: i % 5 === 0 && i > 4 ? createdOrderIds[i - 5] : undefined,
         invoiceRef: `REF-${200 + i}`,
         requestedDate: "2026-09-15",
         preliminaryDate: "2026-09-20",
         confirmedDate: locked ? "2026-09-22" : null,
-        aquaApprovedDelivery: idx >= 5 ? "2026-09-22" : null,
+        aquaApprovedDelivery: idx >= 9 ? "2026-09-22" : null,
         repeatHorizonMonths: locked && i % 3 === 0 ? 12 : null,
         lockedAt: locked ? createdAt : null,
         extrasJson: locked ? JSON.stringify([{ kind: "freight", label: "Frakt", amountExVat: 450 }]) : "[]",
@@ -897,15 +872,23 @@ async function main() {
           entityId: order.id,
           fromStatus: s === 0 ? null : STATUSES[s - 1],
           toStatus: STATUSES[s],
-          actorRole: s < 2 ? Role.RESELLER : s < 6 ? Role.AQUA_STAFF : Role.FACTORY,
+          actorRole: s < 2 ? Role.CUSTOMER : s < 5 ? Role.AQUA_STAFF : s < 7 ? Role.LABEL : Role.BOTTLER,
           source: "seed",
           occurredAt: new Date(createdAt.getTime() + s * 86400000),
         },
       });
     }
 
-    const jobStatus = idx >= 6 ? "DONE" : idx >= 5 ? "STARTED" : "NOT_PLANNED";
+    const jobStatus = idx >= 10 ? "DONE" : idx >= 9 ? "STARTED" : "NOT_PLANNED";
     const planned = new Date(2026, 7, 25 + (i % 6));
+    await prisma.productionJob.create({
+      data: {
+        orderId: order.id,
+        factoryId: orb.id,
+        status: idx >= 6 ? "DONE" : idx >= 5 ? "STARTED" : "NOT_PLANNED",
+        plannedAt: planned,
+      },
+    });
     await prisma.productionJob.create({
       data: {
         orderId: order.id,
@@ -931,7 +914,19 @@ async function main() {
       });
     }
 
-    if (idx >= 7) {
+    if (idx >= 6) {
+      await prisma.shipment.create({
+        data: {
+          orderId: order.id,
+          type: "LABELS_TO_FACTORY",
+          carrier: "PostNord",
+          trackingNo: `LBL${10450 + i}`,
+          status: idx >= 7 ? "DELIVERED" : "IN_TRANSIT",
+        },
+      });
+    }
+
+    if (idx >= 10) {
       await prisma.shipment.create({
         data: {
           orderId: order.id,
@@ -939,25 +934,24 @@ async function main() {
           carrier: "PostNord",
           trackingNo: `AV00${10450 + i}`,
           waybillNo: `WB-${10450 + i}`,
-          status: idx >= 8 ? "DELIVERED" : idx >= 7 ? "IN_TRANSIT" : "CREATED",
+          status: idx >= 12 ? "DELIVERED" : idx >= 11 ? "IN_TRANSIT" : "CREATED",
         },
       });
     }
 
-    if (idx >= 10) {
+    if (idx >= 14) {
       await prisma.invoice.create({
         data: {
           orderId: order.id,
-          resellerId: pair.reseller.id,
           customerId: pair.customer.id,
           invoiceNo: String(10450 + i),
           fortnoxId: `FX-${10450 + i}`,
-          status: idx >= 11 ? "PAID" : "ISSUED",
-          amountExVat: qty * 3.1,
-          vatAmount: qty * 3.1 * 0.25,
-          amountIncVat: qty * 3.1 * 1.25,
+          status: idx >= 15 ? "PAID" : "ISSUED",
+          amountExVat: qty * 6.4,
+          vatAmount: qty * 6.4 * 0.25,
+          amountIncVat: qty * 6.4 * 1.25,
           issuedAt: new Date(),
-          paidAt: idx >= 11 ? new Date() : null,
+          paidAt: idx >= 15 ? new Date() : null,
         },
       });
       await prisma.document.create({
@@ -1000,15 +994,14 @@ async function main() {
     const status = STATUSES[i];
     const pv = allVariants[i % allVariants.length];
     const qty = 1000;
-    const opt = JSON.parse(pv.variant.optionsJson || "{}") as { wall?: string; eco?: string };
+    const opt = JSON.parse(pv.variant.optionsJson || "{}") as { waterType?: string; cap?: string };
     const visual = {
       productName: pv.product.name,
       qty,
-      volumeLabel: pv.variant.volumeMl ? `${Math.round(pv.variant.volumeMl / 10)} cl` : "",
-      wall: opt.wall === "dubbel" ? "Dubbelvägg" : "Enkelvägg",
-      eco: opt.eco === "ja",
-      finish: "Matt",
-      lid: "Utan lock",
+      volumeLabel: pv.variant.volumeMl ? `${Math.round(pv.variant.volumeMl / 10)} CL` : "",
+      waterType: opt.waterType?.includes("kolsyr") ? "KOLSYRAT" : "STILLA",
+      bottleColor: "TRANSPARENT FLASKA",
+      cap: "SVART KAPSYL",
     };
     const locked = i >= 4;
     const order = await prisma.order.create({
@@ -1025,6 +1018,8 @@ async function main() {
         preliminaryDate: "2026-09-25",
         confirmedDate: locked ? "2026-09-26" : null,
         lockedAt: locked ? new Date() : null,
+        factoryDeadline: locked ? "2026-09-10" : null,
+        factoryDeadlineAccepted: i >= 5,
         extrasJson: locked ? JSON.stringify([{ kind: "freight", label: "Frakt", amountExVat: 450 }]) : "[]",
         priceSnapshotJson: locked
           ? JSON.stringify({
@@ -1048,6 +1043,9 @@ async function main() {
           },
         },
       },
+    });
+    await prisma.productionJob.create({
+      data: { orderId: order.id, factoryId: orb.id, status: "NOT_PLANNED" },
     });
     await prisma.productionJob.create({
       data: { orderId: order.id, factoryId: gbg.id, status: "NOT_PLANNED" },
@@ -1075,7 +1073,7 @@ async function main() {
   }
 
   const goldOrders = await prisma.order.findMany({
-    where: { resellerId: resellerRows[14].reseller.id },
+    where: { currentStatus: "ARTWORK_AQUA_REVIEW" },
     take: 3,
   });
   for (const o of goldOrders) {
@@ -1115,7 +1113,7 @@ async function main() {
     ],
   });
 
-  console.log("Seed klar: muggar, 20 ÅF, slutkund-login, 56 ordrar, leads.");
+  console.log("Seed klar: profilvatten, labels@ + bottler@, kunder, flaskordrar.");
 }
 
 main()

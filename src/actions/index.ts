@@ -5,12 +5,9 @@ import { redirect } from "next/navigation";
 import { signIn, signOut } from "@/server/auth";
 import { getSessionUser, homeForRole } from "@/server/rbac";
 import {
-  createQuote,
   repeatOrder,
   advanceOrder,
   getOrderByNo,
-  createResellerOrderFromDesign,
-  createCustomerOrderFromDesign,
   createBuyerOrder,
   saveExtras,
   sendOrderConfirmation,
@@ -21,11 +18,12 @@ import { FACTORY_EVENTS, factoryAdvance, approveFactoryDate, setFactoryDeadline 
 import { markLeadConverted, remindLead, updateLead } from "@/server/services/lead.service";
 import { setPrintRequirementRequired } from "@/server/services/catalog.service";
 import { getIntegrations } from "@/server/integrations/composition";
+import { notifyQuoteInquiry } from "@/server/services/notify";
 import { prisma } from "@/server/db";
 import { OrderStatus, RepeatLeadStatus } from "@prisma/client";
 import { safeInternalPath } from "@/domain/safePath";
 import type { ExtraLine } from "@/domain/extras";
-import { assertRequiredPrintPlaced, emptyCupDocument, parseCupDocument, type CupDocument } from "@/domain/cupDocument";
+import { emptyCupDocument, parseCupDocument, type CupDocument } from "@/domain/cupDocument";
 
 export async function loginAction(formData: FormData) {
   const email = String(formData.get("email") ?? "");
@@ -58,12 +56,21 @@ export async function quoteAction(formData: FormData) {
     city: String(formData.get("city") || "") || undefined,
     message: String(formData.get("message") || "") || undefined,
     productId: String(formData.get("productId") ?? ""),
-    qty: Number(formData.get("qty") ?? 500),
+    qty: Number(formData.get("qty") ?? 270),
     designId: String(formData.get("designId") || "") || undefined,
   });
   if (!parsed.success) redirect("/offert?error=1");
-  const order = await createQuote(parsed.data);
-  redirect(`/offert/tack?order=${order.orderNo}`);
+  const product = await prisma.product.findUnique({ where: { id: parsed.data.productId } });
+  await notifyQuoteInquiry({
+    company: parsed.data.company,
+    email: parsed.data.email,
+    phone: parsed.data.phone,
+    city: parsed.data.city,
+    message: parsed.data.message,
+    productName: product?.name ?? "Produkt",
+    qty: parsed.data.qty,
+  });
+  redirect("/offert/tack");
 }
 
 export async function placeBuyerOrderAction(formData: FormData) {
@@ -80,8 +87,9 @@ export async function placeBuyerOrderAction(formData: FormData) {
     requestedDate: String(formData.get("requestedDate") || "") || undefined,
     deliveryRequirement: String(formData.get("deliveryRequirement") || "") || undefined,
     notes: String(formData.get("notes") || "") || undefined,
-    lid: String(formData.get("lid") || "none"),
-    finish: String(formData.get("finish") || "matte"),
+    waterType: String(formData.get("waterType") || "") || undefined,
+    cap: String(formData.get("cap") || "") || undefined,
+    color: String(formData.get("color") || "") || undefined,
     designId: String(formData.get("designId") || "") || undefined,
     customerId: String(formData.get("customerId") || "") || undefined,
   });
@@ -111,36 +119,6 @@ export async function placeBuyerOrderAction(formData: FormData) {
     }
     redirect(`/konto/ordrar/${order.orderNo}`);
   }
-  if (user.role === "RESELLER") {
-    if (!user.resellerId) throw new Error("ÅF saknas");
-    const reseller = await prisma.reseller.findUnique({
-      where: { id: user.resellerId },
-      include: { customers: true },
-    });
-    const customerId = parsed.data.customerId ?? reseller?.customers[0]?.id;
-    if (!customerId) throw new Error("Välj kund");
-    if (!reseller?.customers.some((c) => c.id === customerId)) throw new Error("Forbidden");
-    const order = await createBuyerOrder({
-      ...parsed.data,
-      buyerType: "RESELLER",
-      resellerId: user.resellerId,
-      customerId,
-      actorRole: "RESELLER",
-    });
-    if (file) {
-      await uploadArtworkForOrder({
-        orderId: order.id,
-        userId: user.id,
-        role: user.role,
-        resellerId: user.resellerId,
-        customerId,
-        fileName: file.name,
-        mimeType: file.type,
-        bytes: Buffer.from(await file.arrayBuffer()),
-      });
-    }
-    redirect(`/partner/ordrar/${order.orderNo}`);
-  }
   throw new Error("Forbidden");
 }
 
@@ -158,17 +136,17 @@ export async function repeatOrderAction(formData: FormData) {
   const source = await prisma.order.findUnique({ where: { id: parsed.data.sourceOrderId } });
   if (!source) throw new Error("Order saknas");
   const staff = user?.role === "AQUA_STAFF" || user?.role === "AQUA_ADMIN";
-  if (user?.role === "RESELLER" && source.resellerId !== user.resellerId) throw new Error("Forbidden");
+  if (user?.role === "RESELLER") throw new Error("Forbidden");
   if (user?.role === "CUSTOMER" && source.customerId !== user.customerId) throw new Error("Forbidden");
+  if (!staff && user?.role !== "CUSTOMER") throw new Error("Forbidden");
   const order = await repeatOrder({
     ...parsed.data,
-    actorRole: (user?.role as "RESELLER" | "CUSTOMER" | "AQUA_STAFF") ?? "RESELLER",
-    resellerId: user?.role === "RESELLER" ? user.resellerId : staff ? source.resellerId : null,
+    actorRole: staff ? "AQUA_STAFF" : "CUSTOMER",
     customerId: user?.role === "CUSTOMER" ? user.customerId : source.customerId,
   });
   const leadId = String(formData.get("leadId") || "");
   if (leadId) await markLeadConverted(leadId, order.id);
-  redirect(user?.role === "CUSTOMER" ? `/konto/ordrar/${order.orderNo}` : `/partner/ordrar/${order.orderNo}`);
+  redirect(staff ? `/operations/ordrar/${order.orderNo}` : `/konto/ordrar/${order.orderNo}`);
 }
 
 export async function opsAdvanceAction(formData: FormData) {
@@ -237,7 +215,7 @@ export async function invoiceAction(formData: FormData) {
 }
 
 function canRunFactory(role?: string | null) {
-  return role === "FACTORY" || role === "AQUA_STAFF" || role === "AQUA_ADMIN";
+  return role === "FACTORY" || role === "LABEL" || role === "BOTTLER" || role === "AQUA_STAFF" || role === "AQUA_ADMIN";
 }
 
 export async function factoryAction(formData: FormData) {
@@ -248,19 +226,26 @@ export async function factoryAction(formData: FormData) {
   if (!FACTORY_EVENTS.includes(action as (typeof FACTORY_EVENTS)[number])) throw new Error("Forbidden");
   const job = await prisma.productionJob.findUnique({ where: { id: jobId } });
   if (!job) throw new Error("Jobb saknas");
-  if (user.role === "FACTORY" && job.factoryId !== user.factoryId) throw new Error("Forbidden");
+  if ((user.role === "FACTORY" || user.role === "LABEL" || user.role === "BOTTLER") && job.factoryId !== user.factoryId) {
+    throw new Error("Forbidden");
+  }
   await factoryAdvance(
     jobId,
     job.factoryId,
     action as (typeof FACTORY_EVENTS)[number],
-    user.role as "FACTORY" | "AQUA_STAFF" | "AQUA_ADMIN",
+    user.role as "FACTORY" | "LABEL" | "BOTTLER" | "AQUA_STAFF" | "AQUA_ADMIN",
     {
       issueNote: String(formData.get("issueNote") || "") || undefined,
       readyDate: String(formData.get("readyDate") || "") || undefined,
+      trackingNo: String(formData.get("trackingNo") || "") || undefined,
+      carrier: String(formData.get("carrier") || "") || undefined,
+      shippedDate: String(formData.get("shippedDate") || "") || undefined,
     },
   );
-  revalidatePath("/factory");
-  revalidatePath(`/factory/jobb/${jobId}`);
+  revalidatePath("/labels");
+  revalidatePath(`/labels/jobb/${jobId}`);
+  revalidatePath("/bottler");
+  revalidatePath(`/bottler/jobb/${jobId}`);
 }
 
 export async function createWaybillAction(formData: FormData) {
@@ -287,11 +272,16 @@ export async function createWaybillAction(formData: FormData) {
     weightKg: Number(formData.get("weightKg") ?? 20),
     carrier: String(formData.get("carrier") ?? "PostNord"),
   });
-  if (job) {
-    revalidatePath(`/factory/jobb/${job.id}`);
-    redirect(`/factory/jobb/${job.id}/fraktsedel?tracking=${result.trackingNo}`);
+  revalidatePath("/bottler");
+  revalidatePath("/operations");
+  if (orderNo) {
+    revalidatePath(`/operations/ordrar/${orderNo}`);
+    return;
   }
-  revalidatePath(`/operations/ordrar/${orderNo}`);
+  if (job) {
+    revalidatePath(`/bottler/jobb/${job.id}`);
+    redirect(`/bottler/jobb/${job.id}/fraktsedel?tracking=${result.trackingNo}`);
+  }
 }
 
 function cupDocumentFromSave(input: {
@@ -338,7 +328,8 @@ export async function saveDesignAction(input: {
   designId?: string;
 }) {
   const user = await getSessionUser();
-  const source = user?.role === "CUSTOMER" ? "customer_order" : user?.role === "RESELLER" ? "reseller_order" : "public_quote";
+  if (user?.role === "RESELLER") throw new Error("Forbidden");
+  const source = user?.role === "CUSTOMER" ? "customer_order" : "aqua_studio";
   const product = await prisma.product.findUnique({ where: { id: input.productId } });
   if (!product) throw new Error("Produkt saknas");
   const cupDoc = cupDocumentFromSave({
@@ -380,33 +371,6 @@ export async function saveDesignAction(input: {
   });
 }
 
-export async function attachDesignToOrderAction(designId: string) {
-  const design = await prisma.design.findUnique({ where: { id: designId } });
-  if (!design) throw new Error("Design saknas");
-  const cupDoc = parseCupDocument(design.cupDocumentJson);
-  if (cupDoc) {
-    assertRequiredPrintPlaced(cupDoc.requirements);
-  } else {
-    const product = await prisma.product.findUnique({
-      where: { id: design.productId },
-      include: { printRequirements: true },
-    });
-    assertRequiredPrintPlaced(
-      (product?.printRequirements ?? []).map((r) => ({ required: r.required, placed: false })),
-    );
-  }
-  const user = await getSessionUser();
-  if (user?.role === "CUSTOMER" && user.customerId) {
-    return createCustomerOrderFromDesign({ designId, customerId: user.customerId });
-  }
-  if (!user?.resellerId) throw new Error("Logga in som ÅF eller kund");
-  return createResellerOrderFromDesign({
-    designId,
-    resellerId: user.resellerId,
-    userId: user.id,
-  });
-}
-
 export async function approveArtworkAction(formData: FormData) {
   const user = await getSessionUser();
   if (user?.role !== "AQUA_STAFF" && user?.role !== "AQUA_ADMIN") throw new Error("Forbidden");
@@ -424,12 +388,10 @@ export async function customerApproveProofAction(formData: FormData) {
   const orderNo = String(formData.get("orderNo"));
   const order = await getOrderByNo(orderNo);
   if (!order) throw new Error("Order saknas");
-  if (user.role === "RESELLER" && order.resellerId !== user.resellerId) throw new Error("Forbidden");
-  if (user.role === "CUSTOMER" && order.customerId !== user.customerId) throw new Error("Forbidden");
-  await customerApproveProof(order.id, user.role as "CUSTOMER" | "RESELLER");
-  revalidatePath(user.role === "CUSTOMER" ? `/konto/ordrar/${orderNo}` : `/partner/ordrar/${orderNo}`);
+  if (user.role !== "CUSTOMER" || order.customerId !== user.customerId) throw new Error("Forbidden");
+  await customerApproveProof(order.id, "CUSTOMER");
+  revalidatePath(`/konto/ordrar/${orderNo}`);
   revalidatePath("/konto");
-  revalidatePath("/partner");
 }
 
 export async function confirmDeliveryAction(formData: FormData) {
@@ -484,19 +446,7 @@ export async function addAddressAction(formData: FormData) {
     revalidatePath("/konto");
     return;
   }
-  if (!user?.resellerId) throw new Error("Endast inloggad köpare");
-  const reseller = await prisma.reseller.findUnique({ where: { id: user.resellerId } });
-  if (!reseller) throw new Error("Återförsäljare saknas");
-  await prisma.address.create({
-    data: {
-      companyId: reseller.companyId,
-      type: parsed.type,
-      line1: parsed.line1,
-      postalCode: parsed.postalCode,
-      city: parsed.city,
-    },
-  });
-  revalidatePath("/partner/konto");
+  throw new Error("Logga in som kund");
 }
 
 export async function markNotificationRead(id: string) {
@@ -505,15 +455,7 @@ export async function markNotificationRead(id: string) {
   const note = await prisma.notification.findUnique({ where: { id } });
   if (!note || note.userId !== user.id) throw new Error("Forbidden");
   await getIntegrations().notifications.markRead(id);
-  revalidatePath("/operations/notiser");
-}
-
-export async function aiGenerateAction(websiteUrl: string, productName: string) {
-  return getIntegrations().designAI.generateProposals(websiteUrl, productName);
-}
-
-export async function aiRefineAction(message: string, current: { id: string; tone: "minimal" | "bold" | "event"; title: string; notes: string; canvas: { background: string; logoScale: number; qr: boolean } }) {
-  return getIntegrations().designAI.refineProposal(message, current);
+  revalidatePath("/operations");
 }
 
 export async function togglePrintRequirementAction(formData: FormData) {

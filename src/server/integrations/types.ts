@@ -39,20 +39,6 @@ export interface EmailService {
   sendRepeatReminder(orderId: string): Promise<{ id: string }>;
 }
 
-export interface DesignProposal {
-  id: string;
-  tone: "minimal" | "bold" | "event";
-  title: string;
-  notes: string;
-  canvas: { background: string; logoScale: number; qr: boolean };
-}
-
-export interface DesignAIService {
-  extractBrand(websiteUrl: string): Promise<{ logoUrl: string; colors: string[]; styleNotes: string }>;
-  generateProposals(websiteUrl: string, productName: string): Promise<DesignProposal[]>;
-  refineProposal(message: string, current: DesignProposal): Promise<DesignProposal>;
-}
-
 export interface NotificationService {
   publish(input: { userId: string; type: string; title: string; body: string; entityType?: string; entityId?: string }): Promise<void>;
   listForUser(userId: string): Promise<Array<{ id: string; title: string; body: string; readAt: Date | null }>>;
@@ -65,6 +51,5 @@ export interface IntegrationRegistry {
   label: LabelService;
   factory: FactoryService;
   email: EmailService;
-  designAI: DesignAIService;
   notifications: NotificationService;
 }

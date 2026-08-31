@@ -15,7 +15,7 @@ export default function InspirationPage() {
     <main className="mx-auto max-w-6xl px-4 pb-20 pt-16">
       <PageIntro badge="Inspiration" title="Referenser och användning" />
       <p className="mt-4 max-w-2xl text-[var(--av-text-secondary)]">
-        Profilvatten, muggar, dryck och flaskor med egen design. Bläddra och starta sedan i studion.
+        Profilvatten, dryck och flaskor med egen etikett. Priser och order ligger i kundportalen.
       </p>
       <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {SHOTS.map((s) => (
@@ -26,7 +26,7 @@ export default function InspirationPage() {
         ))}
       </div>
       <div className="mt-10">
-        <PillLink href="/designa">Starta design</PillLink>
+        <PillLink href="/login">Logga in till kundportalen</PillLink>
       </div>
     </main>
   );

@@ -21,7 +21,7 @@ export default async function KontoHome() {
     <div className="space-y-8">
       <PageHeader
         title={`Hej ${user.name?.split(" ")[0] ?? ""}`}
-        subtitle="Era pappersmuggar — status, korrektur och fakturor."
+        subtitle="Status, godkännande och fakturor."
         action={<LinkButton href="/konto/ordrar/ny">Ny order</LinkButton>}
       />
       <NextStep
@@ -38,7 +38,7 @@ export default async function KontoHome() {
         <KpiCard label="Fakturor" value={invoices} href="/konto/fakturor" />
       </div>
       {orders.length === 0 ? (
-        <EmptyState title="Inga ordrar ännu" body="Skapa en ny order eller starta från en tidigare mugg i studion." />
+        <EmptyState title="Inga ordrar ännu" body="Skapa en ny order eller beställ igen från en tidigare order." />
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
           {orders.slice(0, 6).map((o) => {
@@ -70,7 +70,7 @@ export default async function KontoHome() {
         </div>
       )}
       <p className="text-sm text-[var(--av-text-muted)]">
-        Behöver ni en tryckfil? <Link href="/designa" className="font-medium text-[var(--av-accent)]">Öppna designern</Link>
+        Behöver ni en etikett? <Link href="/designa" className="font-medium text-[var(--av-accent)]">Öppna designern</Link>
       </p>
     </div>
   );

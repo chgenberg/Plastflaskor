@@ -1,7 +1,7 @@
 import type { Role } from "@prisma/client";
 
 export function canSeePrices(role?: Role | string | null) {
-  return role === "RESELLER" || role === "CUSTOMER" || role === "AQUA_STAFF" || role === "AQUA_ADMIN";
+  return role === "CUSTOMER" || role === "AQUA_STAFF" || role === "AQUA_ADMIN";
 }
 
 export function canSeeFinance(role?: Role | string | null) {
@@ -9,7 +9,7 @@ export function canSeeFinance(role?: Role | string | null) {
 }
 
 export function canSeeFactoryFloor(role?: Role | string | null) {
-  return role === "FACTORY" || role === "AQUA_STAFF" || role === "AQUA_ADMIN";
+  return role === "FACTORY" || role === "LABEL" || role === "BOTTLER" || role === "AQUA_STAFF" || role === "AQUA_ADMIN";
 }
 
 export function stripPrices<T extends Record<string, unknown>>(row: T): T {

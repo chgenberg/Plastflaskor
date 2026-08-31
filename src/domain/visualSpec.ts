@@ -1,12 +1,18 @@
+import { bottleColorLabel, capLabel, parseBottleOptions, waterTypeLabel } from "./bottleCatalog";
+
 export type VisualSpec = {
   productName: string;
   qty: number;
   volumeLabel: string;
-  wall: string;
-  eco: boolean;
-  finish: string;
-  lid: string;
+  waterType: string;
+  bottleColor: string;
+  cap: string;
   imageSrc?: string | null;
+  /** @deprecated cup leftover — ignored in UI */
+  wall?: string;
+  eco?: boolean;
+  finish?: string;
+  lid?: string;
 };
 
 export function visualSpecFromOptions(input: {
@@ -16,21 +22,15 @@ export function visualSpecFromOptions(input: {
   optionsJson?: string | null;
   imageSrc?: string | null;
 }): VisualSpec {
-  const opt = safeJson(input.optionsJson);
-  const wall = opt.wall === "dubbel" ? "Dubbelvägg" : "Enkelvägg";
-  const eco = opt.eco === "ja" || opt.eco === true || opt.eco === "true";
-  const finish = opt.finish === "glossy" ? "Glans" : "Matt";
-  const lid =
-    opt.lid === "white" ? "Vitt lock" : opt.lid === "black" ? "Svart lock" : "Utan lock";
-  const cl = input.volumeMl ? `${Math.round(input.volumeMl / 10)} cl` : "";
+  const opt = parseBottleOptions(input.optionsJson);
+  const cl = input.volumeMl ? `${Math.round(input.volumeMl / 10)} CL` : "";
   return {
     productName: input.productName,
     qty: input.qty,
     volumeLabel: cl,
-    wall,
-    eco,
-    finish,
-    lid,
+    waterType: waterTypeLabel(opt.waterType),
+    bottleColor: bottleColorLabel(opt.color),
+    cap: capLabel(opt.cap),
     imageSrc: input.imageSrc,
   };
 }
@@ -62,16 +62,21 @@ export function parseVisualSpec(raw?: string | null): VisualSpec | null {
   try {
     const v = JSON.parse(raw) as VisualSpec;
     if (!v.productName) return null;
-    return v;
+    if (!v.waterType && (v.wall || v.lid)) {
+      return {
+        ...v,
+        waterType: v.waterType ?? "STILLA",
+        bottleColor: v.bottleColor ?? "TRANSPARENT FLASKA",
+        cap: v.cap ?? "SVART KAPSYL",
+      };
+    }
+    return {
+      ...v,
+      waterType: v.waterType ?? "STILLA",
+      bottleColor: v.bottleColor ?? "TRANSPARENT FLASKA",
+      cap: v.cap ?? "SVART KAPSYL",
+    };
   } catch {
     return null;
-  }
-}
-
-function safeJson(raw?: string | null): Record<string, unknown> {
-  try {
-    return JSON.parse(raw || "{}") as Record<string, unknown>;
-  } catch {
-    return {};
   }
 }

@@ -1,7 +1,7 @@
 import { repeatOrderAction } from "@/actions";
 import type { VisualSpec } from "@/domain/visualSpec";
 import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
-import { RepeatFields } from "@/ui/partner/RepeatFields";
+import { RepeatFields } from "@/ui/order/RepeatFields";
 import { Button, controlClass } from "@/ui/shell/primitives";
 
 export function RepeatOrderForm({
@@ -10,19 +10,22 @@ export function RepeatOrderForm({
   defaultQty,
   moq,
   prices,
+  leadId,
 }: {
   sourceOrderId: string;
   spec: VisualSpec | null;
   defaultQty: number;
   moq: number;
   prices?: Record<number, number | null>;
+  leadId?: string;
 }) {
   return (
     <div className="space-y-6">
       {spec ? <VisualSpecCard spec={spec} /> : null}
-      <p className="text-sm text-[var(--av-text-muted)]">Samma tryckfil och spec kopieras. Bara antal och kommentar kan ändras.</p>
+      <p className="text-sm text-[var(--av-text-muted)]">Samma artwork och flaskspec kopieras. Bara antal och kommentar kan ändras.</p>
       <form action={repeatOrderAction} className="space-y-4">
         <input type="hidden" name="sourceOrderId" value={sourceOrderId} />
+        {leadId ? <input type="hidden" name="leadId" value={leadId} /> : null}
         {prices ? (
           <RepeatFields defaultQty={defaultQty} prices={prices} moq={moq} />
         ) : (

@@ -24,12 +24,12 @@ const ITEMS: Parent[] = [
     ],
   },
   {
-    label: "Designa",
-    href: "/designa",
+    label: "Inspiration",
+    href: "/inspiration",
     children: [
-      { href: "/designa", label: "Designa själv" },
       { href: "/inspiration", label: "Inspiration" },
       { href: "/valmojligheter", label: "Valmöjligheter" },
+      { href: "/login", label: "Design studio (inloggad)" },
     ],
   },
   {
@@ -47,7 +47,7 @@ const ITEMS: Parent[] = [
     href: "/offert",
     children: [
       { href: "/offert", label: "Begär offert" },
-      { href: "/aterforsaljare", label: "För återförsäljare" },
+      { href: "/login", label: "Kundportal" },
     ],
   },
 ];
@@ -90,23 +90,23 @@ export function PublicNav({ email }: { email?: string | null }) {
         <div className="ml-auto hidden items-center gap-2 md:flex">
           {email ? (
             <form action={logoutAction}>
-              <button type="submit" className="h-9 rounded-[var(--av-radius-md)] px-3 text-[13px] font-medium text-[var(--av-text-secondary)] hover:bg-[var(--av-bg)]">
+              <button type="submit" className="inline-flex h-9 items-center rounded-[var(--av-radius-md)] px-3 text-[13px] font-medium text-[var(--av-text-secondary)] hover:bg-[var(--av-bg)]">
                 Logga ut
               </button>
             </form>
           ) : (
             <Link
               href="/login"
-              className="h-9 rounded-[var(--av-radius-md)] px-3 text-[13px] font-medium text-[var(--av-text-secondary)] hover:bg-[var(--av-bg)] hover:text-[var(--av-text)]"
+              className="inline-flex h-9 items-center rounded-[var(--av-radius-md)] px-3 text-[13px] font-medium text-[var(--av-text-secondary)] hover:bg-[var(--av-bg)] hover:text-[var(--av-text)]"
             >
               Logga in
             </Link>
           )}
           <Link
-            href="/designa"
+            href="/login"
             className="inline-flex h-9 items-center rounded-[var(--av-radius-md)] bg-[var(--av-accent)] px-4 text-[13px] font-semibold text-white hover:bg-[var(--av-accent-hover)]"
           >
-            Starta design
+            Kundportal
           </Link>
         </div>
 
@@ -133,8 +133,8 @@ export function PublicNav({ email }: { email?: string | null }) {
             <Link href="/login" onClick={() => setMobileOpen(false)} className="mt-3 rounded-[var(--av-radius-md)] px-3 py-2.5 text-sm font-medium">
               Logga in
             </Link>
-            <Link href="/designa" onClick={() => setMobileOpen(false)} className="rounded-[var(--av-radius-md)] bg-[var(--av-accent)] px-4 py-3 text-center text-sm font-semibold text-white">
-              Starta design
+            <Link href="/login" onClick={() => setMobileOpen(false)} className="rounded-[var(--av-radius-md)] bg-[var(--av-accent)] px-4 py-3 text-center text-sm font-semibold text-white">
+              Kundportal
             </Link>
           </div>
         </div>

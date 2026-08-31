@@ -13,10 +13,8 @@ export function OrderFilterForm({
     status?: string;
     from?: string;
     to?: string;
-    buyer?: string;
     size?: string;
-    wall?: string;
-    eco?: string;
+    waterType?: string;
     factory?: string;
     invoice?: string;
     late?: string;
@@ -28,7 +26,7 @@ export function OrderFilterForm({
       <input
         name="q"
         defaultValue={values.q}
-        placeholder="Sök order, kund, ÅF, produkt, org.nr, tracking, faktura"
+        placeholder="Sök order, kund, produkt, org.nr, tracking, faktura"
         className={`${controlClass} sm:col-span-2 lg:col-span-4`}
       />
       <select name="phase" defaultValue={values.phase ?? ""} className={controlClass}>
@@ -47,26 +45,15 @@ export function OrderFilterForm({
           </option>
         ))}
       </select>
-      <select name="buyer" defaultValue={values.buyer ?? ""} className={controlClass}>
-        <option value="">ÅF och direktkund</option>
-        <option value="RESELLER">Återförsäljare</option>
-        <option value="CUSTOMER">Direktkund</option>
-      </select>
       <select name="size" defaultValue={values.size ?? ""} className={controlClass}>
         <option value="">Alla storlekar</option>
-        <option value="12">12 cl</option>
-        <option value="23">23 cl</option>
-        <option value="35">35 cl</option>
+        <option value="33">33 cl</option>
+        <option value="50">50 cl</option>
       </select>
-      <select name="wall" defaultValue={values.wall ?? ""} className={controlClass}>
-        <option value="">Enkel- och dubbelvägg</option>
-        <option value="enkel">Enkelvägg</option>
-        <option value="dubbel">Dubbelvägg</option>
-      </select>
-      <select name="eco" defaultValue={values.eco ?? ""} className={controlClass}>
-        <option value="">ECO och standard</option>
-        <option value="ja">ECO</option>
-        <option value="nej">Ej ECO</option>
+      <select name="waterType" defaultValue={values.waterType ?? ""} className={controlClass}>
+        <option value="">Stilla och kolsyrat</option>
+        <option value="stilla">Stilla</option>
+        <option value="kolsyrat">Kolsyrat</option>
       </select>
       <select name="invoice" defaultValue={values.invoice ?? ""} className={controlClass}>
         <option value="">Alla fakturastatusar</option>
@@ -83,7 +70,7 @@ export function OrderFilterForm({
       </select>
       {factories.length > 1 ? (
         <select name="factory" defaultValue={values.factory ?? ""} className={controlClass}>
-          <option value="">Alla tryckerier</option>
+          <option value="">Alla bottlers</option>
           {factories.map((f) => (
             <option key={f.id} value={f.id}>
               {f.name}

@@ -16,13 +16,12 @@ export default async function OpsLayout({ children }: { children: React.ReactNod
         { href: "/operations/pipeline", label: "Pipeline" },
         { href: "/operations/leads", label: "Leads" },
         { href: "/operations/produktion", label: "Produktion" },
-        { href: "/operations/ordrar?phase=artwork", label: "Tryckfiler" },
+        { href: "/operations/ordrar?phase=labels", label: "Etiketter" },
         { href: "/operations/frakt", label: "Frakt" },
         { href: "/operations/ekonomi", label: "Fakturering" },
         { href: "/operations/kunder", label: "Kunder" },
         { href: "/operations/produkter", label: "Produkter" },
         { href: "/operations/priser", label: "Prislistor" },
-        { href: "/operations/notiser", label: "Notiser" },
         { href: "/operations/installningar", label: "Inställningar" },
       ]}
     >

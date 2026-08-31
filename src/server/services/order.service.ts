@@ -9,7 +9,7 @@ import { buildPriceSnapshot, parseExtras, type ExtraLine } from "@/domain/extras
 import { emptyCupDocument, parseCupDocument } from "@/domain/cupDocument";
 import { parseVisualSpec, visualSpecFromOptions } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
-import { parseCupOptions } from "@/domain/cupCatalog";
+import { parseBottleOptions } from "@/domain/bottleCatalog";
 
 export type OrderListFilters = {
   status?: OrderStatus;
@@ -21,9 +21,8 @@ export type OrderListFilters = {
   invoiceStatus?: InvoiceStatus;
   dateFrom?: string;
   dateTo?: string;
-  size?: "12" | "23" | "35";
-  wall?: "enkel" | "dubbel";
-  eco?: "ja" | "nej";
+  size?: "33" | "50";
+  waterType?: "stilla" | "kolsyrat";
   late?: "1" | "0";
 };
 
@@ -41,14 +40,6 @@ const orderInclude = {
   artworkApprovals: true,
   leads: true,
 } as const;
-
-export async function listOrdersForReseller(resellerId: string) {
-  return prisma.order.findMany({
-    where: { resellerId },
-    include: orderInclude,
-    orderBy: { createdAt: "desc" },
-  });
-}
 
 export async function listOrdersForCustomer(customerId: string) {
   return prisma.order.findMany({
@@ -68,7 +59,7 @@ export async function listActiveFactories() {
 
 export async function listAllOrders(filters?: OrderListFilters) {
   const statuses = filters?.status ? [filters.status] : filters?.phaseStatuses;
-  const volumeMl = filters?.size === "12" ? 120 : filters?.size === "23" ? 230 : filters?.size === "35" ? 350 : undefined;
+  const volumeMl = filters?.size === "33" ? 330 : filters?.size === "50" ? 500 : undefined;
   const q = filters?.q?.trim();
   const and: object[] = [];
   if (statuses?.length) and.push({ currentStatus: { in: statuses as OrderStatus[] } });
@@ -99,12 +90,7 @@ export async function listAllOrders(filters?: OrderListFilters) {
         { customer: { email: { contains: q } } },
         { customer: { phone: { contains: q } } },
         { customer: { orgNr: { contains: q } } },
-        { reseller: { company: { name: { contains: q } } } },
-        { reseller: { company: { orgNr: { contains: q } } } },
-        { reseller: { company: { email: { contains: q } } } },
-        { reseller: { company: { phone: { contains: q } } } },
         { customer: { users: { some: { OR: [{ name: { contains: q } }, { email: { contains: q } }] } } } },
-        { reseller: { users: { some: { OR: [{ name: { contains: q } }, { email: { contains: q } }] } } } },
         { invoice: { invoiceNo: { contains: q } } },
         { shipments: { some: { trackingNo: { contains: q } } } },
         { items: { some: { variant: { product: { name: { contains: q } } } } } },
@@ -118,11 +104,9 @@ export async function listAllOrders(filters?: OrderListFilters) {
   });
 
   return rows.filter((o) => {
-    if (filters?.wall || filters?.eco) {
-      const opt = parseCupOptions(o.items[0]?.variant.optionsJson);
-      if (filters.wall && opt.wall !== filters.wall) return false;
-      if (filters.eco === "ja" && !opt.eco) return false;
-      if (filters.eco === "nej" && opt.eco) return false;
+    if (filters?.waterType) {
+      const bottle = parseBottleOptions(o.items[0]?.variant.optionsJson);
+      if (bottle.waterType !== filters.waterType) return false;
     }
     if (filters?.late === "1" && !isOverdue(o.currentStatus, o.requestedDate)) return false;
     if (filters?.late === "0" && isOverdue(o.currentStatus, o.requestedDate)) return false;
@@ -169,34 +153,35 @@ async function nextOrderNo() {
   return `AV-${10500 + count}`;
 }
 
-async function resolvePrice(input: { resellerId?: string | null; customerId?: string | null; variantId: string; qty: number }) {
+async function resolvePrice(input: { customerId: string; variantId: string; qty: number }) {
   const list = await getPriceListForBuyer(input);
   const price = resolveUnitPrice(list?.items ?? [], input.variantId, input.qty);
   if (!price) throw new Error("Kontakta oss för pris");
   return price;
 }
 
-function lidFinishWallFromSource(
+function bottleOptsFromSource(
   source: { cupDocumentJson: string | null; visualSpecJson: string | null },
   variantOptionsJson: string,
-): { lid: "none" | "white" | "black"; finish: "matte" | "glossy"; wall: "enkel" | "dubbel" } {
-  const doc = parseCupDocument(source.cupDocumentJson);
-  if (doc) {
-    return { lid: doc.options.lid, finish: doc.options.finish, wall: doc.options.wall };
-  }
+) {
+  const opt = parseBottleOptions(variantOptionsJson);
   const spec = parseVisualSpec(source.visualSpecJson);
   if (spec) {
-    const lid = spec.lid.includes("Vitt") ? "white" : spec.lid.includes("Svart") ? "black" : "none";
-    const finish = spec.finish === "Glossy" || spec.finish === "Glans" ? "glossy" : "matte";
-    const wall = spec.wall.toLowerCase().includes("dubbel") ? "dubbel" : "enkel";
-    return { lid, finish, wall };
+    return {
+      waterType: spec.waterType === "KOLSYRAT" ? ("kolsyrat" as const) : opt.waterType,
+      cap: spec.cap.includes("SPORT") ? ("sportkork" as const) : spec.cap.includes("VIT") ? ("white" as const) : opt.cap,
+      color: spec.bottleColor.includes("FROST") ? ("frost" as const) : spec.bottleColor.includes("SVART") ? ("black" as const) : opt.color,
+    };
   }
-  const opt = parseCupOptions(variantOptionsJson);
-  return { lid: opt.lid ?? "none", finish: opt.finish ?? "matte", wall: opt.wall };
+  return opt;
 }
 
-function specFor(variant: { name: string; volumeMl: number | null; optionsJson: string; product: { name: string; slug: string } }, qty: number, lid: string, finish: string) {
-  const merged = { ...parseCupOptions(variant.optionsJson), lid: lid as "none" | "white" | "black", finish: finish as "matte" | "glossy" };
+function specFor(
+  variant: { name: string; volumeMl: number | null; optionsJson: string; product: { name: string; slug: string } },
+  qty: number,
+  extra?: { waterType?: string; cap?: string; color?: string },
+) {
+  const merged = { ...parseBottleOptions(variant.optionsJson), ...extra };
   return visualSpecFromOptions({
     productName: variant.product.name,
     qty,
@@ -220,8 +205,9 @@ export async function createBuyerOrder(input: {
   requestedDate?: string;
   deliveryRequirement?: string;
   notes?: string;
-  lid?: string;
-  finish?: string;
+  waterType?: string;
+  cap?: string;
+  color?: string;
   designId?: string;
   actorRole: Role;
   source?: string;
@@ -231,11 +217,10 @@ export async function createBuyerOrder(input: {
     where: { id: input.variantId },
     include: { product: { include: { printRequirements: true } } },
   });
-  if (!variant || variant.product.category !== "PAPER_CUP") throw new Error("Endast pappersmuggar kan beställas");
+  if (!variant || variant.product.category !== "WATER") throw new Error("Endast profilvatten kan beställas");
   if (input.qty < variant.product.moq) throw new Error(`Minsta antal är ${variant.product.moq}`);
 
   const price = await resolvePrice({
-    resellerId: input.resellerId,
     customerId: input.customerId,
     variantId: variant.id,
     qty: input.qty,
@@ -255,10 +240,16 @@ export async function createBuyerOrder(input: {
     addressId = addr.id;
   }
 
-  const factory = await prisma.factory.findFirst({ where: { isActive: true } });
-  const lid = input.lid ?? "none";
-  const finish = input.finish ?? "matte";
-  const visual = specFor(variant, input.qty, lid, finish);
+  const bottler = await prisma.factory.findFirst({ where: { kind: "bottler", isActive: true } });
+  const labelFactory = await prisma.factory.findFirst({ where: { kind: "label", isActive: true } });
+  const factory = bottler ?? (await prisma.factory.findFirst({ where: { isActive: true } }));
+  const bottleOpt = {
+    ...parseBottleOptions(variant.optionsJson),
+    ...(input.waterType ? { waterType: input.waterType as "stilla" | "kolsyrat" } : {}),
+    ...(input.cap ? { cap: input.cap as "skruvkork" | "sportkork" | "black" | "white" } : {}),
+    ...(input.color ? { color: input.color as "transparent" | "frost" | "black" } : {}),
+  };
+  const visual = specFor(variant, input.qty, bottleOpt);
   const design = input.designId
     ? await prisma.design.findUnique({ where: { id: input.designId } })
     : null;
@@ -268,19 +259,10 @@ export async function createBuyerOrder(input: {
         ...fromDesign,
         productSlug: variant.product.slug,
         quantity: input.qty,
-        options: {
-          ...fromDesign.options,
-          lid: (lid as "none" | "white" | "black") ?? fromDesign.options.lid,
-          finish: (finish as "matte" | "glossy") ?? fromDesign.options.finish,
-        },
       }
     : emptyCupDocument({
         productSlug: variant.product.slug,
         quantity: input.qty,
-        wall: parseCupOptions(variant.optionsJson).wall,
-        eco: parseCupOptions(variant.optionsJson).eco,
-        finish: finish as "matte" | "glossy",
-        lid: lid as "none" | "white" | "black",
         requirements: variant.product.printRequirements.map((r) => ({
           code: r.code,
           label: r.label,
@@ -299,7 +281,7 @@ export async function createBuyerOrder(input: {
       currentStatus: "SUBMITTED",
       shippingAddressId: addressId,
       factoryId: factory?.id,
-      source: input.source ?? (input.buyerType === "CUSTOMER" ? "customer_order" : "reseller_order"),
+      source: input.source ?? "customer_order",
       sourceOrderId: input.sourceOrderId,
       notes: input.notes,
       invoiceRef: input.invoiceRef,
@@ -328,9 +310,11 @@ export async function createBuyerOrder(input: {
     });
   }
 
-  if (factory) {
+  const jobFactories = [labelFactory, factory].filter((f, i, all) => f && all.findIndex((x) => x?.id === f.id) === i);
+  for (const f of jobFactories) {
+    if (!f) continue;
     await prisma.productionJob.create({
-      data: { orderId: order.id, factoryId: factory.id, status: "NOT_PLANNED" },
+      data: { orderId: order.id, factoryId: f.id, status: "NOT_PLANNED" },
     });
   }
 
@@ -346,44 +330,6 @@ export async function createBuyerOrder(input: {
   await advanceOrder(order.id, "AQUA_REVIEW", input.actorRole, "system");
   await getIntegrations().email.sendOrderConfirmation(order.id);
   return order;
-}
-
-export async function createQuote(input: {
-  company: string;
-  email: string;
-  phone?: string;
-  city?: string;
-  message?: string;
-  productId: string;
-  qty: number;
-  designId?: string;
-}) {
-  const publicReseller = await prisma.reseller.findFirst({ where: { code: "PUBLIC-LEAD" } });
-  if (!publicReseller) throw new Error("Publik lead-reseller saknas i seed");
-  const variant = await prisma.productVariant.findFirst({
-    where: { productId: input.productId, product: { category: "PAPER_CUP" } },
-  });
-  if (!variant) throw new Error("Välj en pappersmugg");
-  const customer = await prisma.customer.create({
-    data: {
-      resellerId: publicReseller.id,
-      name: input.company,
-      email: input.email,
-      phone: input.phone,
-    },
-  });
-  return createBuyerOrder({
-    buyerType: "RESELLER",
-    resellerId: publicReseller.id,
-    customerId: customer.id,
-    variantId: variant.id,
-    qty: input.qty,
-    city: input.city,
-    notes: input.message,
-    designId: input.designId,
-    actorRole: "PUBLIC",
-    source: "public_quote",
-  });
 }
 
 export async function repeatOrder(input: {
@@ -411,10 +357,9 @@ export async function repeatOrder(input: {
   const item = source.items[0];
   if (!item) throw new Error("Ordern saknar rader");
   if (input.qty < item.variant.product.moq) throw new Error(`Minsta antal är ${item.variant.product.moq}`);
-  const copied = lidFinishWallFromSource(source, item.variant.optionsJson);
+  const copied = bottleOptsFromSource(source, item.variant.optionsJson);
   return createBuyerOrder({
-    buyerType: source.buyerType,
-    resellerId: source.resellerId,
+    buyerType: "CUSTOMER",
     customerId: source.customerId,
     variantId: item.variantId,
     qty: input.qty,
@@ -426,70 +371,9 @@ export async function repeatOrder(input: {
     actorRole: input.actorRole,
     source: "repeat",
     sourceOrderId: source.id,
-    lid: copied.lid,
-    finish: copied.finish,
-  });
-}
-
-export async function createResellerOrderFromDesign(input: { designId: string; resellerId: string; userId: string }) {
-  const design = await prisma.design.findUnique({ where: { id: input.designId } });
-  if (!design) throw new Error("Design saknas");
-  const product = await prisma.product.findUnique({
-    where: { id: design.productId },
-    include: { variants: true },
-  });
-  if (!product?.variants[0] || product.category !== "PAPER_CUP") throw new Error("Endast pappersmuggar");
-  const reseller = await prisma.reseller.findUnique({
-    where: { id: input.resellerId },
-    include: { company: { include: { addresses: true } }, customers: true },
-  });
-  if (!reseller) throw new Error("Återförsäljare saknas");
-  let customer = reseller.customers[0];
-  if (!customer) {
-    customer = await prisma.customer.create({
-      data: {
-        resellerId: reseller.id,
-        companyId: reseller.companyId,
-        name: reseller.company.name,
-        email: reseller.company.email,
-      },
-    });
-  }
-  const opts = JSON.parse(design.optionsJson || "{}") as { lid?: string; finish?: string };
-  return createBuyerOrder({
-    buyerType: "RESELLER",
-    resellerId: reseller.id,
-    customerId: customer.id,
-    variantId: product.variants[0].id,
-    qty: design.quantity,
-    addressId: reseller.company.addresses[0]?.id,
-    designId: design.id,
-    actorRole: "RESELLER",
-    source: "reseller_studio",
-    lid: opts.lid,
-    finish: opts.finish,
-  });
-}
-
-export async function createCustomerOrderFromDesign(input: { designId: string; customerId: string }) {
-  const design = await prisma.design.findUnique({ where: { id: input.designId } });
-  if (!design) throw new Error("Design saknas");
-  const product = await prisma.product.findUnique({
-    where: { id: design.productId },
-    include: { variants: true },
-  });
-  if (!product?.variants[0] || product.category !== "PAPER_CUP") throw new Error("Endast pappersmuggar");
-  const opts = JSON.parse(design.optionsJson || "{}") as { lid?: string; finish?: string };
-  return createBuyerOrder({
-    buyerType: "CUSTOMER",
-    customerId: input.customerId,
-    variantId: product.variants[0].id,
-    qty: design.quantity,
-    designId: design.id,
-    actorRole: "CUSTOMER",
-    source: "customer_studio",
-    lid: opts.lid,
-    finish: opts.finish,
+    waterType: copied.waterType,
+    cap: copied.cap,
+    color: copied.color,
   });
 }
 
@@ -524,7 +408,7 @@ export async function sendOrderConfirmation(input: {
     })),
     extras,
   });
-  const factory = await prisma.factory.findFirst({ where: { isActive: true } });
+  const factory = await prisma.factory.findFirst({ where: { kind: "bottler", isActive: true } });
   const deadline = addLeadTimeDays(10);
   await prisma.order.update({
     where: { id: order.id },
@@ -539,6 +423,7 @@ export async function sendOrderConfirmation(input: {
     },
   });
   await advanceOrder(order.id, "CONFIRMED", input.actorRole, "ob");
+  await advanceOrder(order.id, "LABEL_PRODUCTION", input.actorRole, "ob");
   if (input.repeatHorizonMonths && input.repeatHorizonMonths > 0) {
     const { createLeadForOrder } = await import("./lead.service");
     await createLeadForOrder(order.id, input.repeatHorizonMonths);

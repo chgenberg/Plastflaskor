@@ -40,9 +40,9 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
               <Image src={COVER[category]} alt={meta.name} fill className="object-cover" sizes="800px" />
             </div>
           ) : null}
-          <p className="text-sm text-[var(--av-text-secondary)]">Starta i studion eller begär offert för den här kategorin.</p>
+          <p className="text-sm text-[var(--av-text-secondary)]">Begär offert eller logga in för priser.</p>
           <div className="flex flex-wrap justify-center gap-3">
-            <PillLink href="/designa">Starta design</PillLink>
+            <PillLink href="/login">Logga in till kundportalen</PillLink>
             <PillLink href="/offert" variant="ghost">
               Begär offert
             </PillLink>
@@ -66,7 +66,9 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
                     <Link href={`/produkter/${category}/${p.slug}`} className="text-[var(--av-accent)]">
                       Läs mer →
                     </Link>
-                    {p.studioEnabled ? <Link href={`/designa/${p.slug}`}>Designa</Link> : null}
+                    {category === "profilvatten" ? (
+                      <Link href="/login?next=/konto/ordrar/ny">Logga in och beställ</Link>
+                    ) : null}
                   </div>
                 </div>
               </article>

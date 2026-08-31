@@ -17,7 +17,7 @@ export function createMockIntegrations(): IntegrationRegistry {
         await delay(400);
         const order = await prisma.order.findUnique({
           where: { id: orderId },
-          include: { items: true, reseller: true },
+          include: { items: true },
         });
         if (!order) throw new Error("Order saknas");
         let amountExVat = order.items.reduce((s, i) => s + i.unitPriceExVat * i.qty, 0);
@@ -121,7 +121,7 @@ export function createMockIntegrations(): IntegrationRegistry {
           shipmentId: shipment.id,
           trackingNo,
           carrier: input.carrier,
-          labelPdfUrl: `/factory/jobb/${input.jobId ?? "na"}/fraktsedel?tracking=${trackingNo}`,
+          labelPdfUrl: `/bottler/jobb/${input.jobId ?? "na"}/fraktsedel?tracking=${trackingNo}`,
           status: "CREATED",
         };
       },
@@ -164,12 +164,9 @@ export function createMockIntegrations(): IntegrationRegistry {
         await delay(200);
         const order = await prisma.order.findUnique({
           where: { id: orderId },
-          include: { customer: { include: { users: true } }, reseller: { include: { users: true } } },
+          include: { customer: { include: { users: true } } },
         });
-        const recipients = [
-          ...(order?.customer.users ?? []),
-          ...(order?.reseller?.users ?? []),
-        ];
+        const recipients = order?.customer.users ?? [];
         if (recipients.length && order) {
           await prisma.notification.createMany({
             data: recipients.map((u) => ({
@@ -185,48 +182,67 @@ export function createMockIntegrations(): IntegrationRegistry {
         return { id: `mail-confirm-${orderId}` };
       },
       async sendArtworkApproval(orderId) {
+        const order = await prisma.order.findUnique({
+          where: { id: orderId },
+          include: { customer: { include: { users: true } } },
+        });
+        if (order?.customer.users.length) {
+          await prisma.notification.createMany({
+            data: order.customer.users.map((u) => ({
+              userId: u.id,
+              type: "email",
+              title: "Korrektur att godkänna",
+              body: `${order.orderNo}: öppna ordern och godkänn korrektur.`,
+              entityType: "ORDER",
+              entityId: orderId,
+            })),
+          });
+        }
         return { id: `mail-art-${orderId}` };
       },
       async sendDeliveryNotice(orderId) {
+        const order = await prisma.order.findUnique({
+          where: { id: orderId },
+          include: { customer: { include: { users: true } } },
+        });
+        if (order?.customer.users.length) {
+          await prisma.notification.createMany({
+            data: order.customer.users.map((u) => ({
+              userId: u.id,
+              type: "email",
+              title: "Ordern är skickad",
+              body: `${order.orderNo}: följ leveransen i kundportalen.`,
+              entityType: "ORDER",
+              entityId: orderId,
+            })),
+          });
+        }
         return { id: `mail-ship-${orderId}` };
       },
       async sendRepeatReminder(orderId) {
+        const order = await prisma.order.findUnique({
+          where: { id: orderId },
+          include: {
+            customer: { include: { users: { where: { role: "CUSTOMER", isActive: true } } } },
+            items: { include: { variant: { include: { product: true } } } },
+          },
+        });
+        const item = order?.items[0];
+        const qty = item?.qty ?? 0;
+        const product = item?.variant.product.name ?? "profilvatten";
+        if (order?.customer.users.length) {
+          await prisma.notification.createMany({
+            data: order.customer.users.map((u) => ({
+              userId: u.id,
+              type: "email",
+              title: "Snart dags igen?",
+              body: `Förra gången beställde ni ${qty.toLocaleString("sv-SE")} flaskor ${product}. Starta från förra ordern med Beställ igen.`,
+              entityType: "ORDER",
+              entityId: orderId,
+            })),
+          });
+        }
         return { id: `mail-repeat-${orderId}` };
-      },
-    },
-    designAI: {
-      async extractBrand(websiteUrl) {
-        await delay(1400);
-        const hash = websiteUrl.length;
-        const palettes = [
-          ["#005CAF", "#171717", "#F9F9F9", "#16A34A"],
-          ["#111111", "#E11D48", "#FFFFFF", "#F59E0B"],
-          ["#0F172A", "#38BDF8", "#F8FAFC", "#22C55E"],
-        ];
-        return {
-          logoUrl: "/brand/aqua-visibility-logo.png",
-          colors: palettes[hash % 3],
-          styleNotes: "Simulerat: hämtad grafisk profil från angiven webbplats.",
-        };
-      },
-      async generateProposals(websiteUrl, productName) {
-        await delay(900);
-        const extract = await this.extractBrand(websiteUrl);
-        return [
-          { id: "minimal", tone: "minimal" as const, title: "Avskalad", notes: `Ren vit etikett för ${productName}.`, canvas: { background: "#FFFFFF", logoScale: 0.7, qr: false } },
-          { id: "bold", tone: "bold" as const, title: "Kraftfull", notes: `Mörk bakgrund, stor logotyp.`, canvas: { background: extract.colors[0], logoScale: 1.15, qr: false } },
-          { id: "event", tone: "event" as const, title: "Evenemang", notes: `Accent + QR för evenemang.`, canvas: { background: extract.colors[1], logoScale: 0.9, qr: true } },
-        ];
-      },
-      async refineProposal(message, current) {
-        await delay(600);
-        const next = { ...current, canvas: { ...current.canvas } };
-        const m = message.toLowerCase();
-        if (m.includes("större") || m.includes("stor")) next.canvas.logoScale = Math.min(1.4, next.canvas.logoScale + 0.2);
-        if (m.includes("svart")) next.canvas.background = "#111111";
-        if (m.includes("qr")) next.canvas.qr = true;
-        next.notes = `Simulerat: "${message}"`;
-        return next;
       },
     },
     notifications: {

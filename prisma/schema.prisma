@@ -14,6 +14,8 @@ enum Role {
   AQUA_STAFF
   AQUA_ADMIN
   FACTORY
+  LABEL
+  BOTTLER
 }
 
 enum BuyerType {
@@ -27,6 +29,10 @@ enum OrderStatus {
   ARTWORK_AQUA_REVIEW
   ARTWORK_CUSTOMER_APPROVAL
   CONFIRMED
+  LABEL_PRODUCTION
+  LABELS_DISPATCHED
+  LABELS_RECEIVED
+  PRODUCTION_SCHEDULED
   IN_PRODUCTION
   READY_TO_SHIP
   SHIPPED
@@ -198,8 +204,9 @@ model Factory {
   companyId String          @unique
   name      String
   code      String          @unique
-  addressId String?
+  kind      String          @default("bottler")
   isActive  Boolean         @default(true)
+  addressId String?
   company   Company         @relation(fields: [companyId], references: [id])
   address   Address?        @relation(fields: [addressId], references: [id])
   users     User[]

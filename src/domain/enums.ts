@@ -4,6 +4,10 @@ export const ORDER_STEPS = [
   "ARTWORK_AQUA_REVIEW",
   "ARTWORK_CUSTOMER_APPROVAL",
   "CONFIRMED",
+  "LABEL_PRODUCTION",
+  "LABELS_DISPATCHED",
+  "LABELS_RECEIVED",
+  "PRODUCTION_SCHEDULED",
   "IN_PRODUCTION",
   "READY_TO_SHIP",
   "SHIPPED",
@@ -21,6 +25,10 @@ export const ORDER_STEP_LABELS: Record<OrderStatusCode, string> = {
   ARTWORK_AQUA_REVIEW: "Korrektur hos Aqua",
   ARTWORK_CUSTOMER_APPROVAL: "Väntar på kundgodkännande",
   CONFIRMED: "Orderbekräftad",
+  LABEL_PRODUCTION: "Etiketter produceras",
+  LABELS_DISPATCHED: "Etiketter skickade",
+  LABELS_RECEIVED: "Etiketter mottagna",
+  PRODUCTION_SCHEDULED: "Produktion planerad",
   IN_PRODUCTION: "I produktion",
   READY_TO_SHIP: "Klar för leverans",
   SHIPPED: "Skickad",
@@ -33,9 +41,13 @@ export const ORDER_STEP_LABELS: Record<OrderStatusCode, string> = {
 export const BUYER_STATUS: Record<string, string> = {
   SUBMITTED: "Mottagen — väntar på Aqua",
   AQUA_REVIEW: "Mottagen — väntar på Aqua",
-  ARTWORK_AQUA_REVIEW: "Korrektur",
-  ARTWORK_CUSTOMER_APPROVAL: "Korrektur",
+  ARTWORK_AQUA_REVIEW: "Mottagen — väntar på Aqua",
+  ARTWORK_CUSTOMER_APPROVAL: "Väntar på ditt godkännande",
   CONFIRMED: "Bekräftad",
+  LABEL_PRODUCTION: "Etiketter produceras",
+  LABELS_DISPATCHED: "Etiketter produceras",
+  LABELS_RECEIVED: "Produktion",
+  PRODUCTION_SCHEDULED: "Produktion",
   IN_PRODUCTION: "Produktion",
   READY_TO_SHIP: "Förbereds för leverans",
   SHIPPED: "Skickad",
@@ -45,19 +57,21 @@ export const BUYER_STATUS: Record<string, string> = {
   PAID: "Fakturerad",
 };
 
-/** @deprecated use BUYER_STATUS */
-export const RESELLER_STATUS = BUYER_STATUS;
-
 export const PIPELINE_PHASES = [
-  { id: "new", label: "Nya ordrar", statuses: ["SUBMITTED", "AQUA_REVIEW"] },
-  { id: "artwork", label: "Korrektur", statuses: ["ARTWORK_AQUA_REVIEW", "ARTWORK_CUSTOMER_APPROVAL"] },
-  { id: "confirmed", label: "Bekräftade", statuses: ["CONFIRMED"] },
-  { id: "production", label: "Tryckeri", statuses: ["IN_PRODUCTION"] },
-  { id: "ready_ship", label: "Klara för leverans", statuses: ["READY_TO_SHIP"] },
-  { id: "shipped", label: "Skickade", statuses: ["SHIPPED"] },
-  { id: "delivered", label: "Levererade", statuses: ["DELIVERED"] },
-  { id: "ready_invoice", label: "Redo att faktureras", statuses: ["READY_TO_INVOICE"] },
-  { id: "invoiced", label: "Fakturerade", statuses: ["INVOICED", "PAID"] },
+  { id: "new", label: "Ny order", statuses: ["SUBMITTED"] },
+  { id: "review", label: "Aqua granskar", statuses: ["AQUA_REVIEW"] },
+  { id: "artwork", label: "Artwork", statuses: ["ARTWORK_AQUA_REVIEW"] },
+  { id: "approval", label: "Kundgodkännande", statuses: ["ARTWORK_CUSTOMER_APPROVAL"] },
+  { id: "confirmed", label: "Orderbekräftad", statuses: ["CONFIRMED"] },
+  { id: "labels", label: "Etiketter", statuses: ["LABEL_PRODUCTION"] },
+  { id: "labels_out", label: "Etiketter skickade", statuses: ["LABELS_DISPATCHED"] },
+  { id: "bottler", label: "Bottler", statuses: ["LABELS_RECEIVED", "PRODUCTION_SCHEDULED"] },
+  { id: "production", label: "Produktion", statuses: ["IN_PRODUCTION"] },
+  { id: "ready_ship", label: "Klar för leverans", statuses: ["READY_TO_SHIP"] },
+  { id: "shipped", label: "Skickad", statuses: ["SHIPPED"] },
+  { id: "delivered", label: "Levererad", statuses: ["DELIVERED"] },
+  { id: "ready_invoice", label: "Redo att fakturera", statuses: ["READY_TO_INVOICE"] },
+  { id: "invoiced", label: "Fakturerad", statuses: ["INVOICED", "PAID"] },
 ] as const;
 
 export const ORDER_STATUS_TRANSITIONS: Record<OrderStatusCode, readonly OrderStatusCode[]> = {
@@ -65,7 +79,11 @@ export const ORDER_STATUS_TRANSITIONS: Record<OrderStatusCode, readonly OrderSta
   AQUA_REVIEW: ["ARTWORK_AQUA_REVIEW"],
   ARTWORK_AQUA_REVIEW: ["ARTWORK_CUSTOMER_APPROVAL"],
   ARTWORK_CUSTOMER_APPROVAL: ["CONFIRMED"],
-  CONFIRMED: ["IN_PRODUCTION"],
+  CONFIRMED: ["LABEL_PRODUCTION"],
+  LABEL_PRODUCTION: ["LABELS_DISPATCHED"],
+  LABELS_DISPATCHED: ["LABELS_RECEIVED"],
+  LABELS_RECEIVED: ["PRODUCTION_SCHEDULED"],
+  PRODUCTION_SCHEDULED: ["IN_PRODUCTION"],
   IN_PRODUCTION: ["READY_TO_SHIP"],
   READY_TO_SHIP: ["SHIPPED"],
   SHIPPED: ["DELIVERED"],
@@ -89,8 +107,12 @@ export const FACTORY_JOB_LABELS: Record<string, string> = {
 };
 
 export const FACTORY_EVENT_LABELS: Record<string, string> = {
-  ACCEPT_DEADLINE: "Deadline accepterad",
+  ACCEPT_DEADLINE: "Sista skickdatum accepterat",
   FLAG_ISSUE: "Problem flaggat",
+  DISPATCH: "Etiketter skickade",
+  RECEIVE_LABELS: "Etiketter mottagna",
+  ESTIMATE_DATE: "Estimerat datum",
+  READY_DATE: "Estimerat bottler-datum",
   START: "Produktion startad",
   DONE: "Klar",
   SHIPPED: "Skickad",
@@ -100,8 +122,22 @@ export const EVENT_LABELS: Record<string, string> = {
   ...ORDER_STEP_LABELS,
   ...FACTORY_JOB_LABELS,
   ...FACTORY_EVENT_LABELS,
-  DELIVERY_DATE_APPROVED: "Leveransdatum godkänt",
+  SUBMITTED: "Order inskickad av kund",
+  AQUA_REVIEW: "Aqua-granskning startad",
+  ARTWORK_AQUA_REVIEW: "Artwork godkänd av Aqua",
+  ARTWORK_CUSTOMER_APPROVAL: "Korrektur skickad till kund",
+  CONFIRMED: "Slutlig OB skickad",
+  LABEL_PRODUCTION: "Etiketter i produktion",
+  LABELS_DISPATCHED: "Etiketter skickade",
+  LABELS_RECEIVED: "Etiketter mottagna av bottler",
+  PRODUCTION_SCHEDULED: "Bottler planerade produktion",
+  READY_TO_SHIP: "Klar för leverans",
+  SHIPPED: "Markerad som skickad",
+  DELIVERED: "Markerad som levererad",
+  READY_TO_INVOICE: "Redo att fakturera",
+  DELIVERY_DATE_APPROVED: "Aqua godkände leveransdatum",
   WAYBILL_READY: "Fraktsedel klar",
+  CUSTOMER_FINAL: "Artwork godkänd av kund",
 };
 
 export function eventLabel(toStatus: string) {
@@ -122,7 +158,18 @@ export function statusTone(status: string, requestedDate?: string | null): "done
   );
   if (overdue || status === "ISSUE_FLAGGED") return "blocked";
   if (["PAID", "DELIVERED", "INVOICED", "CONFIRMED", "DONE"].includes(status)) return "done";
-  if (["READY_TO_INVOICE", "ARTWORK_CUSTOMER_APPROVAL", "AQUA_REVIEW", "READY_TO_SHIP", "STARTED", "ACCEPTED"].includes(status))
+  if (
+    [
+      "READY_TO_INVOICE",
+      "ARTWORK_CUSTOMER_APPROVAL",
+      "AQUA_REVIEW",
+      "READY_TO_SHIP",
+      "STARTED",
+      "ACCEPTED",
+      "LABEL_PRODUCTION",
+      "LABELS_RECEIVED",
+    ].includes(status)
+  )
     return "next";
   return "idle";
 }
@@ -138,10 +185,11 @@ export const CATEGORY_META: Record<string, { slug: string; name: string; enum: s
 
 export const CUP_PRINT_REQUIREMENTS = [
   { code: "volume", label: "Volym", required: true },
+  { code: "ean", label: "EAN", required: true },
+  { code: "pant", label: "Pant", required: true },
   { code: "producer", label: "Producentuppgifter", required: true },
-  { code: "recycling", label: "Återvinning / FSC / OK Compost", required: true },
-  { code: "food_contact", label: "Livsmedelsgodkännande", required: true },
-  { code: "product_name", label: "Produktnamn", required: false },
+  { code: "ingredients", label: "Ingredienser", required: true },
+  { code: "product_name", label: "Produktnamn", required: true },
 ] as const;
 
 export const REPEAT_HORIZONS = [0, 3, 6, 9, 12] as const;
@@ -174,7 +222,7 @@ export const DOCUMENT_KIND_LABELS: Record<string, string> = {
   ORDER: "Orderbekräftelse",
   WAYBILL: "Fraktsedel",
   FINANCE: "Faktura",
-  ARTWORK: "Tryckfil",
+  ARTWORK: "Artwork",
   PRODUCTION: "Produktion",
   LOGISTICS: "Logistik",
 };

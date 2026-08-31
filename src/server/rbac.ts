@@ -9,7 +9,13 @@ export async function getSessionUser() {
 export async function requireRole(roles: string[]) {
   const user = await getSessionUser();
   const fallback =
-    roles[0] === "FACTORY" ? "/factory" : roles.includes("CUSTOMER") ? "/konto" : roles.includes("RESELLER") ? "/partner" : "/operations";
+    roles[0] === "LABEL"
+      ? "/labels"
+      : roles[0] === "BOTTLER" || roles[0] === "FACTORY"
+        ? "/bottler"
+        : roles.includes("CUSTOMER")
+          ? "/konto"
+          : "/operations";
   if (!user) redirect(`/login?next=${encodeURIComponent(fallback)}`);
   if (!roles.includes(user.role)) redirect("/login?error=forbidden");
   return user;
@@ -17,8 +23,10 @@ export async function requireRole(roles: string[]) {
 
 export function homeForRole(role?: string | null) {
   if (role === "CUSTOMER") return "/konto";
-  if (role === "RESELLER") return "/partner";
-  if (role === "FACTORY") return "/factory";
+  if (role === "RESELLER") return "/login";
+  if (role === "LABEL") return "/labels";
+  if (role === "BOTTLER") return "/bottler";
+  if (role === "FACTORY") return "/bottler";
   if (role === "AQUA_STAFF" || role === "AQUA_ADMIN") return "/operations";
   return "/";
 }

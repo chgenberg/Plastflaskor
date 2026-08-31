@@ -7,10 +7,11 @@ import { logoutAction } from "@/actions";
 
 const ROLE_LABEL: Record<string, string> = {
   CUSTOMER: "Kund",
-  RESELLER: "Återförsäljare",
   AQUA_STAFF: "Drift",
   AQUA_ADMIN: "Admin",
-  FACTORY: "Leverantör",
+  LABEL: "Etikett",
+  BOTTLER: "Bottler",
+  FACTORY: "Bottler",
 };
 
 export function AppShell({
@@ -33,7 +34,7 @@ export function AppShell({
   const showOpsSearch = title === "Operations" || title === "Drift" || path.startsWith("/operations");
 
   function active(href: string) {
-    if (href === "/partner" || href === "/operations" || href === "/factory" || href === "/konto") return path === href;
+    if (href === "/operations" || href === "/konto" || href === "/labels" || href === "/bottler") return path === href;
     return path === href || path.startsWith(`${href}/`);
   }
 
@@ -55,7 +56,7 @@ export function AppShell({
               id="ops-search-desktop"
               name="q"
               type="search"
-              placeholder="Sök order, kund, ÅF…"
+              placeholder="Sök order, kund, produkt…"
               className="h-8 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border)] bg-[var(--av-bg)] px-2.5 text-[13px] outline-none placeholder:text-[var(--av-text-muted)] focus:border-[var(--av-accent)]/40"
             />
           </form>
@@ -125,7 +126,7 @@ export function AppShell({
                 id="ops-search-mobile"
                 name="q"
                 type="search"
-                placeholder="Sök order, kund, ÅF…"
+                placeholder="Sök order, kund, produkt…"
                 className="h-10 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border)] bg-[var(--av-bg)] px-3 text-[13px] outline-none"
               />
             </form>

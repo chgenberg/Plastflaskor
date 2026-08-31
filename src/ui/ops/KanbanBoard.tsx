@@ -14,10 +14,8 @@ type KanbanOrder = {
   requestedDate: string | null;
   factoryIssueNote: string | null;
   factoryDeadlineAccepted: boolean;
-  buyerType: string;
   visualSpecJson: string | null;
   customer: { name: string };
-  reseller: { company: { name: string } } | null;
   items: {
     qty: number;
     visualSpecJson: string | null;
@@ -55,7 +53,7 @@ export function KanbanBoard({ orders }: { orders: KanbanOrder[] }) {
                   const late = isOverdue(o.currentStatus, o.requestedDate);
                   const flagged = Boolean(o.factoryIssueNote) && !o.factoryDeadlineAccepted;
                   const spec = specFor(o);
-                  const buyer = o.buyerType === "CUSTOMER" ? o.customer.name : (o.reseller?.company.name ?? o.customer.name);
+                  const buyer = o.customer.name;
                   return (
                     <Link
                       key={o.id}

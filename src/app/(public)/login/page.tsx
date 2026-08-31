@@ -35,7 +35,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         </form>
       </div>
       <p className="mt-6 text-center text-[12px] leading-relaxed text-[var(--av-text-muted)]">
-        Demo: kund@demo.aqua · reseller.gold@demo.aqua · staff@demo.aqua · factory@demo.aqua · AquaDemo26!
+        Demo: kund@demo.aqua · staff@demo.aqua · labels@demo.aqua · bottler@demo.aqua · AquaDemo26!
       </p>
     </main>
   );

@@ -1,8 +1,20 @@
 import { DocumentKind, Role } from "@prisma/client";
 import { prisma } from "../db";
+import { getIntegrations } from "../integrations/composition";
 import { advanceOrder } from "./order.service";
 
 const FACTORY_DOCS: DocumentKind[] = ["PRODUCTION", "LOGISTICS", "ARTWORK", "WAYBILL"];
+
+const SUPPLIER_STATUSES = [
+  "CONFIRMED",
+  "LABEL_PRODUCTION",
+  "LABELS_DISPATCHED",
+  "LABELS_RECEIVED",
+  "PRODUCTION_SCHEDULED",
+  "IN_PRODUCTION",
+  "READY_TO_SHIP",
+  "SHIPPED",
+] as const;
 
 const factoryOrder = {
   select: {
@@ -35,6 +47,7 @@ const factoryOrder = {
     },
     shippingAddress: true,
     customer: { select: { name: true } },
+    factory: { select: { name: true, kind: true, address: { select: { line1: true, postalCode: true, city: true } } } },
     shipments: { select: { id: true, trackingNo: true, carrier: true, packages: true, weightKg: true, status: true, type: true } },
     documents: { where: { kind: { in: FACTORY_DOCS } }, select: { id: true, title: true, kind: true } },
     designs: {
@@ -48,13 +61,22 @@ const factoryOrder = {
   },
 };
 
-export const FACTORY_EVENTS = ["ACCEPT_DEADLINE", "FLAG_ISSUE", "START", "DONE", "SHIPPED"] as const;
+export const FACTORY_EVENTS = [
+  "ACCEPT_DEADLINE",
+  "FLAG_ISSUE",
+  "DISPATCH",
+  "RECEIVE_LABELS",
+  "ESTIMATE_DATE",
+  "START",
+  "DONE",
+  "SHIPPED",
+] as const;
 
 export async function listJobsForFactory(factoryId?: string) {
   return prisma.productionJob.findMany({
     where: {
       ...(factoryId ? { factoryId } : {}),
-      order: { currentStatus: { in: ["CONFIRMED", "IN_PRODUCTION", "READY_TO_SHIP", "SHIPPED"] } },
+      order: { currentStatus: { in: [...SUPPLIER_STATUSES] } },
     },
     include: { order: factoryOrder, factory: true },
     orderBy: { plannedAt: "asc" },
@@ -71,18 +93,33 @@ export async function getJob(jobId: string, factoryId?: string) {
   return job;
 }
 
+async function recordFactoryEvent(orderId: string, toStatus: string, actorRole: Role, source: string, payload?: string) {
+  await prisma.statusEvent.create({
+    data: {
+      entityType: "ORDER",
+      entityId: orderId,
+      toStatus,
+      actorRole,
+      source,
+      payload,
+    },
+  });
+}
+
 export async function factoryAdvance(
   jobId: string,
   factoryId: string,
   action: (typeof FACTORY_EVENTS)[number],
   actorRole: Role = "FACTORY",
-  payload?: { issueNote?: string; readyDate?: string },
+  payload?: { issueNote?: string; readyDate?: string; trackingNo?: string; carrier?: string; shippedDate?: string },
 ) {
   const job = await prisma.productionJob.findFirst({
     where: { id: jobId, factoryId },
-    include: { order: true },
+    include: { order: true, factory: true },
   });
   if (!job) throw new Error("Jobb saknas");
+  const kind = job.factory.kind;
+  const source = kind === "label" ? "labels" : "bottler";
 
   if (action === "ACCEPT_DEADLINE") {
     await prisma.order.update({
@@ -90,6 +127,10 @@ export async function factoryAdvance(
       data: { factoryDeadlineAccepted: true, factoryIssueNote: null },
     });
     await prisma.productionJob.update({ where: { id: jobId }, data: { status: "ACCEPTED" } });
+    await recordFactoryEvent(job.orderId, "ACCEPT_DEADLINE", actorRole, source);
+    if (job.order.currentStatus === "CONFIRMED") {
+      await advanceOrder(job.orderId, "LABEL_PRODUCTION", actorRole, source);
+    }
     return;
   }
   if (action === "FLAG_ISSUE") {
@@ -98,12 +139,69 @@ export async function factoryAdvance(
       data: { factoryDeadlineAccepted: false, factoryIssueNote: payload?.issueNote || "Kan inte hålla deadline" },
     });
     await prisma.productionJob.update({ where: { id: jobId }, data: { status: "ISSUE_FLAGGED", operatorNote: payload?.issueNote } });
+    await recordFactoryEvent(job.orderId, "FLAG_ISSUE", actorRole, source, payload?.issueNote);
+    return;
+  }
+  if (action === "DISPATCH") {
+    const existing = await prisma.shipment.findFirst({
+      where: { orderId: job.orderId, type: "LABELS_TO_FACTORY" },
+    });
+    const shippedAt = payload?.shippedDate ? new Date(payload.shippedDate) : new Date();
+    const trackingNo = payload?.trackingNo || existing?.trackingNo || `LBL-${job.order.orderNo}`;
+    const carrier = payload?.carrier || existing?.carrier || "PostNord";
+    if (!existing) {
+      await prisma.shipment.create({
+        data: {
+          orderId: job.orderId,
+          type: "LABELS_TO_FACTORY",
+          carrier,
+          trackingNo,
+          status: "IN_TRANSIT",
+          shippedAt,
+        },
+      });
+    } else {
+      await prisma.shipment.update({
+        where: { id: existing.id },
+        data: { trackingNo, carrier, status: "IN_TRANSIT", shippedAt },
+      });
+    }
+    await prisma.productionJob.update({ where: { id: jobId }, data: { status: "DONE", completedAt: new Date() } });
+    if (job.order.currentStatus === "LABEL_PRODUCTION") {
+      await advanceOrder(job.orderId, "LABELS_DISPATCHED", actorRole, source);
+    }
+    return;
+  }
+  if (action === "RECEIVE_LABELS") {
+    await prisma.shipment.updateMany({
+      where: { orderId: job.orderId, type: "LABELS_TO_FACTORY" },
+      data: { status: "DELIVERED" },
+    });
+    await prisma.productionJob.update({ where: { id: jobId }, data: { status: "ACCEPTED" } });
+    if (job.order.currentStatus === "LABELS_DISPATCHED") {
+      await advanceOrder(job.orderId, "LABELS_RECEIVED", actorRole, source);
+    }
+    return;
+  }
+  if (action === "ESTIMATE_DATE") {
+    if (!payload?.readyDate) throw new Error("Ange estimerat datum");
+    await prisma.order.update({
+      where: { id: job.orderId },
+      data: { factoryReadyEstimate: payload.readyDate },
+    });
+    await recordFactoryEvent(job.orderId, "READY_DATE", actorRole, source, payload.readyDate);
     return;
   }
   if (action === "START") {
     await prisma.productionJob.update({ where: { id: jobId }, data: { status: "STARTED", startedAt: new Date() } });
+    await recordFactoryEvent(job.orderId, "START", actorRole, source);
     if (job.order.currentStatus === "CONFIRMED") {
-      await advanceOrder(job.orderId, "IN_PRODUCTION", actorRole, "factory");
+      await advanceOrder(job.orderId, "LABEL_PRODUCTION", actorRole, source);
+    } else if (job.order.currentStatus === "LABELS_RECEIVED") {
+      await advanceOrder(job.orderId, "PRODUCTION_SCHEDULED", actorRole, source);
+      await advanceOrder(job.orderId, "IN_PRODUCTION", actorRole, source);
+    } else if (job.order.currentStatus === "PRODUCTION_SCHEDULED") {
+      await advanceOrder(job.orderId, "IN_PRODUCTION", actorRole, source);
     }
     return;
   }
@@ -118,6 +216,7 @@ export async function factoryAdvance(
         data: { factoryReadyEstimate: payload.readyDate },
       });
     }
+    await recordFactoryEvent(job.orderId, "DONE", actorRole, source, payload?.readyDate);
     return;
   }
   if (action === "SHIPPED") {
@@ -126,7 +225,8 @@ export async function factoryAdvance(
       data: { status: "PICKED_UP", shippedAt: new Date() },
     });
     if (job.order.currentStatus === "READY_TO_SHIP") {
-      await advanceOrder(job.orderId, "SHIPPED", actorRole, "factory");
+      await advanceOrder(job.orderId, "SHIPPED", actorRole, source);
+      await getIntegrations().email.sendDeliveryNotice(job.orderId);
     }
   }
 }

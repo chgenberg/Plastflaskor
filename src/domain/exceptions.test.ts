@@ -5,7 +5,7 @@ import { exceptionSummary, exceptionsFor, tomorrowYmd } from "./exceptions";
 test("aqua review and overdue become tasks", () => {
   const items = exceptionsFor([
     { orderNo: "AV-1", currentStatus: "AQUA_REVIEW", source: "customer_order", requestedDate: "2020-01-01" },
-    { orderNo: "AV-2", currentStatus: "ARTWORK_AQUA_REVIEW", source: "reseller_order" },
+    { orderNo: "AV-2", currentStatus: "ARTWORK_AQUA_REVIEW", source: "customer_order" },
   ]);
   const kinds = items.map((i) => i.kind);
   assert.ok(kinds.includes("review"));

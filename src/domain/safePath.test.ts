@@ -4,7 +4,7 @@ import { contentDisposition, safeInternalPath } from "./safePath";
 
 describe("safeInternalPath", () => {
   it("keeps relative app paths", () => {
-    assert.equal(safeInternalPath("/partner/priser"), "/partner/priser");
+    assert.equal(safeInternalPath("/konto/ordrar"), "/konto/ordrar");
   });
   it("rejects protocol-relative and absolute URLs", () => {
     assert.equal(safeInternalPath("//evil.example", "/"), "/");

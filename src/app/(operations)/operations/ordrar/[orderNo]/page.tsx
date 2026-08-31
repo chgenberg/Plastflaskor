@@ -11,6 +11,7 @@ import { OrderConfirmationPreview } from "@/ui/order/OrderConfirmationPreview";
 import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
 import { Button, Field, FileLink, LinkButton, NextStep, PageHeader, Panel, StatusChip, Timeline, controlClass } from "@/ui/shell/primitives";
 import { EXTRA_KINDS } from "@/domain/extras";
+import { orderArtworkLink } from "@/domain/orderArtwork";
 
 export default async function OpsOrderDetail({ params }: { params: Promise<{ orderNo: string }> }) {
   const { orderNo } = await params;
@@ -39,13 +40,16 @@ export default async function OpsOrderDetail({ params }: { params: Promise<{ ord
     item,
     imageSrc: item ? imageForProduct(item.variant.product.slug) : null,
   });
-  const sendingOb = order.currentStatus === "ARTWORK_CUSTOMER_APPROVAL";
+  const customerFinal = order.artworkApprovals.some((a) => a.kind === "CUSTOMER_FINAL");
+  const sendingOb = order.currentStatus === "ARTWORK_CUSTOMER_APPROVAL" && customerFinal;
+  const awaitingCustomerProof = order.currentStatus === "ARTWORK_CUSTOMER_APPROVAL" && !customerFinal;
+  const artwork = orderArtworkLink(order);
 
   return (
     <div className="space-y-7">
       <PageHeader
-        title={order.customer.name}
-        subtitle={`${order.orderNo} · ${order.buyerType === "CUSTOMER" ? "Direktkund" : `ÅF: ${order.reseller?.company.name ?? "–"}`}`}
+        title={order.orderNo}
+        subtitle={`${order.customer.name}${item ? ` · ${item.variant.product.name}` : ""}`}
       />
       <NextStep title={brief.now} body={`${brief.owner}. ${brief.must}`} tone={brief.overdue ? "blocked" : "next"} />
       <div className="grid gap-5 lg:grid-cols-[280px_1fr]">
@@ -71,7 +75,7 @@ export default async function OpsOrderDetail({ params }: { params: Promise<{ ord
                 <Field label="Produkt">{item?.variant.product.name ?? "–"}</Field>
                 <Field label="Antal">{item ? `${item.qty.toLocaleString("sv-SE")} st` : "–"}</Field>
                 <Field label="Pris">{value.toLocaleString("sv-SE")} kr ex moms</Field>
-                <Field label="Storlek / vägg">{spec ? [spec.volumeLabel, spec.wall, spec.eco ? "ECO" : null].filter(Boolean).join(" · ") : "–"}</Field>
+                <Field label="Spec">{spec ? [spec.volumeLabel, spec.waterType, spec.bottleColor, spec.cap].filter(Boolean).join(" · ") : "–"}</Field>
                 <Field label="Preliminärt datum">{order.preliminaryDate ?? "Beräknas från ledtid"}</Field>
                 <Field label="Fakturareferens">{order.invoiceRef ?? "–"}</Field>
                 <div className="sm:col-span-2">
@@ -91,9 +95,9 @@ export default async function OpsOrderDetail({ params }: { params: Promise<{ ord
               <p className="av-label mt-5">Kontrollera innan du accepterar</p>
               <ul className="mt-2 space-y-1.5 text-sm">
                 {[
-                  "Tryckfilens format och upplösning",
-                  "Tryckytans mått och bleed",
-                  "Obligatoriska tryckelement",
+                  "Etikettens format, bleed och safe area",
+                  "Obligatoriska etikettelement (volym, EAN, pant, producent)",
+                  "Teknisk produktionsbarhet",
                   "Antal mot minsta order",
                   "Leveransadress och fakturareferens",
                 ].map((check) => (
@@ -111,6 +115,9 @@ export default async function OpsOrderDetail({ params }: { params: Promise<{ ord
             </Panel>
           ) : null}
           {spec && !sendingOb && !order.lockedAt ? <VisualSpecCard spec={spec} /> : null}
+          {awaitingCustomerProof ? (
+            <NextStep title="Väntar på kundgodkännande" body="När kunden godkänt korrektur kan du välja repeat och skicka slutlig OB." tone="next" />
+          ) : null}
           {sendingOb || order.lockedAt ? (
             <OrderConfirmationPreview
               spec={spec}
@@ -121,21 +128,15 @@ export default async function OpsOrderDetail({ params }: { params: Promise<{ ord
               locked={Boolean(order.lockedAt)}
               lockedCopy="Ordern är godkänd och låst. Kontakta AquaVisibility för ändringar."
               orderNo={order.orderNo}
-              customer={order.reseller?.company.name ?? order.customer.name}
+              customer={order.customer.name}
               address={
                 order.shippingAddress
                   ? `${order.shippingAddress.line1}, ${order.shippingAddress.postalCode} ${order.shippingAddress.city}`
                   : undefined
               }
               invoiceRef={order.invoiceRef}
-              artworkHref={
-                order.documents.find((d) => d.kind === "PROOF")
-                  ? `/api/documents/${order.documents.find((d) => d.kind === "PROOF")!.id}`
-                  : order.designs[0]?.files[0]
-                    ? `/api/artwork-files/${order.designs[0].files[0].id}`
-                    : null
-              }
-              artworkLabel={order.documents.find((d) => d.kind === "PROOF")?.title ?? order.designs[0]?.files[0]?.fileName}
+              artworkHref={artwork?.href}
+              artworkLabel={artwork?.label}
             />
           ) : null}
           <Panel>
@@ -176,7 +177,7 @@ export default async function OpsOrderDetail({ params }: { params: Promise<{ ord
                   <input name="confirmedDate" type="date" defaultValue={order.preliminaryDate ?? ""} className={`${controlClass} mt-1`} required />
                 </label>
                 <label className="block text-sm">
-                  Förväntad återbeställning
+                  När tror du att denna order kan vara aktuell för repeat?
                   <select name="repeatHorizon" className={`${controlClass} mt-1`}>
                     {REPEAT_HORIZONS.map((m) => (
                       <option key={m} value={m}>
@@ -192,15 +193,27 @@ export default async function OpsOrderDetail({ params }: { params: Promise<{ ord
             {order.factoryReadyEstimate && !order.aquaApprovedDelivery ? (
               <form action={approveFactoryDateAction} className="mt-5 space-y-2">
                 <input type="hidden" name="orderNo" value={order.orderNo} />
-                <p className="text-sm">Tryckeriet föreslår {order.factoryReadyEstimate}.</p>
+                <p className="text-sm">Bottler föreslår {order.factoryReadyEstimate}.</p>
                 <input name="date" type="date" defaultValue={order.factoryReadyEstimate} className={controlClass} />
                 <Button type="submit">Godkänn leveransdatum</Button>
               </form>
             ) : null}
 
             {order.currentStatus === "READY_TO_SHIP" ? (
-              <form action={createWaybillAction} className="mt-5">
+              <form action={createWaybillAction} className="mt-5 space-y-2">
                 <input type="hidden" name="orderNo" value={order.orderNo} />
+                <label className="block text-sm">
+                  Transportör
+                  <input name="carrier" defaultValue="PostNord" className={`${controlClass} mt-1`} required />
+                </label>
+                <label className="block text-sm">
+                  Kolli
+                  <input name="packages" type="number" min={1} defaultValue={1} className={`${controlClass} mt-1`} required />
+                </label>
+                <label className="block text-sm">
+                  Vikt (kg)
+                  <input name="weightKg" type="number" min={1} defaultValue={20} className={`${controlClass} mt-1`} required />
+                </label>
                 <Button type="submit">Skapa fraktsedel</Button>
               </form>
             ) : null}
@@ -212,17 +225,17 @@ export default async function OpsOrderDetail({ params }: { params: Promise<{ ord
               </form>
             ) : null}
 
-            {order.currentStatus === "CONFIRMED" ? (
+            {order.currentStatus === "CONFIRMED" || order.currentStatus === "LABEL_PRODUCTION" ? (
               <form action={setFactoryDeadlineAction} className="mt-5 space-y-2">
                 <input type="hidden" name="orderNo" value={order.orderNo} />
                 {order.factoryDeadline ? (
-                  <p className="text-sm text-[var(--av-text-muted)]">Nuvarande deadline: {order.factoryDeadline}</p>
+                  <p className="text-sm text-[var(--av-text-muted)]">Nuvarande sista skickdatum: {order.factoryDeadline}</p>
                 ) : null}
                 <label className="block text-sm">
-                  Senaste utskick / produktionsdeadline
+                  Sista skickdatum för etikett
                   <input name="date" type="date" defaultValue={order.factoryDeadline ?? ""} className={`${controlClass} mt-1`} />
                 </label>
-                <Button type="submit">Sätt deadline för tryckeriet</Button>
+                <Button type="submit">Sätt sista skickdatum</Button>
               </form>
             ) : null}
 
@@ -232,18 +245,9 @@ export default async function OpsOrderDetail({ params }: { params: Promise<{ ord
               </div>
             ) : null}
           </Panel>
-          <Panel title="Fem frågor">
-            <dl className="grid gap-3 text-sm sm:grid-cols-2">
-              <Field label="Vad händer nu?">{brief.now}</Field>
-              <Field label="Vad måste hända?">{brief.must}</Field>
-              <Field label="Vem väntar vi på?">{brief.waiting}</Field>
-              <Field label="När?">{order.aquaApprovedDelivery ?? brief.when}</Field>
-              <Field label="Vem äger nästa steg?">{brief.owner || "—"}</Field>
-            </dl>
-          </Panel>
-          <Panel title="Tryckfil">
+          <Panel title="Artwork">
             {order.designs.length === 0 ? (
-              <p className="text-sm text-[var(--av-text-muted)]">Ingen tryckfil kopplad.</p>
+              <p className="text-sm text-[var(--av-text-muted)]">Ingen artwork kopplad.</p>
             ) : (
               <ul className="space-y-3 text-sm">
                 {order.designs.map((d) => (

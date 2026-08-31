@@ -45,13 +45,15 @@ export function leadMatchesBucket(
 }
 
 export async function listLeads() {
+  await prisma.$executeRawUnsafe(
+    `DELETE FROM RepeatOpportunity WHERE customerId NOT IN (SELECT id FROM Customer)`,
+  );
   const leads = await prisma.repeatOpportunity.findMany({
     include: {
       customer: true,
       sourceOrder: {
         include: {
           items: { include: { variant: { include: { product: true } } } },
-          reseller: { include: { company: true } },
           documents: true,
         },
       },

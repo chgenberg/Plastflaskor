@@ -42,7 +42,7 @@ export function defaultLayers(): Layer[] {
     {
       id: "artwork",
       type: "artwork",
-      name: "Tryckyta",
+      name: "Etikett",
       x: 50,
       y: 50,
       scale: 1,
@@ -88,9 +88,7 @@ export function skuLabel(p: StudioProduct) {
       ? `${ml / 10} cl`
       : `${ml} ml`
     : "—";
-  const wall = p.slug.includes("dv") ? "Dubbelvägg" : "Enkelvägg";
-  const eco = p.slug.includes("eco") ? " · ECO" : "";
-  return `${volume} · ${wall}${eco}`;
+  return volume;
 }
 
 export function shapeFor(categorySlug: string): "bottle" | "can" | "cup" | "sport" | "cooler" {

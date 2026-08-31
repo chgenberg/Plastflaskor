@@ -10,13 +10,7 @@ function SpecLine({ children, strong }: { children: string; strong?: boolean }) 
 }
 
 export function VisualSpecCard({ spec, compact, dense, hero }: { spec: VisualSpec; compact?: boolean; dense?: boolean; hero?: boolean }) {
-  const lines = [
-    spec.volumeLabel || null,
-    spec.wall,
-    spec.eco ? "ECO" : null,
-    spec.finish,
-    spec.lid && spec.lid !== "Utan lock" ? spec.lid : null,
-  ].filter(Boolean) as string[];
+  const lines = [spec.volumeLabel || null, spec.waterType, spec.bottleColor, spec.cap].filter(Boolean) as string[];
 
   if (dense) {
     return (
@@ -39,12 +33,12 @@ export function VisualSpecCard({ spec, compact, dense, hero }: { spec: VisualSpe
           <Image src={spec.imageSrc} alt={spec.productName} fill className="object-contain p-2" sizes={hero ? "220px" : compact ? "96px" : "160px"} />
         ) : (
           <div className="flex h-full items-center justify-center text-[11px] uppercase tracking-[0.12em] text-[var(--av-text-muted)]">
-            Mugg
+            Flaska
           </div>
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="av-label">Pappersmugg</p>
+        <p className="av-label">Profilvatten</p>
         <p className={`${hero ? "mt-2 text-[44px]" : compact ? "mt-1 text-[22px]" : "mt-1.5 text-[32px]"} font-semibold tracking-tight tabular-nums text-[var(--av-text)]`}>
           {spec.qty.toLocaleString("sv-SE")} ST
         </p>

@@ -9,6 +9,7 @@ import { OrderConfirmationPreview } from "@/ui/order/OrderConfirmationPreview";
 import { ArtworkUpload } from "@/ui/shell/ArtworkUpload";
 import { Button, Field, FileLink, NextStep, PageHeader, Panel, StatusChip, Timeline } from "@/ui/shell/primitives";
 import { canSeePrices } from "@/domain/policies/priceVisibility";
+import { orderArtworkLink } from "@/domain/orderArtwork";
 
 type Order = {
   id: string;
@@ -67,6 +68,7 @@ export function BuyerOrderDetail({ order, role, repeatHref }: { order: Order; ro
   const needsProof = order.currentStatus === "ARTWORK_CUSTOMER_APPROVAL";
   const customerFinal = (order.artworkApprovals ?? []).some((a) => a.kind === "CUSTOMER_FINAL");
   const proofDoc = order.documents.find((d) => d.kind === "PROOF");
+  const artwork = orderArtworkLink(order);
   const financeDocs = order.documents.filter((d) => d.kind === "FINANCE");
   const otherDocs = order.documents.filter((d) => d.kind !== "FINANCE");
   const approved = order.aquaApprovedDelivery ?? order.confirmedDate;
@@ -97,7 +99,7 @@ export function BuyerOrderDetail({ order, role, repeatHref }: { order: Order; ro
         customerFinal ? (
           <NextStep title="Korrektur godkänd" body="AquaVisibility skickar slutlig orderbekräftelse." tone="done" />
         ) : (
-          <NextStep title="Godkänn korrektur" body="När ni godkänner blir filen slutgiltig tryckfil till tryckeriet." tone="next" />
+          <NextStep title="Godkänn korrektur" body="När ni godkänner blir filen den slutgiltiga artwork-filen till etikettproducenten." tone="next" />
         )
       ) : null}
       {needsProof && !customerFinal ? (
@@ -126,6 +128,7 @@ export function BuyerOrderDetail({ order, role, repeatHref }: { order: Order; ro
             repeatHorizonMonths={order.repeatHorizonMonths}
             locked
             showPrices={showPrice}
+            showRepeat={false}
             lockedCopy="Ordern är godkänd och låst. Kontakta AquaVisibility för ändringar."
             orderNo={order.orderNo}
             invoiceRef={order.invoiceRef}
@@ -135,6 +138,8 @@ export function BuyerOrderDetail({ order, role, repeatHref }: { order: Order; ro
                 ? `${order.shippingAddress.line1}, ${order.shippingAddress.postalCode} ${order.shippingAddress.city}`
                 : undefined
             }
+            artworkHref={artwork?.href}
+            artworkLabel={artwork?.label}
           />
           <a href={repeatHref} className="inline-block text-sm font-medium text-[var(--av-accent)]">
             Beställ igen
@@ -154,7 +159,7 @@ export function BuyerOrderDetail({ order, role, repeatHref }: { order: Order; ro
       </Panel>
 
       {order.lockedAt ? null : (
-        <Panel title="Tryckfil">
+        <Panel title="Artwork">
           {order.designs.length ? (
             <ul className="space-y-2 text-sm">
               {order.designs.map((d) => (
@@ -169,7 +174,7 @@ export function BuyerOrderDetail({ order, role, repeatHref }: { order: Order; ro
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-[var(--av-text-muted)]">Ingen tryckfil uppladdad ännu.</p>
+            <p className="text-sm text-[var(--av-text-muted)]">Ingen artwork uppladdad ännu.</p>
           )}
           <ArtworkUpload orderId={order.id} returnTo={repeatHref.replace(/\/repeat$/, "")} />
         </Panel>

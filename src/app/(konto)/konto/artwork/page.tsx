@@ -11,11 +11,11 @@ export default async function KontoArtworkPage() {
     <div className="space-y-8">
       <PageHeader
         title="Artwork"
-        subtitle="Era tryckfiler och tidigare designer."
+        subtitle="Era artwork-filer och tidigare designer."
         action={<LinkButton href="/designa">Ny design</LinkButton>}
       />
       {designs.length === 0 ? (
-        <EmptyState title="Inga tryckfiler ännu" body="Ladda upp i studion eller koppla en fil till en order." />
+        <EmptyState title="Ingen artwork ännu" body="Ladda upp i studion eller koppla en fil till en order." />
       ) : (
         <div className="grid gap-4 md:grid-cols-3">
           {designs.map((d) => (

@@ -1,18 +1,18 @@
 import Image from "next/image";
-import { listCupProducts } from "@/server/services/catalog.service";
+import { listWaterProducts } from "@/server/services/catalog.service";
 import { togglePrintRequirementAction } from "@/actions";
 import { updateProductAction } from "@/actions/catalogMasters";
-import { CUP_PRINT_REQUIREMENTS } from "@/domain/enums";
+import { LABEL_REQUIREMENTS } from "@/domain/bottleCatalog";
 import { Button, PageHeader, Panel } from "@/ui/shell/primitives";
 import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
 import { visualSpecFromOptions } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
 
 export default async function ProductsAdmin() {
-  const products = await listCupProducts();
+  const products = await listWaterProducts();
   return (
     <div className="space-y-8">
-      <PageHeader title="Produkter" subtitle="Pappmuggar i orderflödet. Publik Woo-katalog är oförändrad." />
+      <PageHeader title="Produkter" subtitle="Profilvatten: modell, storlek, ledtid och regulatoriska etikettkrav." />
       <div className="grid gap-5">
         {products.map((p) => {
           const v = p.variants[0];
@@ -24,7 +24,7 @@ export default async function ProductsAdmin() {
             optionsJson: v?.optionsJson,
             imageSrc,
           });
-          const requirements = p.printRequirements.length ? p.printRequirements : CUP_PRINT_REQUIREMENTS;
+          const requirements = p.printRequirements.length ? p.printRequirements : LABEL_REQUIREMENTS;
           return (
             <Panel key={p.id} title={p.name}>
               <div className="grid gap-6 lg:grid-cols-[160px_1fr]">
@@ -47,7 +47,7 @@ export default async function ProductsAdmin() {
                       {p.leadTimeText}
                     </span>
                     <span className="rounded-full bg-[var(--av-bg)] px-3 py-1 text-[12px] font-medium text-[var(--av-text)]">
-                      {(p.printFormat ?? "Wrap") === "Wrap" ? "Tryckyta runt mugg" : p.printFormat}
+                      {p.printFormat && p.printFormat !== "Wrap" ? p.printFormat : "Etikett wrap"}
                     </span>
                   </div>
                   {p.oneLiner ? <p className="mt-3 text-sm text-[var(--av-text-muted)]">{p.oneLiner}</p> : null}
@@ -86,7 +86,7 @@ export default async function ProductsAdmin() {
                       />
                     </label>
                     <label className="text-sm">
-                      Tryckformat
+                      Etikettformat
                       <input
                         name="printFormat"
                         type="text"
@@ -112,7 +112,7 @@ export default async function ProductsAdmin() {
                 </div>
               </div>
               <div className="mt-6">
-                <p className="av-label">Tryckkrav</p>
+                <p className="av-label">Etikettkrav</p>
                 <ul className="mt-3 space-y-2">
                   {requirements.map((r) => (
                     <li

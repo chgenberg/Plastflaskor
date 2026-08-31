@@ -4,22 +4,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { attachDesignToOrderAction, saveDesignAction } from "@/actions";
+import { saveDesignAction } from "@/actions";
 import { assertRequiredPrintPlaced, emptyCupDocument, REQUIRED_PRINT_MESSAGE } from "@/domain/cupDocument";
-import { RealityView } from "./RealityView";
 import { BottlePreview } from "./engine/BottlePreview";
-import { flattenLabelBlob } from "./engine/flattenLabel";
 import { LabelCanvas } from "./engine/LabelCanvas";
 import { defaultLayers, skuLabel, wrapForVolume, type Finish, type Layer, type StudioProduct, type Tool } from "./engine/types";
 
 const STEPS = [
   { id: "product", label: "Produkt" },
-  { id: "options", label: "Val" },
-  { id: "qty", label: "Antal" },
   { id: "upload", label: "Ladda upp" },
   { id: "design", label: "Design" },
   { id: "preview", label: "Förhandsvisning" },
-  { id: "send", label: "Skicka" },
 ] as const;
 
 const TOOLS: { id: Tool; label: string }[] = [
@@ -27,7 +22,7 @@ const TOOLS: { id: Tool; label: string }[] = [
   { id: "text", label: "Text" },
   { id: "upload", label: "Ladda upp" },
   { id: "colors", label: "Färger" },
-  { id: "bottle", label: "Mugg" },
+  { id: "bottle", label: "Flaska" },
   { id: "preview", label: "Förhandsvisa" },
 ];
 
@@ -40,14 +35,15 @@ export function Studio({
   initialSlug?: string;
   role?: string | null;
 }) {
-  const isBuyer = role === "RESELLER" || role === "CUSTOMER";
+  const isBuyer = role === "CUSTOMER";
   const router = useRouter();
-  const preferred = products.find((p) => p.slug === initialSlug) ?? products.find((p) => p.slug.includes("23cl")) ?? products[0];
+  const preferred = products.find((p) => p.slug === initialSlug) ?? products.find((p) => p.slug.includes("33cl")) ?? products[0];
   const [slug, setSlug] = useState(preferred?.slug);
   const product = products.find((p) => p.slug === slug) ?? products[0];
-  const [qty, setQty] = useState(product?.moq ?? 500);
+  const [qty, setQty] = useState(product?.moq ?? 270);
   const [finish, setFinish] = useState<Finish>("matte");
-  const [lid, setLid] = useState<"none" | "white" | "black">("none");
+  const [waterType, setWaterType] = useState<"stilla" | "kolsyrat">("stilla");
+  const [cap, setCap] = useState<"skruvkork" | "sportkork" | "black" | "white">("skruvkork");
   const [placedReqs, setPlacedReqs] = useState<Record<string, boolean>>({});
   const [project, setProject] = useState("AQUA VISIBILITY / SS26");
   const [tool, setTool] = useState<Tool>("upload");
@@ -56,14 +52,10 @@ export function Studio({
   const [zoom2d, setZoom2d] = useState(1);
   const [saved, setSaved] = useState(true);
   const [picker, setPicker] = useState(false);
-  const [view, setView] = useState<"wrap" | "vinklar" | "verklighet">("wrap");
+  const [view, setView] = useState<"wrap" | "vinklar">("wrap");
   const [yaw, setYaw] = useState(18);
   const [printFiles, setPrintFiles] = useState<string[]>([]);
-  const [step, setStep] = useState(3);
-  const [realityUrl, setRealityUrl] = useState<string | null>(null);
-  const [realityFp, setRealityFp] = useState<string | null>(null);
-  const [realityLoading, setRealityLoading] = useState(false);
-  const [realityError, setRealityError] = useState<string | null>(null);
+  const [step, setStep] = useState(1);
   const [gateError, setGateError] = useState<string | null>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
   const history = useRef<Layer[][]>([defaultLayers()]);
@@ -71,8 +63,6 @@ export function Studio({
   const [, start] = useTransition();
   const selected = layers.find((l) => l.id === selectedId) ?? layers[0];
 
-  const wall = product?.slug.includes("dv") ? "dubbel" : "enkel";
-  const eco = Boolean(product?.slug.includes("eco"));
   const wrap = useMemo(() => product?.wrap ?? wrapForVolume(product?.volumeMl), [product?.wrap, product?.volumeMl]);
   const requirements = useMemo(
     () =>
@@ -90,22 +80,17 @@ export function Studio({
         productSlug: product.slug,
         variantSku: product.variantSku,
         quantity: qty,
-        wall,
-        eco,
         finish: finish === "gloss" ? "glossy" : "matte",
-        lid,
         wrap,
         layers: layers as unknown as Record<string, unknown>[],
         requirements,
       }),
-    [product.slug, product.variantSku, qty, wall, eco, finish, lid, wrap, layers, requirements],
+    [product.slug, product.variantSku, qty, finish, wrap, layers, requirements],
   );
-  const options = useMemo(() => JSON.stringify(cupDoc.options), [cupDoc]);
-  const realityKey = useMemo(
-    () => JSON.stringify({ slug, finish, lid, layers }),
-    [slug, finish, lid, layers],
+  const options = useMemo(
+    () => JSON.stringify({ ...cupDoc.options, waterType, cap }),
+    [cupDoc, waterType, cap],
   );
-
   function pushHistory(next: Layer[]) {
     history.current = [...history.current, layers].slice(-30);
     future.current = [];
@@ -150,7 +135,7 @@ export function Studio({
   useEffect(() => {
     const t = setTimeout(() => setSaved(true), 700);
     return () => clearTimeout(t);
-  }, [layers, qty, finish, lid, placedReqs, project]);
+  }, [layers, qty, finish, placedReqs, project]);
 
   useEffect(() => {
     function onPointerDown(e: PointerEvent) {
@@ -159,48 +144,6 @@ export function Studio({
     window.addEventListener("pointerdown", onPointerDown);
     return () => window.removeEventListener("pointerdown", onPointerDown);
   }, []);
-
-  function openRealityPane() {
-    setView("verklighet");
-    setTool("preview");
-  }
-
-  async function seeInReality() {
-    openRealityPane();
-    if (realityLoading) return;
-    setRealityLoading(true);
-    setRealityError(null);
-    try {
-      const blob = await flattenLabelBlob(layers);
-      const fd = new FormData();
-      fd.append("label", blob, "label.png");
-      fd.append(
-        "meta",
-        JSON.stringify({
-          productSlug: product.slug,
-          productName: product.name,
-          categorySlug: product.categorySlug,
-          volumeMl: product.volumeMl ?? null,
-          water: "stilla",
-          cap: "skruvkork",
-          labelKind: "papper",
-          finish,
-          lid,
-          projectName: project,
-          extraText: layers.find((l) => l.type === "text")?.text ?? "",
-        }),
-      );
-      const res = await fetch("/api/studio/reality", { method: "POST", body: fd });
-      const data = (await res.json()) as { imageDataUrl?: string; error?: string };
-      if (!res.ok || !data.imageDataUrl) throw new Error(data.error ?? "Kunde inte skapa bilden.");
-      setRealityUrl(data.imageDataUrl);
-      setRealityFp(realityKey);
-    } catch (err) {
-      setRealityError(err instanceof Error ? err.message : "Kunde inte skapa bilden.");
-    } finally {
-      setRealityLoading(false);
-    }
-  }
 
   function persistDesign() {
     assertRequiredPrintPlaced(requirements);
@@ -215,23 +158,11 @@ export function Studio({
     });
   }
 
-  function requestQuote() {
-    start(async () => {
-      try {
-        const design = await persistDesign();
-        router.push(`/offert?product=${product.id}&design=${design.id}&qty=${qty}`);
-      } catch (err) {
-        setGateError(err instanceof Error ? err.message : REQUIRED_PRINT_MESSAGE);
-      }
-    });
-  }
-
   function addToOrder() {
     start(async () => {
       try {
         const design = await persistDesign();
-        const order = await attachDesignToOrderAction(design.id);
-        router.push(role === "CUSTOMER" ? `/konto/ordrar/${order.orderNo}` : `/partner/ordrar/${order.orderNo}`);
+        router.push(`/konto/ordrar/ny?design=${design.id}`);
       } catch (err) {
         setGateError(err instanceof Error ? err.message : REQUIRED_PRINT_MESSAGE);
       }
@@ -246,7 +177,6 @@ export function Studio({
     setSelectedId("artwork");
     setPrintFiles([]);
     setFinish("matte");
-    setLid("none");
     setPlacedReqs({});
     setQty(product.moq);
     setSaved(false);
@@ -256,10 +186,6 @@ export function Studio({
     setStep(i);
     const id = STEPS[i].id;
     if (id === "product") setPicker(true);
-    if (id === "options" || id === "qty") {
-      setTool("bottle");
-      setView("wrap");
-    }
     if (id === "upload") {
       setTool("upload");
       setView("wrap");
@@ -272,10 +198,7 @@ export function Studio({
       setTool("preview");
       setView("vinklar");
     }
-    if (id === "send") setTool("preview");
   }
-
-  const qtys = [product.moq, 1000, 2500, 5000].filter((n, i, a) => n >= product.moq && a.indexOf(n) === i);
 
   return (
     <div className="flex h-dvh flex-col bg-[var(--av-bg)] text-[var(--av-text)]">
@@ -328,23 +251,17 @@ export function Studio({
               </div>
             ) : null}
           </div>
-          <p className="hidden text-[12px] text-[var(--av-text-muted)] sm:block">{qty} st</p>
           <button type="button" onClick={resetDesign} className="hidden h-9 rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-3 text-[12px] font-medium sm:inline-flex sm:items-center">
             Återställ
           </button>
           {isBuyer ? (
             <button type="button" onClick={addToOrder} className="h-9 rounded-[var(--av-radius-md)] bg-[var(--av-accent)] px-5 text-[13px] font-semibold text-white hover:bg-[var(--av-accent-hover)]">
-              Lägg till i order
+              Spara och beställ
             </button>
           ) : (
-            <>
-              <button type="button" onClick={requestQuote} className="h-9 rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] bg-white px-4 text-[13px] font-semibold">
-                Begär offert
-              </button>
-              <Link href="/login" className="inline-flex h-9 items-center rounded-[var(--av-radius-md)] bg-[var(--av-accent)] px-5 text-[13px] font-semibold text-white hover:bg-[var(--av-accent-hover)]">
-                Logga in
-              </Link>
-            </>
+            <Link href="/operations" className="inline-flex h-9 items-center rounded-[var(--av-radius-md)] bg-[var(--av-accent)] px-5 text-[13px] font-semibold text-white hover:bg-[var(--av-accent-hover)]">
+              Tillbaka till drift
+            </Link>
           )}
         </div>
       </header>
@@ -362,7 +279,7 @@ export function Studio({
               type="button"
               onClick={() => {
                 setTool(t.id);
-                if (t.id === "preview") openRealityPane();
+                if (t.id === "preview") setView("vinklar");
                 else setView("wrap");
               }}
               className={`flex w-[68px] flex-col items-center gap-1 rounded-2xl py-3 text-[11px] font-medium ${
@@ -393,7 +310,6 @@ export function Studio({
             </ol>
             <PaneToggle
               active={view}
-              loading={realityLoading}
               onWrap={() => {
                 setView("wrap");
                 if (tool === "preview") setTool("design");
@@ -402,28 +318,15 @@ export function Studio({
                 setView("vinklar");
                 setTool("preview");
               }}
-              onReality={openRealityPane}
             />
             <div className="relative min-h-0 flex-1">
-              {view === "verklighet" ? (
-                <RealityView
-                  imageUrl={realityUrl}
-                  loading={realityLoading}
-                  error={realityError}
-                  stale={Boolean(realityUrl && realityFp !== realityKey)}
-                  onGenerate={() => void seeInReality()}
-                  onBack={() => {
-                    setView("wrap");
-                    if (tool === "preview") setTool("design");
-                  }}
-                />
-              ) : view === "vinklar" ? (
+              {view === "vinklar" ? (
                 <div className="absolute inset-0 px-4 pb-4 pt-2">
                   <BottlePreview
                     categorySlug={product.categorySlug}
                     productSlug={product.slug}
                     volumeMl={product.volumeMl}
-                    cap="skruvkork"
+                    cap={cap}
                     finish={finish}
                     yaw={yaw}
                     zoom={1}
@@ -463,37 +366,23 @@ export function Studio({
               selected={selected}
               finish={finish}
               product={product}
-              lid={lid}
+              waterType={waterType}
+              cap={cap}
               placedReqs={placedReqs}
               wrap={wrap}
-              onLid={setLid}
+              onWaterType={setWaterType}
+              onCap={setCap}
               onToggleReq={(code, placed) => {
                 setPlacedReqs((prev) => ({ ...prev, [code]: placed }));
                 setGateError(null);
               }}
-              qty={qty}
-              qtys={qtys}
               onSelect={setSelectedId}
               onFinish={setFinish}
-              onQty={setQty}
               onLayerChange={(id, patch) => updateLayer(id, patch)}
               onCenter={() => updateLayer(selected.id, { x: 50, y: selected.type === "logo" ? 46 : 70, rotation: 0 })}
-              onMatchColors={() => updateLayer("text", { color: "#005CAF" })}
-              onOptimize={() =>
-                pushHistory(
-                  layers.map((l) =>
-                    l.type === "logo"
-                      ? { ...l, x: 50, y: 46, scale: 1, rotation: 0 }
-                      : l.type === "text"
-                        ? { ...l, x: 50, y: 70, scale: 1, rotation: 0 }
-                        : { ...l, scale: 1, rotation: 0 },
-                  ),
-                )
-              }
               onUpload={(src) => updateLayer(selected.type === "logo" ? "logo" : "artwork", { src })}
               onPrintFile={(name) => setPrintFiles((prev) => [...prev, name])}
               printFiles={printFiles}
-              onOpenReality={openRealityPane}
               onReset={resetDesign}
             />
           </aside>
@@ -507,7 +396,7 @@ export function Studio({
             type="button"
             onClick={() => {
               setTool(t.id);
-              if (t.id === "preview") openRealityPane();
+              if (t.id === "preview") setView("vinklar");
               else setView("wrap");
             }}
             className={`rounded-[var(--av-radius-md)] px-3 py-1.5 text-xs font-medium ${tool === t.id ? "bg-[var(--av-accent-soft)] text-[var(--av-accent)]" : "text-[var(--av-text-muted)]"}`}
@@ -526,24 +415,20 @@ function Inspector({
   selected,
   finish,
   product,
-  lid,
+  waterType,
+  cap,
   placedReqs,
   wrap,
-  onLid,
+  onWaterType,
+  onCap,
   onToggleReq,
-  qty,
-  qtys,
   onSelect,
   onFinish,
-  onQty,
   onLayerChange,
   onCenter,
-  onMatchColors,
-  onOptimize,
   onUpload,
   onPrintFile,
   printFiles,
-  onOpenReality,
   onReset,
 }: {
   tool: Tool;
@@ -551,24 +436,20 @@ function Inspector({
   selected: Layer;
   finish: Finish;
   product?: StudioProduct;
-  lid: "none" | "white" | "black";
+  waterType: "stilla" | "kolsyrat";
+  cap: "skruvkork" | "sportkork" | "black" | "white";
   placedReqs: Record<string, boolean>;
   wrap: { widthMm: number; heightMm: number; bleedMm: number };
-  onLid: (v: "none" | "white" | "black") => void;
+  onWaterType: (v: "stilla" | "kolsyrat") => void;
+  onCap: (v: "skruvkork" | "sportkork" | "black" | "white") => void;
   onToggleReq: (code: string, placed: boolean) => void;
-  qty: number;
-  qtys: number[];
   onSelect: (id: string) => void;
   onFinish: (f: Finish) => void;
-  onQty: (n: number) => void;
   onLayerChange: (id: string, patch: Partial<Layer>) => void;
   onCenter: () => void;
-  onMatchColors: () => void;
-  onOptimize: () => void;
   onUpload: (src: string) => void;
   onPrintFile: (name: string) => void;
   printFiles: string[];
-  onOpenReality: () => void;
   onReset: () => void;
 }) {
   return (
@@ -600,7 +481,7 @@ function Inspector({
               onLayerChange("text", { text: e.target.value });
             }}
             className="mt-2 h-10 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-3"
-            placeholder="Skriv på tryckytan"
+            placeholder="Skriv på etiketten"
           />
         </label>
       ) : null}
@@ -622,7 +503,7 @@ function Inspector({
 
       {tool === "upload" ? (
         <div className="space-y-2">
-          <p className="av-label">Ladda upp tryckfil</p>
+          <p className="av-label">Ladda upp artwork</p>
           <label className="flex h-36 cursor-pointer flex-col items-center justify-center rounded-[var(--av-radius-lg)] border border-dashed border-[var(--av-border-strong)] px-4 text-center text-[13px] text-[var(--av-text-muted)]">
             <input
               type="file"
@@ -642,17 +523,17 @@ function Inspector({
               }}
             />
             <span className="font-medium text-[var(--av-text)]">
-              {selected.type === "logo" ? "Ladda upp logotyp" : "Ladda upp tryckfil"}
+              {selected.type === "logo" ? "Ladda upp logotyp" : "Ladda upp artwork"}
             </span>
             <span className="mt-1 text-[12px]">PNG, JPG, SVG, PDF eller AI</span>
           </label>
-          <p className="text-[12px] text-[var(--av-text-muted)]">Primär väg: ladda upp färdig tryckfil. Canvas finns kvar för justering.</p>
+          <p className="text-[12px] text-[var(--av-text-muted)]">Ladda upp er färdiga design. Justera sedan obligatoriska etikettelement.</p>
         </div>
       ) : null}
       {printFiles.length ? (
         <ul className="space-y-1 text-[12px] text-[var(--av-text-muted)]">
           {printFiles.map((name) => (
-            <li key={name}>Tryckfil: {name}</li>
+            <li key={name}>Artwork: {name}</li>
           ))}
         </ul>
       ) : null}
@@ -675,28 +556,35 @@ function Inspector({
       {tool === "bottle" ? (
         <div className="space-y-3">
           <div>
-            <p className="av-label">Mugg (låst)</p>
-            <p className="mt-1.5 text-sm">
-              {product?.slug.includes("dv") ? "Dubbelvägg" : "Enkelvägg"}
-              {product?.slug.includes("eco") ? " · ECO" : ""}
-            </p>
+            <p className="av-label">Flaska</p>
+            <p className="mt-1.5 text-sm">{product?.name}</p>
             <p className="mt-1 text-[12px] text-[var(--av-text-muted)]">
-              Tryckyta {wrap.widthMm} × {wrap.heightMm} mm + {wrap.bleedMm} mm bleed
+              Etikett {wrap.widthMm} × {wrap.heightMm} mm + {wrap.bleedMm} mm bleed
             </p>
           </div>
-          <Field label="Lock">
+          <Field label="Stilla / kolsyrat">
             <select
-              value={lid}
-              onChange={(e) => onLid(e.target.value as "none" | "white" | "black")}
+              value={waterType}
+              onChange={(e) => onWaterType(e.target.value as "stilla" | "kolsyrat")}
               className="h-10 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-3"
             >
-              <option value="none">Utan lock</option>
-              <option value="white">Vitt lock</option>
-              <option value="black">Svart lock</option>
+              <option value="stilla">Stilla</option>
+              <option value="kolsyrat">Kolsyrat</option>
+            </select>
+          </Field>
+          <Field label="Kapsyl">
+            <select
+              value={cap}
+              onChange={(e) => onCap(e.target.value as "skruvkork" | "sportkork" | "black" | "white")}
+              className="h-10 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-3"
+            >
+              <option value="skruvkork">Svart kapsyl</option>
+              <option value="white">Vit kapsyl</option>
+              <option value="sportkork">Sportkork</option>
             </select>
           </Field>
           <div>
-            <p className="av-label">Ytfinish</p>
+            <p className="av-label">Etikettfinish</p>
             <div className="mt-2 grid grid-cols-2 gap-1 rounded-[var(--av-radius-md)] bg-[var(--av-bg)] p-1">
               {(["matte", "gloss"] as const).map((f) => (
                 <button
@@ -711,7 +599,7 @@ function Inspector({
             </div>
           </div>
           <div>
-            <p className="av-label">Obligatoriska tryckelement</p>
+            <p className="av-label">Regulatoriska etikettkrav</p>
             <ul className="mt-2 space-y-1.5 text-sm">
               {(product?.printRequirements ?? []).map((r) => (
                 <li key={r.code}>
@@ -729,22 +617,7 @@ function Inspector({
                 </li>
               ))}
             </ul>
-            <p className="mt-2 text-[12px] text-[var(--av-text-muted)]">Kryssa i när elementet är placerat på tryckytan.</p>
-          </div>
-          <div>
-            <p className="av-label">Antal</p>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {qtys.map((n) => (
-                <button
-                  key={n}
-                  type="button"
-                  onClick={() => onQty(n)}
-                  className={`rounded-[var(--av-radius-md)] px-3 py-1.5 text-xs ${qty === n ? "bg-[var(--av-accent)] text-white" : "bg-[var(--av-bg)]"}`}
-                >
-                  {n} st
-                </button>
-              ))}
-            </div>
+            <p className="mt-2 text-[12px] text-[var(--av-text-muted)]">Kryssa i när elementet är placerat på etiketten.</p>
           </div>
         </div>
       ) : null}
@@ -759,16 +632,14 @@ function Inspector({
       </section>
 
       <section>
-        <p className="av-label">AI-hjälp</p>
+        <p className="av-label">Hjälp</p>
         <div className="mt-2 space-y-1.5">
-          <AiBtn onClick={onOpenReality}>Se i verkligheten</AiBtn>
-          <AiBtn onClick={onCenter}>Centrera motiv</AiBtn>
-          <AiBtn onClick={onMatchColors}>Matcha varumärkesfärger</AiBtn>
-          <AiBtn onClick={onOptimize}>Optimera layout</AiBtn>
-          <AiBtn onClick={onReset}>Återställ design</AiBtn>
-          <Link href="/designa/ai" className="block rounded-xl px-3 py-2 text-[13px] text-[var(--av-accent)] hover:bg-[var(--av-accent-soft)]">
-            Öppna AI-studio (tillval) →
-          </Link>
+          <button type="button" onClick={onCenter} className="flex w-full items-center justify-between rounded-[var(--av-radius-md)] px-3 py-2 text-left text-[13px] hover:bg-[var(--av-bg)]">
+            Centrera motiv
+          </button>
+          <button type="button" onClick={onReset} className="flex w-full items-center justify-between rounded-[var(--av-radius-md)] px-3 py-2 text-left text-[13px] hover:bg-[var(--av-bg)]">
+            Återställ
+          </button>
         </div>
       </section>
     </div>
@@ -799,27 +670,14 @@ function Num({ label, value, onChange, step = 1 }: { label: string; value: numbe
   );
 }
 
-function AiBtn({ children, onClick }: { children: ReactNode; onClick: () => void }) {
-  return (
-    <button type="button" onClick={onClick} className="flex w-full items-center justify-between rounded-[var(--av-radius-md)] px-3 py-2 text-left text-[13px] hover:bg-[var(--av-bg)]">
-      {children}
-      <span className="text-[var(--av-text-muted)]">✦</span>
-    </button>
-  );
-}
-
 function PaneToggle({
   active,
-  loading,
   onWrap,
   onAngles,
-  onReality,
 }: {
-  active: "wrap" | "vinklar" | "verklighet";
-  loading: boolean;
+  active: "wrap" | "vinklar";
   onWrap: () => void;
   onAngles: () => void;
-  onReality: () => void;
 }) {
   return (
     <div className="flex justify-center pt-4">
@@ -829,7 +687,7 @@ function PaneToggle({
           onClick={onWrap}
           className={`rounded-[var(--av-radius-sm)] px-4 py-1.5 ${active === "wrap" ? "bg-white text-[var(--av-text)] shadow-sm" : "text-[var(--av-text-muted)]"}`}
         >
-          Tryckyta
+          Etikett
         </button>
         <button
           type="button"
@@ -837,13 +695,6 @@ function PaneToggle({
           className={`rounded-[var(--av-radius-sm)] px-4 py-1.5 ${active === "vinklar" ? "bg-white text-[var(--av-text)] shadow-sm" : "text-[var(--av-text-muted)]"}`}
         >
           3D / vinklar
-        </button>
-        <button
-          type="button"
-          onClick={onReality}
-          className={`rounded-[var(--av-radius-sm)] px-4 py-1.5 ${active === "verklighet" ? "bg-white text-[var(--av-text)] shadow-sm" : "text-[var(--av-text-muted)]"}`}
-        >
-          {loading ? "Skapar…" : "Se i verkligheten"}
         </button>
       </div>
     </div>

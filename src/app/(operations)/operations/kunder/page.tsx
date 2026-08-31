@@ -21,19 +21,19 @@ export default async function CustomersPage({
 
   return (
     <div className="space-y-8">
-      <PageHeader title="Kunder" subtitle="Direktkunder och ÅF-kunder." />
+      <PageHeader title="Kunder" subtitle="Företag, prislista, ordrar och repeat." />
 
       <form action="/operations/kunder" method="get" className="av-card grid gap-3 p-5 sm:grid-cols-[1fr_auto]">
         <input
           name="q"
           defaultValue={term}
-          placeholder="Sök namn, org.nr, e-post, ÅF"
+          placeholder="Sök namn, org.nr, e-post"
           className={FIELD}
         />
         <Button type="submit">Sök</Button>
       </form>
 
-      <Panel title="Ny direktkund">
+      <Panel title="Ny kund">
         <form action={createCustomerAction} className="grid gap-3 sm:grid-cols-2">
           <label className="text-sm text-[var(--av-text-muted)]">
             Namn
@@ -75,7 +75,7 @@ export default async function CustomersPage({
             <input name="city" className={`${FIELD} mt-1 text-[var(--av-text)]`} />
           </label>
           <div className="sm:col-span-2">
-            <Button type="submit">Skapa direktkund</Button>
+            <Button type="submit">Skapa kund</Button>
           </div>
         </form>
       </Panel>
@@ -90,9 +90,10 @@ export default async function CustomersPage({
           {customers.map((c) => (
             <Link key={c.id} href={`/operations/kunder/${c.id}`} className="av-card block p-5 transition hover:border-[var(--av-border-strong)]">
               <p className="text-[16px] font-semibold tracking-tight">{c.name}</p>
-              <p className="mt-1 text-[13px] text-[var(--av-text-muted)]">{c.reseller?.company.name ?? "Direktkund"}</p>
+              <p className="mt-1 text-[13px] text-[var(--av-text-muted)]">
+                {priceListDisplayName(c.priceList?.name)}
+              </p>
               <p className="mt-3 av-mono text-[13px] text-[var(--av-text-secondary)]">{c.orgNr ?? "Inget org.nr"}</p>
-              <p className="mt-1 text-[13px]">{priceListDisplayName(c.priceList?.name ?? c.reseller?.priceList.name)}</p>
               <p className="mt-3 text-[13px] text-[var(--av-text-muted)]">
                 {c.orders.length} ordrar · nästa lead {c.leads[0]?.expectedAt.toLocaleDateString("sv-SE") ?? "–"}
               </p>

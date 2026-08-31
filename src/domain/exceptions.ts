@@ -7,6 +7,8 @@ export type ExceptionKind =
   | "deadline_tomorrow"
   | "deadline_unaccepted"
   | "deadline_issue"
+  | "label_deadline"
+  | "labels_not_received"
   | "ready_date"
   | "ready_vs_requirement"
   | "waybill"
@@ -37,7 +39,7 @@ export type OrderLike = {
   factoryReadyEstimate?: string | null;
   aquaApprovedDelivery?: string | null;
   deliveryRequirement?: string | null;
-  shipments?: { waybillNo?: string | null }[] | null;
+  shipments?: { waybillNo?: string | null; type?: string }[] | null;
   invoice?: { status?: string } | null;
   artworkApprovals?: { kind: string; createdAt: Date | string }[] | null;
 };
@@ -49,6 +51,8 @@ export const EXCEPTION_SEVERITY: Record<ExceptionKind, AlertSeverity> = {
   deadline_tomorrow: "yellow",
   deadline_unaccepted: "yellow",
   deadline_issue: "red",
+  label_deadline: "yellow",
+  labels_not_received: "red",
   ready_date: "yellow",
   ready_vs_requirement: "red",
   waybill: "yellow",
@@ -82,7 +86,9 @@ function isOpen(status: string) {
 }
 
 function hasWaybill(o: OrderLike) {
-  return Boolean(o.shipments?.some((s) => s.waybillNo));
+  return Boolean(
+    o.shipments?.some((s) => s.waybillNo && (s.type === "GOODS_TO_CUSTOMER" || s.type == null)),
+  );
 }
 
 function latestProofAt(o: OrderLike) {
@@ -118,25 +124,40 @@ const RULES: { kind: ExceptionKind; label: string; href: (o: OrderLike) => strin
   },
   {
     kind: "deadline_unaccepted",
-    label: "Deadline ej accepterad av tryckeri",
+    label: "Deadline ej accepterad av etikettproducent",
     href: () => `/operations/ordrar?alert=deadline_unaccepted`,
-    match: (o) => o.currentStatus === "CONFIRMED" && o.factoryDeadlineAccepted === false && !o.factoryIssueNote,
+    match: (o) =>
+      (o.currentStatus === "CONFIRMED" || o.currentStatus === "LABEL_PRODUCTION") &&
+      o.factoryDeadlineAccepted === false &&
+      !o.factoryIssueNote,
+  },
+  {
+    kind: "label_deadline",
+    label: "Etikett-deadline behöver accepteras",
+    href: () => `/operations/ordrar?alert=label_deadline`,
+    match: (o) => o.currentStatus === "LABEL_PRODUCTION" && o.factoryDeadlineAccepted === false && !o.factoryIssueNote,
+  },
+  {
+    kind: "labels_not_received",
+    label: "Etiketter ej mottagna av bottler",
+    href: () => `/operations/ordrar?alert=labels_not_received`,
+    match: (o) => o.currentStatus === "LABELS_DISPATCHED",
   },
   {
     kind: "deadline_issue",
-    label: "Tryckeri har flaggat deadline",
+    label: "Leverantör har flaggat deadline",
     href: () => `/operations/ordrar?alert=deadline_issue`,
     match: (o) => Boolean(o.factoryIssueNote) && !o.factoryDeadlineAccepted,
   },
   {
     kind: "ready_date",
-    label: "Tryckeri-datum behöver godkännas",
+    label: "Bottler-datum behöver godkännas",
     href: () => `/operations/ordrar?alert=ready_date`,
     match: (o) => Boolean(o.factoryReadyEstimate) && !o.aquaApprovedDelivery,
   },
   {
     kind: "ready_vs_requirement",
-    label: "Tryckeridatum efter kundens krav",
+    label: "Bottler-datum efter kundens krav",
     href: () => `/operations/ordrar?alert=ready_vs_requirement`,
     match: (o) => Boolean(o.factoryReadyEstimate && o.requestedDate && o.factoryReadyEstimate > o.requestedDate),
   },

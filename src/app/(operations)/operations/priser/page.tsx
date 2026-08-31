@@ -6,9 +6,9 @@ import { Button, DataRow, DataTable, EmptyState, PageHeader } from "@/ui/shell/p
 export default async function PriceListsAdmin() {
   const lists = await prisma.priceList.findMany({
     include: {
-      _count: { select: { items: true, resellers: true, customers: true } },
+      _count: { select: { items: true, customers: true } },
       items: {
-        where: { variant: { product: { category: "PAPER_CUP" } } },
+        where: { variant: { product: { category: "WATER" } } },
         select: {
           id: true,
           minQty: true,
@@ -25,7 +25,7 @@ export default async function PriceListsAdmin() {
     <div className="space-y-8">
       <PageHeader title="Prislistor" subtitle="Standard, Partner, Key Account och Specialavtal. Ordern låser snapshot vid OB." />
       {lists.length === 0 ? (
-        <EmptyState title="Inga prislistor" body="När listor seedas syns kod, ÅF, kunder och pappersmugg-rader här." />
+        <EmptyState title="Inga prislistor" body="När listor seedas syns kod, kunder och profilvatten-rader här." />
       ) : (
         <div className="grid gap-5">
           {lists.map((list) => (
@@ -38,13 +38,9 @@ export default async function PriceListsAdmin() {
                   <p className="mt-1 text-[12px] text-[var(--av-text-muted)]">{list.currency}</p>
                 </div>
               </div>
-              <div className="grid gap-3 border-b border-[var(--av-border)] px-5 py-4 sm:grid-cols-3">
+              <div className="grid gap-3 border-b border-[var(--av-border)] px-5 py-4 sm:grid-cols-2">
                 <div>
-                  <p className="av-label">ÅF</p>
-                  <p className="mt-1 text-[22px] font-semibold tabular-nums tracking-tight">{list._count.resellers}</p>
-                </div>
-                <div>
-                  <p className="av-label">Slutkunder</p>
+                  <p className="av-label">Kunder</p>
                   <p className="mt-1 text-[22px] font-semibold tabular-nums tracking-tight">{list._count.customers}</p>
                 </div>
                 <div>
@@ -54,12 +50,12 @@ export default async function PriceListsAdmin() {
               </div>
               {list.items.length === 0 ? (
                 <div className="p-5">
-                  <p className="text-sm text-[var(--av-text-muted)]">Inga pappersmugg-rader på den här listan.</p>
+                  <p className="text-sm text-[var(--av-text-muted)]">Inga profilvatten-rader på den här listan.</p>
                 </div>
               ) : (
                 <DataTable
                   headers={[
-                    { label: "Pappmugg" },
+                    { label: "Produkt" },
                     { label: "Min antal", align: "right" },
                     { label: "Pris exkl. moms", align: "right" },
                     { label: "Spara" },

@@ -14,7 +14,7 @@ export default async function KontoLayout({ children }: { children: React.ReactN
         { href: "/konto", label: "Översikt" },
         { href: "/konto/ordrar", label: "Ordrar" },
         { href: "/konto/ordrar/ny", label: "Ny order" },
-        { href: "/designa", label: "Designa" },
+        { href: "/designa", label: "Design Studio" },
         { href: "/konto/artwork", label: "Artwork" },
         { href: "/konto/fakturor", label: "Fakturor" },
         { href: "/konto/dokument", label: "Dokument" },

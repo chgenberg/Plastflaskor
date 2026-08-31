@@ -14,12 +14,10 @@ export async function listCustomers(q?: string) {
             { name: { contains: term } },
             { orgNr: { contains: term } },
             { email: { contains: term } },
-            { reseller: { company: { name: { contains: term } } } },
           ],
         }
       : undefined,
     include: {
-      reseller: { include: { company: true, priceList: true } },
       orders: { select: { id: true, currentStatus: true, createdAt: true } },
       leads: { where: { status: { in: ["ACTIVE", "UPCOMING"] } }, orderBy: { expectedAt: "asc" } },
       priceList: true,
@@ -88,7 +86,6 @@ export async function getCustomerMaster(id: string) {
   return prisma.customer.findUnique({
     where: { id },
     include: {
-      reseller: { include: { company: { include: { addresses: true } }, priceList: true, users: { select: { id: true, name: true, email: true, role: true } } } },
       company: { include: { addresses: true } },
       users: { select: { id: true, name: true, email: true, role: true } },
       priceList: true,

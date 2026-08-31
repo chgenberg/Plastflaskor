@@ -4,14 +4,18 @@ const OWNERS: Record<string, string> = {
   SUBMITTED: "Aqua — ta emot ordern",
   AQUA_REVIEW: "Aqua — granska order och artwork",
   ARTWORK_AQUA_REVIEW: "Aqua — skicka korrektur",
-  ARTWORK_CUSTOMER_APPROVAL: "Köpare — godkänn korrektur",
-  CONFIRMED: "Aqua — skicka till tryckeri",
-  IN_PRODUCTION: "Tryckeri",
+  ARTWORK_CUSTOMER_APPROVAL: "Kund — godkänn korrektur",
+  CONFIRMED: "Aqua — skicka till etikettproducent",
+  LABEL_PRODUCTION: "Etikettproducent",
+  LABELS_DISPATCHED: "Etiketter på väg till bottler",
+  LABELS_RECEIVED: "Bottler — planera produktion",
+  PRODUCTION_SCHEDULED: "Bottler",
+  IN_PRODUCTION: "Bottler",
   READY_TO_SHIP: "Aqua — skapa fraktsedel",
   SHIPPED: "Transportör",
   DELIVERED: "Aqua — fakturera",
   READY_TO_INVOICE: "Aqua ekonomi",
-  INVOICED: "Köpare — betalning",
+  INVOICED: "Kund — betalning",
   PAID: "Klar",
 };
 
@@ -47,18 +51,33 @@ export function addLeadTimeDays(days: number, from = new Date()) {
 export type BuyerTimelineStep = { id: string; label: string; done: boolean; current: boolean };
 
 export function buyerTimeline(status: string): BuyerTimelineStep[] {
-  const confirmed = ["CONFIRMED", "IN_PRODUCTION", "READY_TO_SHIP", "SHIPPED", "DELIVERED", "READY_TO_INVOICE", "INVOICED", "PAID"].includes(status);
+  const afterConfirm = [
+    "CONFIRMED",
+    "LABEL_PRODUCTION",
+    "LABELS_DISPATCHED",
+    "LABELS_RECEIVED",
+    "PRODUCTION_SCHEDULED",
+    "IN_PRODUCTION",
+    "READY_TO_SHIP",
+    "SHIPPED",
+    "DELIVERED",
+    "READY_TO_INVOICE",
+    "INVOICED",
+    "PAID",
+  ].includes(status);
+  const labelsDone = ["LABELS_RECEIVED", "PRODUCTION_SCHEDULED", "IN_PRODUCTION", "READY_TO_SHIP", "SHIPPED", "DELIVERED", "READY_TO_INVOICE", "INVOICED", "PAID"].includes(status);
   const printing = ["IN_PRODUCTION", "READY_TO_SHIP", "SHIPPED", "DELIVERED", "READY_TO_INVOICE", "INVOICED", "PAID"].includes(status);
   const packing = ["READY_TO_SHIP", "SHIPPED", "DELIVERED", "READY_TO_INVOICE", "INVOICED", "PAID"].includes(status);
   const shipped = ["SHIPPED", "DELIVERED", "READY_TO_INVOICE", "INVOICED", "PAID"].includes(status);
   const delivered = ["DELIVERED", "READY_TO_INVOICE", "INVOICED", "PAID"].includes(status);
-  const inArtwork = ["ARTWORK_AQUA_REVIEW", "ARTWORK_CUSTOMER_APPROVAL"].includes(status);
+  const received = !["SUBMITTED", "AQUA_REVIEW", "ARTWORK_AQUA_REVIEW", "ARTWORK_CUSTOMER_APPROVAL"].includes(status);
+  const inLabels = ["LABEL_PRODUCTION", "LABELS_DISPATCHED"].includes(status);
 
   const steps: BuyerTimelineStep[] = [
-    { id: "received", label: "Order mottagen", done: true, current: false },
-    { id: "artwork", label: "Korrektur", done: confirmed, current: inArtwork },
-    { id: "confirmed", label: "Order bekräftad", done: confirmed, current: false },
-    { id: "print", label: "Produktion", done: printing, current: status === "IN_PRODUCTION" },
+    { id: "received", label: "Order mottagen", done: true, current: !received && !afterConfirm },
+    { id: "confirmed", label: "Order bekräftad", done: afterConfirm, current: status === "CONFIRMED" },
+    { id: "labels", label: "Etiketter produceras", done: labelsDone, current: inLabels },
+    { id: "print", label: "Produktion", done: printing, current: status === "IN_PRODUCTION" || status === "LABELS_RECEIVED" || status === "PRODUCTION_SCHEDULED" },
     { id: "pack", label: "Förbereds för leverans", done: packing, current: status === "READY_TO_SHIP" },
     { id: "shipped", label: "Skickad", done: shipped, current: status === "SHIPPED" },
     { id: "delivered", label: "Levererad", done: delivered, current: delivered && status === "DELIVERED" },
@@ -116,7 +135,7 @@ export function buyerNextAction(
     return { title: "Följ leverans", body: `${shipped.orderNo} är på väg.`, hrefSuffix: `/ordrar/${shipped.orderNo}`, cta: "Öppna order" };
   }
   if (orders.length === 0) {
-    return { title: "Skapa er första order", body: "Beställ pappersmuggar med artwork och lock.", hrefSuffix: "/ordrar/ny", cta: "Ny order" };
+    return { title: "Skapa er första order", body: "Beställ profilvatten med egen etikett och artwork.", hrefSuffix: "/ordrar/ny", cta: "Ny order" };
   }
-  return { title: "Ny order", body: "Beställ samma artwork igen eller skapa en ny mugg.", hrefSuffix: "/ordrar/ny", cta: "Ny order" };
+  return { title: "Ny order", body: "Beställ samma artwork igen eller skapa en ny flaskorder.", hrefSuffix: "/ordrar/ny", cta: "Ny order" };
 }

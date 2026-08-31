@@ -1,5 +1,8 @@
 /** Product shots from Nano Banana 2. Only these slugs stay public. */
 export const PRODUCT_IMAGES: Record<string, string> = {
+  "naturligt-mineralvatten-33cl": "/Images/pages/valmojligheter-antal.png",
+  "naturligt-mineralvatten-50cl": "/Images/pages/valmojligheter-antal.png",
+  "vatten-fran-svensk-kalla-33cl": "/Images/pages/valmojligheter-etikett.png",
   "energidryck-med-egen-etikett": "/Images/products/energidryck-med-egen-etikett.png",
   "lask-med-egen-etikett": "/Images/products/lask-med-egen-etikett.png",
   "pappersmugg-ev-23cl": "/Images/products/pappersmugg-ev-23cl.png",

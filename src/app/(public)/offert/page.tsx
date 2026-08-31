@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { listProducts } from "@/server/services/catalog.service";
+import { listWaterProducts } from "@/server/services/catalog.service";
 import { quoteAction } from "@/actions";
 import { PAGE_IMAGES } from "@/domain/pageImages";
 import { EditorialShot, PageIntro } from "@/ui/public/PageIntro";
 
 export default async function QuotePage({ searchParams }: { searchParams: Promise<{ product?: string; design?: string; qty?: string; error?: string }> }) {
   const { product, design, qty, error } = await searchParams;
-  const products = await listProducts();
+  const products = await listWaterProducts();
   return (
     <main className="mx-auto max-w-xl px-4 pb-20 pt-16">
       <PageIntro badge="Kontakt" title="Begär offert" />

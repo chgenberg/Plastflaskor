@@ -4,15 +4,14 @@ import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
 import { prisma } from "@/server/db";
 import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
-import { EmptyState, KpiCard, PageHeader, StatusChip } from "@/ui/shell/primitives";
+import { EmptyState, PageHeader, StatusChip } from "@/ui/shell/primitives";
 
 const GROUPS = [
   { id: "date", label: "Datum" },
   { id: "week", label: "Vecka" },
   { id: "product", label: "Produkt" },
   { id: "size", label: "Storlek" },
-  { id: "wall", label: "Vägg" },
-  { id: "eco", label: "ECO" },
+  { id: "water", label: "Stilla / kolsyrat" },
   { id: "status", label: "Status" },
 ] as const;
 
@@ -25,7 +24,7 @@ function groupKey(
   group: string,
 ) {
   const item = j.order.items[0];
-  const opt = JSON.parse(item?.variant.optionsJson || "{}") as { wall?: string; eco?: string };
+  const opt = JSON.parse(item?.variant.optionsJson || "{}") as { waterType?: string };
   if (group === "week" && j.plannedAt) {
     const d = new Date(j.plannedAt);
     const onejan = new Date(d.getFullYear(), 0, 1);
@@ -35,8 +34,7 @@ function groupKey(
   if (group === "date") return j.plannedAt?.toLocaleDateString("sv-SE") ?? "Ej planerad";
   if (group === "product") return item?.variant.product.name ?? "–";
   if (group === "size") return item?.variant.volumeMl ? `${item.variant.volumeMl / 10} cl` : "–";
-  if (group === "wall") return opt.wall === "dubbel" ? "Dubbelvägg" : "Enkelvägg";
-  if (group === "eco") return opt.eco === "ja" ? "ECO" : "Utan ECO";
+  if (group === "water") return opt.waterType?.includes("kolsyr") ? "Kolsyrat" : "Stilla";
   return FACTORY_JOB_LABELS[j.status] ?? j.status;
 }
 
@@ -44,22 +42,16 @@ export default async function ProductionBoard({ searchParams }: { searchParams: 
   const raw = (await searchParams).group ?? "date";
   const group = GROUPS.some((g) => g.id === raw) ? raw : "date";
   const jobs = await prisma.productionJob.findMany({
-    include: { order: { include: { items: { include: { variant: { include: { product: true } } } } } } },
+    include: {
+      order: {
+        include: {
+          customer: { select: { name: true } },
+          items: { include: { variant: { include: { product: true } } } },
+        },
+      },
+    },
     orderBy: { plannedAt: "asc" },
   });
-  const week = jobs.reduce(
-    (acc, j) => {
-      const qty = j.order.items.reduce((s, i) => s + i.qty, 0);
-      const cat = j.order.items[0]?.variant.product.category;
-      if (cat === "PAPER_CUP") acc.cups += qty;
-      const ml = j.order.items[0]?.variant.volumeMl ?? 0;
-      if (ml <= 120) acc.size12 += qty;
-      else if (ml <= 230) acc.size23 += qty;
-      else acc.size35 += qty;
-      return acc;
-    },
-    { cups: 0, size12: 0, size23: 0, size35: 0 },
-  );
   const grouped = new Map<string, typeof jobs>();
   for (const j of jobs) {
     const key = groupKey(j, group);
@@ -68,7 +60,7 @@ export default async function ProductionBoard({ searchParams }: { searchParams: 
 
   return (
     <div className="space-y-8">
-      <PageHeader title="Produktion" subtitle="Gruppera tryckjobb efter datum, produkt, storlek, vägg eller ECO." />
+      <PageHeader title="Produktion" subtitle="Gruppera flaskjobb efter datum, produkt, storlek eller stilla/kolsyrat." />
       <form className="flex flex-wrap gap-2">
         {GROUPS.map((g) => (
           <Link
@@ -80,12 +72,6 @@ export default async function ProductionBoard({ searchParams }: { searchParams: 
           </Link>
         ))}
       </form>
-      <div className="grid gap-3 sm:grid-cols-4">
-        <KpiCard label="12 cl" value={week.size12} />
-        <KpiCard label="23 cl" value={week.size23} />
-        <KpiCard label="35 cl" value={week.size35} />
-        <KpiCard label="Muggar" value={week.cups} />
-      </div>
       {jobs.length === 0 ? (
         <EmptyState title="Inga jobb" body="När produktion planeras syns den här." />
       ) : (
@@ -109,7 +95,8 @@ export default async function ProductionBoard({ searchParams }: { searchParams: 
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <p className="font-mono text-[var(--av-accent)]">{j.order.orderNo}</p>
-                        <p className="mt-1 font-medium">
+                        <p className="mt-1 font-medium">{j.order.customer.name}</p>
+                        <p className="mt-0.5 text-sm text-[var(--av-text-muted)]">
                           {spec?.productName ?? item?.variant.product.name ?? "–"}
                           {item ? ` · ${item.qty.toLocaleString("sv-SE")} st` : ""}
                         </p>

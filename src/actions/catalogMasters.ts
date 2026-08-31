@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getSessionUser } from "@/server/rbac";
-import { updateCupProduct, updatePriceListItem } from "@/server/services/catalog.service";
+import { updateWaterProduct, updatePriceListItem } from "@/server/services/catalog.service";
 
 async function requireStaff() {
   const user = await getSessionUser();
@@ -13,7 +13,7 @@ export async function updateProductAction(formData: FormData) {
   await requireStaff();
   const id = String(formData.get("id") ?? "");
   if (!id) throw new Error("Produkt saknas");
-  await updateCupProduct(id, {
+  await updateWaterProduct(id, {
     moq: Number(formData.get("moq")),
     leadTimeDays: Number(formData.get("leadTimeDays")),
     leadTimeText: String(formData.get("leadTimeText") ?? ""),

@@ -3,12 +3,11 @@ import { test } from "node:test";
 import { buyerNextAction, buyerTimeline } from "./orderBrief";
 import { invoiceBuyerLabel } from "./enums";
 
-test("buyer timeline marks current artwork step", () => {
+test("buyer timeline hides internal artwork and stays on mottagen until OB", () => {
   const steps = buyerTimeline("ARTWORK_CUSTOMER_APPROVAL");
-  const artwork = steps.find((s) => s.id === "artwork");
-  assert.equal(artwork?.current, true);
-  assert.equal(artwork?.done, false);
-  assert.equal(steps.find((s) => s.id === "received")?.done, true);
+  assert.equal(steps.some((s) => s.id === "artwork"), false);
+  assert.equal(steps.find((s) => s.id === "received")?.current, true);
+  assert.equal(steps.find((s) => s.id === "confirmed")?.done, false);
 });
 
 test("buyer next action prefers proof", () => {

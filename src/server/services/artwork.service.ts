@@ -23,7 +23,7 @@ export async function uploadArtworkForOrder(input: {
   if (order.lockedAt) throw new Error("Ordern är godkänd och låst. Kontakta AquaVisibility för ändringar.");
   if (input.role === "RESELLER" && order.resellerId !== input.resellerId) throw new Error("Forbidden");
   if (input.role === "CUSTOMER" && order.customerId !== input.customerId) throw new Error("Forbidden");
-  if (input.role === "FACTORY") throw new Error("Forbidden");
+  if (input.role === "FACTORY" || input.role === "LABEL" || input.role === "BOTTLER") throw new Error("Forbidden");
   const item = order.items[0];
   let design = order.designs[0];
   if (!design) {
@@ -32,8 +32,8 @@ export async function uploadArtworkForOrder(input: {
         orderId: order.id,
         productId: item.variant.productId,
         variantId: item.variantId,
-        projectName: `${order.orderNo} wrap`,
-        source: order.buyerType === "CUSTOMER" ? "customer_order" : "reseller_order",
+        projectName: `${order.orderNo} etikett`,
+        source: "customer_order",
         quantity: item.qty,
         optionsJson: item.variant.optionsJson,
         cupDocumentJson: (() => {

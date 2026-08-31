@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPublicProductBySlug } from "@/server/services/catalog.service";
 import { getSessionUser } from "@/server/rbac";
@@ -13,7 +12,7 @@ export default async function ProductPage({ params }: { params: Promise<{ catego
   const item = await getPublicProductBySlug(product);
   if (!item || item.categorySlug !== category) notFound();
   const user = await getSessionUser();
-  const showResellerCta = !canSeePrices(user?.role);
+  const showLoginForPrices = !canSeePrices(user?.role);
   const img = imageForProduct(item.slug);
   const variant = item.variants[0];
   const facts = productFacts({
@@ -58,26 +57,20 @@ export default async function ProductPage({ params }: { params: Promise<{ catego
         {item.specText}
       </pre>
       <div className="mt-8 flex flex-wrap gap-3">
-        <PillLink href={`/designa/${item.slug}`}>
-          {item.categorySlug === "kyl" ? "Designa din kyl" : item.categorySlug === "pappersmuggar" ? "Designa din mugg" : "Designa din flaska"}
-        </PillLink>
-        <PillLink href={`/offert?product=${item.id}`} variant="ghost">
+        {item.categorySlug === "profilvatten" ? (
+          <PillLink href={user ? "/konto/ordrar/ny" : "/login?next=/konto/ordrar/ny"}>
+            {user ? "Beställ i kundportalen" : "Logga in och beställ"}
+          </PillLink>
+        ) : null}
+        <PillLink href={`/offert?product=${item.id}`} variant={item.categorySlug === "profilvatten" ? "ghost" : undefined}>
           Begär offert
         </PillLink>
-        {showResellerCta ? (
+        {showLoginForPrices && item.categorySlug === "profilvatten" ? (
           <PillLink href="/login" variant="ghost">
             Logga in för priser
           </PillLink>
         ) : null}
       </div>
-      {showResellerCta ? (
-        <p className="mt-5 text-sm text-[var(--av-text-secondary)]">
-          Är du återförsäljare?{" "}
-          <Link href="/login?next=/partner/priser" className="font-medium text-[var(--av-accent)]">
-            Logga in för priser
-          </Link>
-        </p>
-      ) : null}
       <article className="mt-12 space-y-4 text-sm leading-relaxed text-[var(--av-text-secondary)]">
         {item.body.split("\n\n").map((p) => (
           <p key={p.slice(0, 24)}>{p}</p>

@@ -15,6 +15,7 @@ export function OrderConfirmationPreview({
   repeatHorizonMonths,
   locked,
   showPrices = true,
+  showRepeat = true,
   lockedCopy = "Ordern är godkänd och låst. Kontakta AquaVisibility för ändringar.",
   orderNo,
   customer,
@@ -30,6 +31,7 @@ export function OrderConfirmationPreview({
   repeatHorizonMonths?: number | null;
   locked?: boolean;
   showPrices?: boolean;
+  showRepeat?: boolean;
   lockedCopy?: string;
   orderNo?: string;
   customer?: string;
@@ -41,6 +43,12 @@ export function OrderConfirmationPreview({
   const goods = snapshot?.goodsExVat;
   const extrasEx = snapshot?.extrasExVat ?? extras.reduce((s, e) => s + e.amountExVat, 0);
   const total = snapshot?.amountExVat;
+  const freight = extras.filter((e) => e.kind === "freight" || e.kind === "express");
+  const discounts = extras.filter((e) => e.kind === "discount");
+  const otherExtras = extras.filter((e) => e.kind !== "freight" && e.kind !== "express" && e.kind !== "discount");
+  const freightSum = freight.reduce((s, e) => s + e.amountExVat, 0);
+  const discountSum = discounts.reduce((s, e) => s + e.amountExVat, 0);
+  const otherSum = otherExtras.reduce((s, e) => s + e.amountExVat, 0);
   const horizon =
     repeatHorizonMonths == null
       ? null
@@ -64,14 +72,28 @@ export function OrderConfirmationPreview({
             <dd className="mt-1 font-medium">{customer}</dd>
           </div>
         ) : null}
+        {spec ? (
+          <div>
+            <dt className="av-label">Produkt</dt>
+            <dd className="mt-1 font-medium">{spec.productName}</dd>
+          </div>
+        ) : null}
+        {spec ? (
+          <div>
+            <dt className="av-label">Antal</dt>
+            <dd className="mt-1 font-medium tabular-nums">{spec.qty.toLocaleString("sv-SE")} st</dd>
+          </div>
+        ) : null}
         <div>
           <dt className="av-label">Bekräftat leveransdatum</dt>
           <dd className="mt-1 font-medium">{confirmedDate ?? "Välj datum nedan"}</dd>
         </div>
-        <div>
-          <dt className="av-label">Förväntad återbeställning</dt>
-          <dd className="mt-1 font-medium">{horizon ?? "Anges innan OB skickas"}</dd>
-        </div>
+        {showRepeat ? (
+          <div>
+            <dt className="av-label">Förväntad återbeställning</dt>
+            <dd className="mt-1 font-medium">{horizon ?? "Anges innan OB skickas"}</dd>
+          </div>
+        ) : null}
         {address ? (
           <div className="sm:col-span-2">
             <dt className="av-label">Leveransadress</dt>
@@ -118,12 +140,20 @@ export function OrderConfirmationPreview({
             </p>
           ))}
           <p className="flex justify-between gap-4 text-[var(--av-text-muted)]">
-            <span>Varor</span>
+            <span>Pris</span>
             <span className="tabular-nums">{sek(goods ?? 0)}</span>
           </p>
           <p className="flex justify-between gap-4 text-[var(--av-text-muted)]">
-            <span>Tillägg</span>
-            <span className="tabular-nums">{sek(extrasEx)}</span>
+            <span>Frakt</span>
+            <span className="tabular-nums">{sek(freightSum)}</span>
+          </p>
+          <p className="flex justify-between gap-4 text-[var(--av-text-muted)]">
+            <span>Extrakostnader</span>
+            <span className="tabular-nums">{sek(otherSum)}</span>
+          </p>
+          <p className="flex justify-between gap-4 text-[var(--av-text-muted)]">
+            <span>Rabatt</span>
+            <span className="tabular-nums">{sek(discountSum)}</span>
           </p>
           <p className="flex justify-between gap-4 text-lg font-semibold">
             <span>Totalt ex moms</span>

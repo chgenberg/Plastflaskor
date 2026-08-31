@@ -70,7 +70,7 @@ export function emptyCupDocument(input: {
 }
 
 export const REQUIRED_PRINT_MESSAGE =
-  "Placera obligatoriska tryckelement på tryckytan innan du går vidare.";
+  "Placera obligatoriska etikettelement innan du går vidare.";
 
 export function assertRequiredPrintPlaced(
   requirements: { required?: boolean; placed?: boolean }[] | null | undefined,

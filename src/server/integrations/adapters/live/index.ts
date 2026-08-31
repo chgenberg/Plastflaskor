@@ -33,11 +33,6 @@ export function createLiveIntegrations(): IntegrationRegistry {
       sendDeliveryNotice: () => notImplemented("email.sendDeliveryNotice"),
       sendRepeatReminder: () => notImplemented("email.sendRepeatReminder"),
     },
-    designAI: {
-      extractBrand: () => notImplemented("designAI.extractBrand"),
-      generateProposals: () => notImplemented("designAI.generateProposals"),
-      refineProposal: () => notImplemented("designAI.refineProposal"),
-    },
     notifications: {
       publish: () => notImplemented("notifications.publish"),
       listForUser: () => notImplemented("notifications.listForUser"),

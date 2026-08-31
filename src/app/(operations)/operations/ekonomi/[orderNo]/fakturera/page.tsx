@@ -10,6 +10,7 @@ import { OrderConfirmationPreview } from "@/ui/order/OrderConfirmationPreview";
 import { Button, FileLink, PageHeader, Panel } from "@/ui/shell/primitives";
 import { FortnoxBadge } from "@/ui/shell/FortnoxBadge";
 import { FortnoxInvoiceForm } from "@/ui/ops/FortnoxInvoiceForm";
+import { orderArtworkLink } from "@/domain/orderArtwork";
 
 export default async function InvoicePage({
   params,
@@ -45,11 +46,12 @@ export default async function InvoicePage({
   const vat = snapshot.vatAmount;
   const invoiceDoc = order.documents.find((d) => d.kind === "FINANCE");
   const issued = order.invoice?.status === "ISSUED";
+  const artwork = orderArtworkLink(order);
   const billing =
-    order.reseller?.company.addresses.find((a) => a.type === "BILLING") ??
-    order.reseller?.company.addresses[0] ??
+    order.customer.addresses.find((a) => a.type === "BILLING") ??
+    order.customer.addresses[0] ??
     order.shippingAddress;
-  const freight = order.shipments[0];
+  const freight = order.shipments.find((s) => s.type === "GOODS_TO_CUSTOMER") ?? order.shipments[0];
   return (
     <div className="mx-auto max-w-xl space-y-8">
       <PageHeader
@@ -72,9 +74,11 @@ export default async function InvoicePage({
         locked={Boolean(order.lockedAt)}
         lockedCopy="Ordern är godkänd och låst. Kontakta AquaVisibility för ändringar."
         orderNo={order.orderNo}
-        customer={order.reseller?.company.name ?? order.customer.name}
+        customer={order.customer.name}
         address={`${order.shippingAddress.line1}, ${order.shippingAddress.postalCode} ${order.shippingAddress.city}`}
         invoiceRef={order.invoiceRef}
+        artworkHref={artwork?.href}
+        artworkLabel={artwork?.label}
       />
       <Panel>
         {ok ? (
@@ -84,12 +88,12 @@ export default async function InvoicePage({
         ) : null}
         <dl className="space-y-3 text-sm">
           <div>
-            <dt className="av-label">Kund / ÅF</dt>
-            <dd className="mt-1">{order.reseller?.company.name ?? order.customer.name}</dd>
+            <dt className="av-label">Kund</dt>
+            <dd className="mt-1">{order.customer.name}</dd>
           </div>
           <div>
             <dt className="av-label">Organisationsnummer</dt>
-            <dd className="mt-1">{order.reseller?.company.orgNr ?? order.customer.orgNr ?? "–"}</dd>
+            <dd className="mt-1">{order.customer.orgNr ?? order.customer.company?.orgNr ?? "–"}</dd>
           </div>
           <div>
             <dt className="av-label">Fakturaadress</dt>
@@ -99,7 +103,7 @@ export default async function InvoicePage({
           </div>
           <div>
             <dt className="av-label">E-post</dt>
-            <dd className="mt-1">{order.reseller?.company.email ?? order.customer.email ?? "–"}</dd>
+            <dd className="mt-1">{order.customer.email ?? order.customer.company?.email ?? "–"}</dd>
           </div>
           <div>
             <dt className="av-label">Fakturareferens</dt>

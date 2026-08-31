@@ -63,20 +63,22 @@ type SessionLike = {
 export async function getAuthorizedDocument(id: string, user: SessionLike) {
   const doc = await prisma.document.findUnique({
     where: { id },
-    include: { order: { include: { customer: true, reseller: { include: { company: true } }, invoice: true } } },
+    include: { order: { include: { customer: true, invoice: true } } },
   });
   if (!doc) return null;
   if (user.role === "CUSTOMER") {
     if (!user.customerId || doc.order?.customerId !== user.customerId) return null;
     return doc;
   }
-  if (user.role === "RESELLER") {
-    if (!user.resellerId || doc.order?.resellerId !== user.resellerId) return null;
-    return doc;
-  }
-  if (user.role === "FACTORY") {
+  if (user.role === "RESELLER") return null;
+  if (user.role === "FACTORY" || user.role === "LABEL" || user.role === "BOTTLER") {
     if (!(FACTORY_DOC_KINDS as readonly string[]).includes(doc.kind)) return null;
-    if (user.factoryId && doc.order?.factoryId !== user.factoryId) return null;
+    if (user.factoryId && doc.order?.factoryId !== user.factoryId) {
+      const job = await prisma.productionJob.findFirst({
+        where: { orderId: doc.orderId ?? undefined, factoryId: user.factoryId },
+      });
+      if (!job) return null;
+    }
     return doc;
   }
   if (user.role === "AQUA_STAFF" || user.role === "AQUA_ADMIN") return doc;
@@ -95,15 +97,15 @@ export async function getAuthorizedArtworkFile(id: string, user: SessionLike) {
     if (!ownUser && !ownOrder) return null;
     return file;
   }
-  if (user.role === "RESELLER") {
-    const ownUser = file.design.userId === user.id;
-    const ownOrder = Boolean(user.resellerId && file.design.order?.resellerId === user.resellerId);
-    if (!ownUser && !ownOrder) return null;
-    return file;
-  }
-  if (user.role === "FACTORY") {
+  if (user.role === "RESELLER") return null;
+  if (user.role === "FACTORY" || user.role === "LABEL" || user.role === "BOTTLER") {
     if (!file.design.orderId) return null;
-    if (user.factoryId && file.design.order && file.design.order.factoryId !== user.factoryId) return null;
+    if (user.factoryId && file.design.order && file.design.order.factoryId !== user.factoryId) {
+      const job = await prisma.productionJob.findFirst({
+        where: { orderId: file.design.orderId, factoryId: user.factoryId },
+      });
+      if (!job) return null;
+    }
     const final = await prisma.artworkVersion.findFirst({
       where: { orderId: file.design.orderId, storageKey: file.storageKey, isFinal: true },
     });
@@ -122,7 +124,6 @@ export function documentPdf(doc: {
   order?: {
     orderNo: string;
     customer?: { name: string; email?: string | null };
-    reseller?: { company?: { name: string } } | null;
     invoice?: {
       invoiceNo: string;
       status: string;
@@ -135,20 +136,19 @@ export function documentPdf(doc: {
   const inv = doc.order?.invoice;
   const finance = doc.kind === "FINANCE" && inv;
   return renderSimplePdf(doc.title, [
-    finance ? "Aqua Visibility AB  ·  Testdebitering" : `Typ: ${doc.kind}`,
-    finance ? "Ingen affär sker. Kortet debiteras inte." : `Version: ${doc.version}`,
+    finance ? "Aqua Visibility AB  ·  Fortnox mock" : `Typ: ${doc.kind}`,
+    finance ? "V1-faktura via mockad Fortnox. Ingen live-bokföring." : `Version: ${doc.version}`,
     doc.order?.orderNo ? `Order: ${doc.order.orderNo}` : "",
     doc.order?.customer?.name ? `Kund: ${doc.order.customer.name}` : "",
     doc.order?.customer?.email ? `E-post: ${doc.order.customer.email}` : "",
-    doc.order?.reseller?.company?.name ? `ÅF: ${doc.order.reseller.company.name}` : "",
     finance ? `Fakturanr: ${inv.invoiceNo}` : `Nyckel: ${doc.storageKey}`,
-    finance ? `Status: ${inv.status === "PAID" ? "Betald (Stripe test 4242)" : inv.status}` : "",
+    finance ? `Status: ${inv.status === "PAID" ? "Betald" : inv.status === "ISSUED" ? "Skickad" : inv.status}` : "",
     finance ? `Summa ex moms: ${inv.amountExVat.toFixed(2)} kr` : "",
     finance ? `Moms 25%: ${inv.vatAmount.toFixed(2)} kr` : "",
     finance ? `Att betala: ${inv.amountIncVat.toFixed(2)} kr` : "",
     "",
     finance
-      ? "Detta är en dummyfaktura för demonstration."
+      ? "Fakturan är skapad mot Fortnox-mocken."
       : "Detta är en genererad kopia. Originalfilen finns hos Aqua Visibility.",
   ].filter(Boolean));
 }
@@ -174,16 +174,7 @@ export async function listDesignsForUser(user: SessionLike) {
       take: 40,
     });
   }
-  if (user.role === "RESELLER") {
-    return prisma.design.findMany({
-      where: {
-        OR: [{ userId: user.id }, ...(user.resellerId ? [{ order: { resellerId: user.resellerId } }] : [])],
-      },
-      include: { files: true, order: true },
-      orderBy: { createdAt: "desc" },
-      take: 40,
-    });
-  }
+  if (user.role === "RESELLER") return [];
   return prisma.design.findMany({
     include: { files: true, order: true },
     orderBy: { createdAt: "desc" },

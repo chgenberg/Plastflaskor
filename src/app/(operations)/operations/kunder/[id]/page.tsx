@@ -14,6 +14,8 @@ const ADDRESS_TYPE_LABELS: Record<string, string> = {
   BILLING: "Faktura",
   SHIPPING: "Leverans",
   FACTORY: "Fabrik",
+  LABEL: "Etikett",
+  BOTTLER: "Bottler",
   HQ: "Huvudkontor",
 };
 
@@ -33,12 +35,11 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
   ]);
   if (!customer) notFound();
 
-  const buyerKind = customer.reseller ? "ÅF" : "Direktkund";
-  const priceListName = priceListDisplayName(customer.priceList?.name ?? customer.reseller?.priceList.name);
+  const priceListName = priceListDisplayName(customer.priceList?.name);
   const nextLead = customer.leads.find((l) => l.status === "ACTIVE" || l.status === "UPCOMING");
 
   const addressMap = new Map<string, { type: string; line1: string; postalCode: string; city: string }>();
-  for (const a of [...customer.addresses, ...(customer.company?.addresses ?? []), ...(customer.reseller?.company.addresses ?? [])]) {
+  for (const a of [...customer.addresses, ...(customer.company?.addresses ?? [])]) {
     addressMap.set(`${a.type}|${a.line1}|${a.postalCode}|${a.city}`, a);
   }
   for (const o of customer.orders) {
@@ -50,7 +51,6 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
   const contactSeen = new Set<string>();
   const contacts = [
     ...customer.users.map((u) => ({ id: u.id, name: u.name, email: u.email, role: "Kund" })),
-    ...(customer.reseller?.users ?? []).map((u) => ({ id: u.id, name: u.name, email: u.email, role: "ÅF" })),
   ].filter((c) => {
     if (contactSeen.has(c.email)) return false;
     contactSeen.add(c.email);
@@ -94,7 +94,7 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
     <div className="space-y-8">
       <PageHeader
         title={customer.name}
-        subtitle={`${buyerKind}${customer.reseller ? ` · ${customer.reseller.company.name}` : ""} · ${priceListName}`}
+        subtitle={`Kund · ${priceListName}`}
         action={<LinkButton href="/operations/kunder" variant="secondary">Alla kunder</LinkButton>}
       />
 
@@ -103,7 +103,7 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
           <dl className="grid gap-4 text-sm sm:grid-cols-2">
             <div>
               <dt className="av-label">Faktura-e-post</dt>
-              <dd className="mt-1">{customer.email ?? customer.company?.email ?? customer.reseller?.company.email ?? "–"}</dd>
+              <dd className="mt-1">{customer.email ?? customer.company?.email ?? "–"}</dd>
             </div>
             <div>
               <dt className="av-label">Fakturaadress</dt>
@@ -150,10 +150,6 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
             <div>
               <dt className="av-label">Prislista</dt>
               <dd className="mt-1">{priceListName}</dd>
-            </div>
-            <div>
-              <dt className="av-label">Kundtyp</dt>
-              <dd className="mt-1">{buyerKind}{customer.reseller ? ` · ${customer.reseller.company.name}` : ""}</dd>
             </div>
             <div>
               <dt className="av-label">Nästa lead</dt>
@@ -303,7 +299,7 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
           <ul className="space-y-1 text-sm">
             {yearlyVolume.map(([year, qty]) => (
               <li key={year}>
-                {year} – {qty.toLocaleString("sv-SE")} muggar
+                {year} – {qty.toLocaleString("sv-SE")} flaskor
               </li>
             ))}
             <li className="pt-2 font-medium">
@@ -342,9 +338,9 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
         )}
       </Panel>
 
-      <Panel title="Tryckfiler och dokument">
+      <Panel title="Artwork och dokument">
         {artwork.length === 0 ? (
-          <p className="text-sm text-[var(--av-text-muted)]">Inga tidigare tryckfiler eller dokument.</p>
+          <p className="text-sm text-[var(--av-text-muted)]">Ingen tidigare artwork eller dokument.</p>
         ) : (
           <ul className="space-y-2 text-sm">
             {artwork.map((a) => (

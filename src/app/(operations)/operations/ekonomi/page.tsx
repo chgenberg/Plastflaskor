@@ -2,7 +2,7 @@ import { ORDER_STEP_LABELS, type OrderStatusCode } from "@/domain/enums";
 import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
 import { getSessionUser } from "@/server/rbac";
-import { listAllOrders } from "@/server/services/order.service";
+import { listAllOrders, orderValue } from "@/server/services/order.service";
 import { getFortnoxConnection } from "@/server/integrations/status";
 import { markInvoicePaid } from "@/actions";
 import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
@@ -18,10 +18,6 @@ export default async function FinancePage() {
   const ready = orders.filter((o) => o.currentStatus === "READY_TO_INVOICE" || o.currentStatus === "DELIVERED");
   const invoiced = orders.filter((o) => o.invoice && o.invoice.status === "ISSUED");
   const waiting = invoiced.filter((o) => o.invoice?.status !== "PAID");
-  const weekStart = new Date();
-  weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
-  weekStart.setHours(0, 0, 0, 0);
-  const invoicedWeek = orders.filter((o) => o.invoice?.issuedAt && o.invoice.issuedAt >= weekStart);
   const isAdmin = user?.role === "AQUA_ADMIN";
 
   return (
@@ -31,10 +27,8 @@ export default async function FinancePage() {
         subtitle="Redo att fakturera, utfärdade och väntar betalning."
         action={<FortnoxBadge label={fortnox.label} />}
       />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2">
         <KpiCard label="Redo att faktureras" value={ready.length} />
-        <KpiCard label="Fakturerade" value={invoiced.length} />
-        <KpiCard label="Fakturerade denna vecka" value={invoicedWeek.length} />
         <KpiCard label="Väntar betalning" value={waiting.length} />
       </div>
       {ready.length === 0 ? (
@@ -43,7 +37,7 @@ export default async function FinancePage() {
         <section className="space-y-4">
           <SectionTitle>Redo att faktureras</SectionTitle>
           {ready.map((o) => {
-            const value = o.items.reduce((s, i) => s + i.unitPriceExVat * i.qty, 0);
+            const value = orderValue(o);
             const item = o.items[0];
             const spec = specFromOrderItem({
               visualSpecJson: o.visualSpecJson,
@@ -55,7 +49,7 @@ export default async function FinancePage() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="font-mono text-sm font-medium">{o.orderNo}</p>
-                    <p className="mt-0.5 text-sm text-[var(--av-text-muted)]">{o.reseller?.company.name ?? o.customer.name}</p>
+                    <p className="mt-0.5 text-sm text-[var(--av-text-muted)]">{o.customer.name}</p>
                   </div>
                   <StatusChip
                     status={o.currentStatus}
@@ -88,7 +82,7 @@ export default async function FinancePage() {
         <section className="space-y-4">
           <SectionTitle>Väntar betalning</SectionTitle>
           {waiting.map((o) => {
-            const value = o.items.reduce((s, i) => s + i.unitPriceExVat * i.qty, 0);
+            const value = orderValue(o);
             const item = o.items[0];
             const spec = specFromOrderItem({
               visualSpecJson: o.visualSpecJson,
@@ -100,7 +94,7 @@ export default async function FinancePage() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="font-mono text-sm font-medium">{o.invoice?.invoiceNo ?? o.orderNo}</p>
-                    <p className="mt-0.5 text-sm text-[var(--av-text-muted)]">{o.reseller?.company.name ?? o.customer.name}</p>
+                    <p className="mt-0.5 text-sm text-[var(--av-text-muted)]">{o.customer.name}</p>
                     <p className="mt-0.5 font-mono text-sm text-[var(--av-text-muted)]">{o.orderNo}</p>
                   </div>
                   <StatusChip

@@ -25,9 +25,9 @@ export async function listProducts(categorySlug?: string) {
   });
 }
 
-export async function listCupProducts() {
+export async function listWaterProducts() {
   return prisma.product.findMany({
-    where: { category: "PAPER_CUP" },
+    where: { category: "WATER" },
     orderBy: { sortOrder: "asc" },
     include: { variants: true, printRequirements: { orderBy: { sortOrder: "asc" } } },
   });
@@ -47,24 +47,24 @@ export async function getPublicProductBySlug(slug: string) {
   });
 }
 
-export async function getPriceListForBuyer(input: { resellerId?: string | null; customerId?: string | null; variantId?: string }) {
-  if (input.resellerId) return getPricesForReseller(input.resellerId, input.variantId);
-  if (input.customerId) {
-    const customer = await prisma.customer.findUnique({
-      where: { id: input.customerId },
-      include: {
-        priceList: {
-          include: {
-            items: {
-              where: input.variantId ? { variantId: input.variantId } : undefined,
-              include: { variant: { include: { product: true } } },
-              orderBy: { minQty: "asc" },
-            },
+export async function getPriceListForBuyer(input: { customerId: string; variantId?: string }) {
+  const customer = await prisma.customer.findUnique({
+    where: { id: input.customerId },
+    include: {
+      priceList: {
+        include: {
+          items: {
+            where: input.variantId ? { variantId: input.variantId } : undefined,
+            include: { variant: { include: { product: true } } },
+            orderBy: { minQty: "asc" },
           },
         },
       },
-    });
-    return customer?.priceList ?? (await prisma.priceList.findUnique({
+    },
+  });
+  return (
+    customer?.priceList ??
+    (await prisma.priceList.findUnique({
       where: { code: "STANDARD" },
       include: {
         items: {
@@ -73,27 +73,8 @@ export async function getPriceListForBuyer(input: { resellerId?: string | null; 
           orderBy: { minQty: "asc" },
         },
       },
-    }));
-  }
-  return null;
-}
-
-export async function getPricesForReseller(resellerId: string, variantId?: string) {
-  const reseller = await prisma.reseller.findUnique({
-    where: { id: resellerId },
-    include: {
-      priceList: {
-        include: {
-          items: {
-            where: variantId ? { variantId } : undefined,
-            include: { variant: { include: { product: true } } },
-            orderBy: { minQty: "asc" },
-          },
-        },
-      },
-    },
-  });
-  return reseller?.priceList ?? null;
+    }))
+  );
 }
 
 export function resolveUnitPrice(
@@ -113,7 +94,7 @@ export async function setPrintRequirementRequired(id: string, required: boolean)
   });
 }
 
-export async function updateCupProduct(
+export async function updateWaterProduct(
   id: string,
   data: {
     moq: number;
@@ -125,7 +106,7 @@ export async function updateCupProduct(
 ) {
   const product = await prisma.product.findUnique({ where: { id } });
   if (!product) throw new Error("Produkten finns inte.");
-  if (product.category !== "PAPER_CUP") throw new Error("Endast pappersmuggar kan redigeras här.");
+  if (product.category !== "WATER") throw new Error("Endast profilvatten kan redigeras här.");
   if (!Number.isFinite(data.moq) || data.moq < 1) throw new Error("Minsta order måste vara minst 1.");
   if (!Number.isFinite(data.leadTimeDays) || data.leadTimeDays < 1) {
     throw new Error("Ledtid måste vara minst 1 dag.");
@@ -149,8 +130,8 @@ export async function updatePriceListItem(id: string, data: { minQty: number; un
     include: { variant: { include: { product: { select: { category: true } } } } },
   });
   if (!item) throw new Error("Prisraden finns inte.");
-  if (item.variant.product.category !== "PAPER_CUP") {
-    throw new Error("Endast pappersmugg-rader kan redigeras.");
+  if (item.variant.product.category !== "WATER") {
+    throw new Error("Endast profilvatten-rader kan redigeras.");
   }
   if (!Number.isFinite(data.minQty) || data.minQty < 1) throw new Error("Min antal måste vara minst 1.");
   if (!Number.isFinite(data.unitPriceExVat) || data.unitPriceExVat < 0) {

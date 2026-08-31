@@ -72,7 +72,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
               imageSrc: item ? imageForProduct(item.variant.product.slug) : null,
             });
             const value = orderValue(lead.sourceOrder);
-            const email = lead.customer.email ?? lead.sourceOrder.reseller?.company.email;
+            const email = lead.customer.email;
             const artworkDocs = lead.sourceOrder.documents.filter((d) => d.kind === "ARTWORK" || d.kind === "PROOF");
             return (
               <Panel key={lead.id}>
@@ -130,13 +130,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                   </ul>
                 ) : null}
                 <div className="mt-5 flex flex-wrap gap-2">
-                  <LinkButton
-                    href={
-                      lead.sourceOrder.buyerType === "CUSTOMER"
-                        ? `/konto/ordrar/${lead.sourceOrder.orderNo}/repeat`
-                        : `/partner/ordrar/${lead.sourceOrder.orderNo}/repeat`
-                    }
-                  >
+                  <LinkButton href={`/operations/ordrar/${lead.sourceOrder.orderNo}/repeat?lead=${lead.id}`}>
                     Skapa repeat
                   </LinkButton>
                   <LinkButton href={`/operations/ordrar/${lead.sourceOrder.orderNo}`} variant="secondary">

@@ -31,7 +31,7 @@ export default async function KontoOrders({ searchParams }: { searchParams: Prom
         {[
           { id: "all", label: "Alla", href: "/konto/ordrar" },
           { id: "active", label: "Aktiva", href: "/konto/ordrar?view=active" },
-          { id: "proof", label: "Korrektur", href: "/konto/ordrar?view=proof" },
+          { id: "proof", label: "Väntar på godkännande", href: "/konto/ordrar?view=proof" },
           { id: "shipped", label: "På väg", href: "/konto/ordrar?view=shipped" },
           { id: "delivered", label: "Levererade / tidigare", href: "/konto/ordrar?view=delivered" },
         ].map((tab) => (

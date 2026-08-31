@@ -1,10 +1,10 @@
-import { listCupProducts } from "@/server/services/catalog.service";
+import { listWaterProducts } from "@/server/services/catalog.service";
 import { getSessionUser } from "@/server/rbac";
 import { Studio } from "@/ui/studio/Studio";
 import { wrapForVolume } from "@/ui/studio/engine/types";
 
 export default async function DesignPage() {
-  const products = await listCupProducts();
+  const products = await listWaterProducts();
   const user = await getSessionUser();
   return (
     <Studio

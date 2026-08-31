@@ -22,8 +22,9 @@ export const buyerOrderSchema = z.object({
   requestedDate: z.string().optional(),
   deliveryRequirement: z.string().trim().optional(),
   notes: z.string().trim().optional(),
-  lid: z.enum(["none", "white", "black"]).default("none"),
-  finish: z.enum(["matte", "glossy"]).default("matte"),
+  waterType: z.enum(["stilla", "kolsyrat"]).optional(),
+  cap: z.enum(["skruvkork", "sportkork", "black", "white"]).optional(),
+  color: z.enum(["transparent", "frost", "black"]).optional(),
   designId: z.string().optional(),
   customerId: z.string().optional(),
 });

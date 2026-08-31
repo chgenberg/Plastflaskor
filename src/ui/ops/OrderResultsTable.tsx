@@ -16,7 +16,6 @@ type ResultOrder = {
   deliveryRequirement?: string | null;
   visualSpecJson?: string | null;
   customer: { name: string };
-  reseller: { company: { name: string } } | null;
   items: {
     qty: number;
     visualSpecJson?: string | null;
@@ -45,7 +44,6 @@ export function OrderResultsTable({ orders, hrefBase = "/operations/ordrar" }: {
                   {o.orderNo}
                 </Link>
                 <p className="mt-0.5 text-[14px] font-medium">{o.customer.name}</p>
-                <p className="mt-0.5 text-[13px] text-[var(--av-text-muted)]">{o.reseller?.company.name ?? "Direktkund"}</p>
               </div>
               <StatusChip status={o.currentStatus} label={ORDER_STEP_LABELS[o.currentStatus as OrderStatusCode]} requestedDate={o.requestedDate} />
             </div>

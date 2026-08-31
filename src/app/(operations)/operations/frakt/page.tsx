@@ -21,8 +21,9 @@ export default async function ShippingPage() {
               item,
               imageSrc: item ? imageForProduct(item.variant.product.slug) : null,
             });
+            const goods = o.shipments.find((s) => s.type === "GOODS_TO_CUSTOMER");
             const cta =
-              o.currentStatus === "READY_TO_SHIP" && !o.shipments[0]
+              o.currentStatus === "READY_TO_SHIP" && !goods
                 ? { href: `/operations/ordrar/${o.orderNo}`, label: "Skapa fraktsedel" }
                 : o.currentStatus === "SHIPPED"
                   ? { href: `/operations/ordrar/${o.orderNo}`, label: "Markera levererad" }
@@ -46,10 +47,10 @@ export default async function ShippingPage() {
                   </div>
                 ) : null}
                 <p className="mt-4 text-[13px] text-[var(--av-text-muted)]">
-                  Spårning {o.shipments[0]?.trackingNo ?? "saknas"}
+                  Spårning {goods?.trackingNo ?? "saknas"}
                 </p>
-                {o.currentStatus === "READY_TO_SHIP" && o.shipments[0] ? (
-                  <p className="mt-1 text-[13px] text-[var(--av-text-muted)]">Fraktsedel klar · tryckeriet markerar skickad</p>
+                {o.currentStatus === "READY_TO_SHIP" && goods ? (
+                  <p className="mt-1 text-[13px] text-[var(--av-text-muted)]">Fraktsedel klar · bottler markerar skickad</p>
                 ) : null}
                 <div className="mt-4">
                   <LinkButton href={cta.href}>{cta.label}</LinkButton>

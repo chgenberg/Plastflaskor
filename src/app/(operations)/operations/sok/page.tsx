@@ -9,7 +9,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
 
   return (
     <div className="space-y-7">
-      <PageHeader title="Sök" subtitle="Hitta order, kund, ÅF, produkt, org.nr, kontakt, spårning eller faktura." />
+      <PageHeader title="Sök" subtitle="Hitta order, kund, produkt, org.nr, kontakt, spårning eller faktura." />
       <Panel>
         <form action="/operations/sok" className="space-y-4">
           <label className="block text-[14px]">

@@ -29,7 +29,6 @@ export default async function OvrigaPage() {
                   <Link href={`/produkter/${p.categorySlug}/${p.slug}`} className="text-[var(--av-accent)]">
                     Läs mer →
                   </Link>
-                  {p.studioEnabled ? <Link href={`/designa/${p.slug}`}>Designa</Link> : null}
                 </div>
               </div>
             </article>

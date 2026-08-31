@@ -50,10 +50,10 @@ export default function OpsSettings() {
       </div>
       <Panel title="Kommunikation">
         <p className="text-sm leading-relaxed text-[var(--av-text)]">
-          Ingen intern chatt (Word §54). Kontakt går via e-post och notiser — inte en inbyggd chatt.
+          Ingen intern chatt. Kontakt går via e-post och notiser — inte en inbyggd chatt.
         </p>
         <p className="mt-2 text-sm leading-relaxed text-[var(--av-text-muted)]">
-          Pappersmuggar. Tryckfil i två steg. OB låser spec och pris. Ett tryckeri.
+          Profilvatten. Artwork i två steg. OB låser spec och pris. Etikettproducent och bottler.
         </p>
       </Panel>
     </div>

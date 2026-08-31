@@ -21,7 +21,12 @@ const IMG = {
 export default async function HomePage() {
   const products = await listProducts();
   const featured = products.filter((p) =>
-    ["energidryck-med-egen-etikett", "aquarefill", "pappersmugg-ev-23cl", "lask-med-egen-etikett", "profilerbar-kyl"].includes(p.slug),
+    [
+      "naturligt-mineralvatten-33cl",
+      "naturligt-mineralvatten-50cl",
+      "vatten-fran-svensk-kalla-33cl",
+      "energidryck-med-egen-etikett",
+    ].includes(p.slug),
   );
 
   return (
@@ -34,9 +39,9 @@ export default async function HomePage() {
           </h1>
           <p className="mt-5 max-w-md text-[16px] leading-relaxed text-[var(--av-text-secondary)]">Lugn, vi hjälper er!</p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <PillLink href="/produkter">Se produkter →</PillLink>
-            <PillLink href="/login" variant="ghost">
-              Logga in för priser
+            <PillLink href="/login">Kundportal →</PillLink>
+            <PillLink href="/produkter" variant="ghost">
+              Se produkter
             </PillLink>
           </div>
           <ul className="mt-10 flex flex-col gap-3 text-[13px] text-[var(--av-text-muted)] sm:flex-row sm:gap-8">
@@ -97,14 +102,16 @@ export default async function HomePage() {
             <Image src={PAGE_IMAGES.miljoKompost} alt="Pappersmugg och profilvatten" fill className="object-cover" sizes="460px" />
           </div>
           <div>
-            <Badge>Kopp(LA) av,</Badge>
-            <h2 className="av-serif mt-5 text-4xl tracking-[-0.01em] md:text-5xl">Med en kaffe eller vatten i profilerade Pappersmuggar!</h2>
+            <Badge>Svensk källa</Badge>
+            <h2 className="av-serif mt-5 text-4xl tracking-[-0.01em] md:text-5xl">Profilvatten från svensk källa — med er etikett.</h2>
             <p className="mt-5 text-[var(--av-text-secondary)]">
-              Behöver ditt företag energidryck med er egen logotyp, eller läsk med egen etikett? Få leverans inom en månad
-              och bästa möjliga service från ett pålitligt företag.
+              Tollagården och Stenkulla. Stilla eller kolsyrat, med er egen etikett.
             </p>
-            <div className="mt-8">
-              <PillLink href="/produkter/pappersmuggar">Se pappersmuggar →</PillLink>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <PillLink href="/produkter/profilvatten">Se profilvatten →</PillLink>
+              <PillLink href="/produkter/pappersmuggar" variant="ghost">
+                Pappersmuggar
+              </PillLink>
             </div>
           </div>
         </div>
@@ -192,7 +199,7 @@ export default async function HomePage() {
           <Link href="/login" className="av-card p-6">
             <p className="av-label">Kundportal</p>
             <h2 className="mt-2 text-lg font-semibold tracking-tight">Logga in för priser och order</h2>
-            <p className="mt-2 text-sm text-[var(--av-text-muted)]">Order, korrektur och fakturor ligger bakom login.</p>
+            <p className="mt-2 text-sm text-[var(--av-text-muted)]">Order, godkännande och fakturor ligger bakom login.</p>
           </Link>
           <Link href="/offert" className="av-card p-6">
             <p className="av-label">Kontakt</p>
@@ -202,7 +209,7 @@ export default async function HomePage() {
           <Link href="/inspiration" className="av-card p-6">
             <p className="av-label">Inspiration</p>
             <h2 className="mt-2 text-lg font-semibold tracking-tight">Referenser</h2>
-            <p className="mt-2 text-sm text-[var(--av-text-muted)]">Se hur produkterna används — sedan vidare till studion.</p>
+            <p className="mt-2 text-sm text-[var(--av-text-muted)]">Se hur produkterna används.</p>
           </Link>
         </div>
       </section>
