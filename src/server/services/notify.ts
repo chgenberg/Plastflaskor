@@ -13,7 +13,10 @@ export async function notifyOrderChange(orderId: string, toStatus: string) {
     where: { role: { in: ["AQUA_STAFF", "AQUA_ADMIN"] }, isActive: true },
     select: { id: true },
   });
-  const ids = [...new Set([...staff.map((u) => u.id), ...order.reseller.users.map((u) => u.id)])];
+  const buyerUsers = order.reseller
+    ? order.reseller.users
+    : await prisma.user.findMany({ where: { customerId: order.customerId }, select: { id: true } });
+  const ids = [...new Set([...staff.map((u) => u.id), ...buyerUsers.map((u) => u.id)])];
   if (!ids.length) return;
   await prisma.notification.createMany({
     data: ids.map((userId) => ({

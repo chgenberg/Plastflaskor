@@ -4,17 +4,17 @@ import { KpiCard, PageHeader } from "@/ui/shell/primitives";
 
 async function averageProductionDays() {
   const events = await prisma.statusEvent.findMany({
-    where: { entityType: "ORDER", toStatus: { in: ["ORDER_RECEIVED", "PRODUCTION_DONE"] } },
+    where: { entityType: "ORDER", toStatus: { in: ["SUBMITTED", "READY_TO_SHIP"] } },
     select: { entityId: true, toStatus: true, occurredAt: true },
   });
   const received = new Map<string, Date>();
   const done = new Map<string, Date>();
   for (const e of events) {
-    if (e.toStatus === "ORDER_RECEIVED") {
+    if (e.toStatus === "SUBMITTED") {
       const prev = received.get(e.entityId);
       if (!prev || e.occurredAt < prev) received.set(e.entityId, e.occurredAt);
     }
-    if (e.toStatus === "PRODUCTION_DONE") {
+    if (e.toStatus === "READY_TO_SHIP") {
       const prev = done.get(e.entityId);
       if (!prev || e.occurredAt < prev) done.set(e.entityId, e.occurredAt);
     }
@@ -35,11 +35,8 @@ export default async function LeadershipPage() {
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const orders = all.filter((o) => o.createdAt >= monthStart);
-  const bottles = orders
-    .filter((o) => o.items[0]?.variant.product.category === "WATER")
-    .reduce((s, o) => s + o.items.reduce((a, i) => a + i.qty, 0), 0);
   const cups = orders
-    .filter((o) => o.items[0]?.variant.product.category === "PAPER_CUP")
+    .filter((o) => o.items.some((i) => i.variant.product.category === "PAPER_CUP"))
     .reduce((s, o) => s + o.items.reduce((a, i) => a + i.qty, 0), 0);
   const repeats = orders.filter((o) => o.source === "repeat").length;
   const avgDays = await averageProductionDays();
@@ -51,9 +48,8 @@ export default async function LeadershipPage() {
       <PageHeader title={title} subtitle="Siffror från ordrar och statushändelser. Inga uppskattade tal." />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <KpiCard label="Ordrar" value={orders.length} />
-        <KpiCard label="Flaskor" value={bottles.toLocaleString("sv-SE")} />
-        <KpiCard label="Pappersmuggar" value={cups.toLocaleString("sv-SE")} />
-        <KpiCard label="Repeat orders" value={`${Math.round((repeats / Math.max(orders.length, 1)) * 100)} %`} />
+        <KpiCard label="Muggar" value={cups.toLocaleString("sv-SE")} />
+        <KpiCard label="Repeatordrar" value={`${Math.round((repeats / Math.max(orders.length, 1)) * 100)} %`} />
         {avgDays !== null ? (
           <KpiCard label="Genomsnittlig produktionstid" value={`${avgDays.toLocaleString("sv-SE", { maximumFractionDigits: 1 })} dagar`} />
         ) : null}

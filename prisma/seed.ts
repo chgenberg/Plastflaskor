@@ -4,24 +4,26 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 const STATUSES: OrderStatus[] = [
-  "ORDER_RECEIVED",
-  "ARTWORK_UPLOADED",
-  "ARTWORK_APPROVED",
-  "LABELS_ORDERED",
-  "LABELS_PRINTED",
-  "LABELS_SHIPPED_TO_FACTORY",
-  "LABELS_RECEIVED_BY_FACTORY",
-  "PRODUCTION_PLANNED",
-  "PRODUCTION_STARTED",
-  "BOTTLES_FILLED",
-  "LABELS_APPLIED",
-  "PRODUCTION_DONE",
-  "WAYBILL_CREATED",
-  "SHIPPED_TO_END_CUSTOMER",
+  "SUBMITTED",
+  "AQUA_REVIEW",
+  "ARTWORK_AQUA_REVIEW",
+  "ARTWORK_CUSTOMER_APPROVAL",
+  "CONFIRMED",
+  "IN_PRODUCTION",
+  "READY_TO_SHIP",
+  "SHIPPED",
   "DELIVERED",
   "READY_TO_INVOICE",
   "INVOICED",
   "PAID",
+];
+
+const PRINT_REQS = [
+  { code: "volume", label: "Volym", required: true },
+  { code: "producer", label: "Producentuppgifter", required: true },
+  { code: "recycling", label: "Återvinning / FSC / OK Compost", required: true },
+  { code: "food_contact", label: "Livsmedelsgodkännande", required: true },
+  { code: "product_name", label: "Produktnamn", required: false },
 ];
 
 const RESELLERS = [
@@ -567,8 +569,13 @@ async function main() {
         isPublic: [
           "energidryck-med-egen-etikett",
           "lask-med-egen-etikett",
+          "pappersmugg-eco-ev-12cl",
           "pappersmugg-ev-23cl",
+          "pappersmugg-eco-ev-23cl",
+          "pappersmugg-dv-23cl",
+          "pappersmugg-eco-dv-23cl",
           "pappersmugg-dv-35cl",
+          "pappersmugg-eco-dv-35cl",
           "aquarefill",
           "shiva-bio-tacx-500ml",
           "shiva-bio-tacx-750ml",
@@ -586,6 +593,17 @@ async function main() {
       include: { variants: true },
     });
     createdProducts.push(product);
+    if (p.category === "PAPER_CUP") {
+      await prisma.printRequirement.createMany({
+        data: PRINT_REQS.map((r, i) => ({
+          productId: product.id,
+          code: r.code,
+          label: r.label,
+          required: r.required,
+          sortOrder: i,
+        })),
+      });
+    }
   }
 
   const basePrice: Record<string, number> = {
@@ -767,9 +785,43 @@ async function main() {
       companyId: gbgCompany.id,
     },
   });
+  const directCo = await prisma.company.create({
+    data: { orgNr: "559888-0101", name: "Fikastunden Direkt AB", email: "kund@demo.aqua" },
+  });
+  const directCustomer = await prisma.customer.create({
+    data: {
+      companyId: directCo.id,
+      priceListId: listByCode.STANDARD.id,
+      name: "Fikastunden Direkt AB",
+      orgNr: "559888-0101",
+      email: "kund@demo.aqua",
+    },
+  });
+  const directAddr = await prisma.address.create({
+    data: {
+      customerId: directCustomer.id,
+      type: "SHIPPING",
+      line1: "Kungsgatan 1",
+      postalCode: "411 19",
+      city: "Göteborg",
+    },
+  });
+  await prisma.user.create({
+    data: {
+      email: "kund@demo.aqua",
+      name: "Sara Kund",
+      passwordHash,
+      role: "CUSTOMER",
+      companyId: directCo.id,
+      customerId: directCustomer.id,
+    },
+  });
 
-  const allVariants = createdProducts.flatMap((p) => p.variants.map((v) => ({ variant: v, product: p })));
-  const qtys = [270, 540, 1080, 2500, 500];
+  const allVariants = createdProducts
+    .filter((p) => p.category === "PAPER_CUP")
+    .flatMap((p) => p.variants.map((v) => ({ variant: v, product: p })));
+  const qtys = [500, 1000, 2500, 5000, 1080];
+  const createdOrderIds: string[] = [];
 
   for (let i = 0; i < 50; i++) {
     const status = STATUSES[Math.min(STATUSES.length - 1, Math.floor((i / 50) * STATUSES.length))];
@@ -779,30 +831,65 @@ async function main() {
     const factory = i % 2 === 0 ? gbg : orb;
     const orderNo = `AV-${10450 + i}`;
     const createdAt = new Date(2026, 6, 1 + (i % 40));
+    const opt = JSON.parse(pv.variant.optionsJson || "{}") as { wall?: string; eco?: string };
+    const visual = {
+      productName: pv.product.name,
+      qty,
+      volumeLabel: pv.variant.volumeMl ? `${Math.round(pv.variant.volumeMl / 10)} cl` : "",
+      wall: opt.wall === "dubbel" ? "Dubbelvägg" : "Enkelvägg",
+      eco: opt.eco === "ja",
+      finish: "Matt",
+      lid: "Utan lock",
+    };
+    const idx = STATUSES.indexOf(status);
+    const locked = idx >= 4;
     const order = await prisma.order.create({
       data: {
         orderNo,
+        buyerType: "RESELLER",
         resellerId: pair.reseller.id,
         customerId: pair.customer.id,
         currentStatus: status,
         shippingAddressId: pair.addr.id,
         factoryId: factory.id,
-        source: i % 5 === 0 ? "repeat" : "reseller_order",
-        sourceOrderId: i % 5 === 0 && i > 5 ? undefined : undefined,
+        source: i % 5 === 0 && i > 4 ? "repeat" : "reseller_order",
+        sourceOrderId: i % 5 === 0 && i > 4 ? createdOrderIds[i - 5] : undefined,
         invoiceRef: `REF-${200 + i}`,
         requestedDate: "2026-09-15",
+        preliminaryDate: "2026-09-20",
+        confirmedDate: locked ? "2026-09-22" : null,
+        aquaApprovedDelivery: idx >= 5 ? "2026-09-22" : null,
+        repeatHorizonMonths: locked && i % 3 === 0 ? 12 : null,
+        lockedAt: locked ? createdAt : null,
+        extrasJson: locked ? JSON.stringify([{ kind: "freight", label: "Frakt", amountExVat: 450 }]) : "[]",
+        priceSnapshotJson: locked
+          ? JSON.stringify({
+              lines: [{ name: pv.product.name, qty, unitPriceExVat: 3.1, lineExVat: Math.round(qty * 3.1 * 100) / 100 }],
+              extras: [{ kind: "freight", label: "Frakt", amountExVat: 450 }],
+              extrasExVat: 450,
+              goodsExVat: Math.round(qty * 3.1 * 100) / 100,
+              amountExVat: Math.round((qty * 3.1 + 450) * 100) / 100,
+              vatAmount: Math.round((qty * 3.1 + 450) * 0.25 * 100) / 100,
+              amountIncVat: Math.round((qty * 3.1 + 450) * 1.25 * 100) / 100,
+              lockedAt: createdAt.toISOString(),
+            })
+          : null,
+        visualSpecJson: JSON.stringify(visual),
+        factoryDeadline: locked ? "2026-09-10" : null,
+        factoryDeadlineAccepted: idx >= 5,
         createdAt,
         items: {
           create: {
             variantId: pv.variant.id,
             qty,
-            unitPriceExVat: 6.4,
+            unitPriceExVat: 3.1,
+            visualSpecJson: JSON.stringify(visual),
           },
         },
       },
     });
+    createdOrderIds.push(order.id);
 
-    const idx = STATUSES.indexOf(status);
     for (let s = 0; s <= idx; s++) {
       await prisma.statusEvent.create({
         data: {
@@ -810,38 +897,41 @@ async function main() {
           entityId: order.id,
           fromStatus: s === 0 ? null : STATUSES[s - 1],
           toStatus: STATUSES[s],
-          actorRole: s < 2 ? Role.RESELLER : s < 8 ? Role.AQUA_STAFF : Role.FACTORY,
+          actorRole: s < 2 ? Role.RESELLER : s < 6 ? Role.AQUA_STAFF : Role.FACTORY,
           source: "seed",
           occurredAt: new Date(createdAt.getTime() + s * 86400000),
         },
       });
     }
 
-    const labelStatus =
-      idx >= 6 ? "RECEIVED_BY_FACTORY" : idx >= 5 ? "SHIPPED_TO_FACTORY" : idx >= 4 ? "PRINTED" : idx >= 3 ? "ORDERED" : "NOT_ORDERED";
-    await prisma.label.create({
-      data: {
-        orderId: order.id,
-        status: labelStatus as "NOT_ORDERED",
-        qty,
-        trackingNo: idx >= 5 ? `LBL${10450 + i}` : null,
-        receivedAt: idx >= 6 ? new Date() : null,
-      },
-    });
-
-    const jobStatus =
-      idx >= 11 ? "DONE" : idx >= 9 ? "FILLED" : idx >= 8 ? "STARTED" : idx >= 7 ? "PLANNED" : "NOT_PLANNED";
+    const jobStatus = idx >= 6 ? "DONE" : idx >= 5 ? "STARTED" : "NOT_PLANNED";
     const planned = new Date(2026, 7, 25 + (i % 6));
     await prisma.productionJob.create({
       data: {
         orderId: order.id,
         factoryId: factory.id,
         status: jobStatus as "NOT_PLANNED",
-        plannedAt: idx >= 7 ? planned : planned,
+        plannedAt: planned,
       },
     });
 
-    if (idx >= 12) {
+    if (locked && i % 3 === 0) {
+      const expected = new Date();
+      expected.setDate(expected.getDate() + (i % 6 === 0 ? 4 : 18));
+      const activate = new Date();
+      activate.setDate(activate.getDate() - 7);
+      await prisma.repeatOpportunity.create({
+        data: {
+          sourceOrderId: order.id,
+          customerId: pair.customer.id,
+          expectedAt: expected,
+          activateAt: activate,
+          status: i % 6 === 0 ? "ACTIVE" : i % 9 === 0 ? "CUSTOMER_REMINDED" : "UPCOMING",
+        },
+      });
+    }
+
+    if (idx >= 7) {
       await prisma.shipment.create({
         data: {
           orderId: order.id,
@@ -849,23 +939,25 @@ async function main() {
           carrier: "PostNord",
           trackingNo: `AV00${10450 + i}`,
           waybillNo: `WB-${10450 + i}`,
-          status: idx >= 14 ? "DELIVERED" : idx >= 13 ? "IN_TRANSIT" : "CREATED",
+          status: idx >= 8 ? "DELIVERED" : idx >= 7 ? "IN_TRANSIT" : "CREATED",
         },
       });
     }
 
-    if (idx >= 16) {
+    if (idx >= 10) {
       await prisma.invoice.create({
         data: {
           orderId: order.id,
           resellerId: pair.reseller.id,
+          customerId: pair.customer.id,
           invoiceNo: String(10450 + i),
-          status: idx >= 17 ? "PAID" : "ISSUED",
-          amountExVat: qty * 6.4,
-          vatAmount: qty * 6.4 * 0.25,
-          amountIncVat: qty * 6.4 * 1.25,
+          fortnoxId: `FX-${10450 + i}`,
+          status: idx >= 11 ? "PAID" : "ISSUED",
+          amountExVat: qty * 3.1,
+          vatAmount: qty * 3.1 * 0.25,
+          amountIncVat: qty * 3.1 * 1.25,
           issuedAt: new Date(),
-          paidAt: idx >= 17 ? new Date() : null,
+          paidAt: idx >= 11 ? new Date() : null,
         },
       });
       await prisma.document.create({
@@ -899,6 +991,84 @@ async function main() {
           kind: "ARTWORK",
           title: "Artwork original",
           storageKey: `artwork/${orderNo}.pdf`,
+        },
+      });
+    }
+  }
+
+  for (let i = 0; i < 6; i++) {
+    const status = STATUSES[i];
+    const pv = allVariants[i % allVariants.length];
+    const qty = 1000;
+    const opt = JSON.parse(pv.variant.optionsJson || "{}") as { wall?: string; eco?: string };
+    const visual = {
+      productName: pv.product.name,
+      qty,
+      volumeLabel: pv.variant.volumeMl ? `${Math.round(pv.variant.volumeMl / 10)} cl` : "",
+      wall: opt.wall === "dubbel" ? "Dubbelvägg" : "Enkelvägg",
+      eco: opt.eco === "ja",
+      finish: "Matt",
+      lid: "Utan lock",
+    };
+    const locked = i >= 4;
+    const order = await prisma.order.create({
+      data: {
+        orderNo: `AV-K-${2001 + i}`,
+        buyerType: "CUSTOMER",
+        customerId: directCustomer.id,
+        currentStatus: status,
+        shippingAddressId: directAddr.id,
+        factoryId: gbg.id,
+        source: "customer_order",
+        invoiceRef: `KUND-${i + 1}`,
+        requestedDate: "2026-09-18",
+        preliminaryDate: "2026-09-25",
+        confirmedDate: locked ? "2026-09-26" : null,
+        lockedAt: locked ? new Date() : null,
+        extrasJson: locked ? JSON.stringify([{ kind: "freight", label: "Frakt", amountExVat: 450 }]) : "[]",
+        priceSnapshotJson: locked
+          ? JSON.stringify({
+              lines: [{ name: pv.product.name, qty, unitPriceExVat: 3.1, lineExVat: 3100 }],
+              extras: [{ kind: "freight", label: "Frakt", amountExVat: 450 }],
+              extrasExVat: 450,
+              goodsExVat: 3100,
+              amountExVat: 3550,
+              vatAmount: 887.5,
+              amountIncVat: 4437.5,
+              lockedAt: new Date().toISOString(),
+            })
+          : null,
+        visualSpecJson: JSON.stringify(visual),
+        items: {
+          create: {
+            variantId: pv.variant.id,
+            qty,
+            unitPriceExVat: 3.1,
+            visualSpecJson: JSON.stringify(visual),
+          },
+        },
+      },
+    });
+    await prisma.productionJob.create({
+      data: { orderId: order.id, factoryId: gbg.id, status: "NOT_PLANNED" },
+    });
+    await prisma.statusEvent.create({
+      data: {
+        entityType: "ORDER",
+        entityId: order.id,
+        toStatus: status,
+        actorRole: Role.CUSTOMER,
+        source: "seed",
+      },
+    });
+    if (locked) {
+      await prisma.repeatOpportunity.create({
+        data: {
+          sourceOrderId: order.id,
+          customerId: directCustomer.id,
+          expectedAt: new Date(Date.now() + 5 * 86400000),
+          activateAt: new Date(Date.now() - 7 * 86400000),
+          status: "ACTIVE",
         },
       });
     }
@@ -945,7 +1115,7 @@ async function main() {
     ],
   });
 
-  console.log("Seed klar: produkter, 20 ÅF, 30 kunder, 50 ordrar.");
+  console.log("Seed klar: muggar, 20 ÅF, slutkund-login, 56 ordrar, leads.");
 }
 
 main()

@@ -2,6 +2,10 @@ import { notFound } from "next/navigation";
 import { requireRole } from "@/server/rbac";
 import { getJob } from "@/server/services/production.service";
 import { factoryAction } from "@/actions";
+import { FACTORY_JOB_LABELS, FACTORY_PRODUCTION_STEPS } from "@/domain/enums";
+import { specFromOrderItem } from "@/domain/visualSpec";
+import { imageForProduct } from "@/domain/productImages";
+import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
 import { Button, FileLink, LinkButton, PageHeader, Panel, StatusChip } from "@/ui/shell/primitives";
 
 export default async function JobPage({ params }: { params: Promise<{ jobId: string }> }) {
@@ -10,76 +14,130 @@ export default async function JobPage({ params }: { params: Promise<{ jobId: str
   const job = await getJob(jobId, user.role === "FACTORY" ? user.factoryId ?? undefined : undefined);
   if (!job) notFound();
   const item = job.order.items[0];
-  const received = Boolean(job.order.label?.receivedAt);
-  const opt = JSON.parse(item?.variant.optionsJson || "{}") as { waterType?: string; cap?: string };
-  const volume = item?.variant.volumeMl ? `${item.variant.volumeMl / 10} cl` : item?.variant.name;
-  const waybillReady = job.status === "DONE" && job.order.currentStatus === "PRODUCTION_DONE";
-  const shippedReady = job.order.currentStatus === "WAYBILL_CREATED";
+  const spec = specFromOrderItem({
+    visualSpecJson: job.order.visualSpecJson,
+    item,
+    imageSrc: item ? imageForProduct(item.variant.product.slug) : null,
+  });
+  const addr = job.order.shippingAddress;
+  const waybill = job.order.shipments.find((s) => s.type === "GOODS_TO_CUSTOMER");
+  const needsDeadline = !job.order.factoryDeadlineAccepted && job.order.currentStatus === "CONFIRMED";
+  const canStart =
+    Boolean(job.order.factoryDeadlineAccepted) &&
+    (job.status === "ACCEPTED" || job.order.currentStatus === "CONFIRMED") &&
+    job.order.currentStatus === "CONFIRMED";
+  const canFinish =
+    (job.status === "STARTED" || job.order.currentStatus === "IN_PRODUCTION") && job.status !== "DONE";
+  const canShip = job.order.currentStatus === "READY_TO_SHIP" && Boolean(waybill);
+  const artworkFiles = job.order.designs.flatMap((d) => d.files);
+  const finalFiles = job.order.artworkVersions.map((version) => ({
+    version,
+    file: artworkFiles.find((f) => f.storageKey === version.storageKey) ?? null,
+  }));
+  const stepIdx = FACTORY_PRODUCTION_STEPS.findIndex((s) => (s.statuses as readonly string[]).includes(job.status));
 
   return (
-    <div className="mx-auto max-w-lg space-y-8">
-      <PageHeader title={`${item?.qty} × ${volume}`} subtitle={job.order.orderNo} />
+    <div className="mx-auto max-w-lg space-y-5">
+      <PageHeader title={job.order.customer.name} subtitle={job.order.orderNo} />
+      {spec ? <VisualSpecCard spec={spec} /> : null}
       <Panel>
-        <StatusChip status={job.status} label={job.status} />
-        <p className="mt-4 text-sm text-[#6b7280]">
-          {[opt.waterType, opt.cap, item?.variant.product.name].filter(Boolean).join(" · ")}
+        <StatusChip status={job.status} label={FACTORY_JOB_LABELS[job.status] ?? job.status} />
+        <ol className="mt-4 flex items-center gap-2 text-sm">
+          {FACTORY_PRODUCTION_STEPS.map((s, i) => (
+            <li key={s.id} className="flex items-center gap-2">
+              {i > 0 ? <span className="text-[#d4d4d8]">→</span> : null}
+              <span className={i === stepIdx ? "font-semibold text-[#1d1d1f]" : "text-[#6b7280]"}>{s.label}</span>
+            </li>
+          ))}
+        </ol>
+        <p className="mt-4 text-sm">
+          Antal: <span className="font-semibold tabular-nums">{item?.qty?.toLocaleString("sv-SE") ?? "–"} st</span>
         </p>
-        <p className="mt-2 text-sm">Design: {job.order.designs[0]?.projectName ?? "–"}</p>
-        <p className="text-sm">Etikett: {job.order.label ? `${job.order.label.qty} st · ${job.order.label.status}` : "–"}</p>
         <p className="mt-2 text-sm">
-          {job.order.shippingAddress.line1}, {job.order.shippingAddress.city}
+          Senaste utskick: {job.order.factoryDeadline ?? "–"}{" "}
+          {job.order.factoryDeadlineAccepted ? "(accepterad)" : ""}
         </p>
-        <p className="mt-2 text-sm">Etikett mottagen: {received ? "Ja" : "Nej"}</p>
-        <p className="text-sm">Leverans: {job.order.requestedDate ?? "–"}</p>
-        {job.order.documents.length > 0 ? (
-          <ul className="mt-4 space-y-1 text-sm">
-            {job.order.documents.map((d) => (
-              <li key={d.id}>
-                <FileLink href={`/api/documents/${d.id}`}>{d.title}</FileLink>
-              </li>
-            ))}
-          </ul>
+        {job.order.factoryIssueNote ? (
+          <p className="mt-2 text-sm text-[var(--av-status-blocked-fg)]">{job.order.factoryIssueNote}</p>
         ) : null}
+        <p className="mt-3 text-sm font-medium">Kund: {job.order.customer.name}</p>
+        <p className="mt-1 text-sm">
+          Leverans: {addr.line1}, {addr.postalCode} {addr.city}
+        </p>
+        <div className="mt-4 space-y-1.5">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">Slutgiltig tryckfil</p>
+          {finalFiles.length === 0 ? (
+            <p className="text-sm text-[#6b7280]">Ingen slutgiltig tryckfil ännu.</p>
+          ) : (
+            finalFiles.map(({ version, file }) =>
+              file ? (
+                <p key={version.id} className="text-sm">
+                  <FileLink href={`/api/artwork-files/${file.id}`}>{version.title}</FileLink>
+                </p>
+              ) : (
+                <p key={version.id} className="text-sm font-medium">
+                  {version.title}
+                </p>
+              ),
+            )
+          )}
+        </div>
+        {job.order.documents.map((d) => (
+          <p key={d.id} className="mt-1 text-sm">
+            <FileLink href={`/api/documents/${d.id}`}>{d.title}</FileLink>
+          </p>
+        ))}
         <div className="mt-6 space-y-3">
-          {!received ? (
-            <FactoryBtn jobId={job.id} action="LABELS_RECEIVED_BY_FACTORY" label="Mottag etikett" variant="secondary" />
+          {needsDeadline ? (
+            <>
+              <FactoryBtn jobId={job.id} action="ACCEPT_DEADLINE" label="Acceptera deadline" />
+              <form action={factoryAction} className="space-y-2">
+                <input type="hidden" name="jobId" value={job.id} />
+                <input type="hidden" name="action" value="FLAG_ISSUE" />
+                <input
+                  name="issueNote"
+                  placeholder="Föreslaget datum / anledning"
+                  className="h-12 w-full rounded-xl border border-black/10 px-3 text-sm"
+                />
+                <Button type="submit" variant="secondary" size="lg" className="w-full">
+                  Flagga problem
+                </Button>
+              </form>
+            </>
           ) : null}
-          {received && (job.status === "NOT_PLANNED" || job.status === "PLANNED") ? (
-            <FactoryBtn jobId={job.id} action="PRODUCTION_STARTED" label="Starta produktion" />
+          {canStart ? (
+            <FactoryBtn jobId={job.id} action="START" label="Starta produktion" />
           ) : null}
-          {job.status === "STARTED" ? <FactoryBtn jobId={job.id} action="BOTTLES_FILLED" label="Markera fylld" /> : null}
-          {job.status === "FILLED" ? <FactoryBtn jobId={job.id} action="LABELS_APPLIED" label="Etiketter applicerade" /> : null}
-          {job.status === "LABELS_APPLIED" ? <FactoryBtn jobId={job.id} action="PRODUCTION_DONE" label="Produktion klar" /> : null}
-          {waybillReady ? (
+          {canFinish && job.status !== "DONE" ? (
+            <form action={factoryAction} className="space-y-2">
+              <input type="hidden" name="jobId" value={job.id} />
+              <input type="hidden" name="action" value="DONE" />
+              <input name="readyDate" type="date" className="h-12 w-full rounded-xl border border-black/10 px-3 text-sm" />
+              <Button type="submit" size="lg" className="w-full">
+                Produktion klar + estimerat datum
+              </Button>
+            </form>
+          ) : null}
+          {waybill ? (
             <LinkButton href={`/factory/jobb/${job.id}/fraktsedel`} size="lg" className="w-full">
-              Skriv ut fraktsedel
+              Ladda ner fraktsedel
             </LinkButton>
+          ) : job.order.currentStatus === "READY_TO_SHIP" ? (
+            <p className="text-sm text-[#6b7280]">Väntar på att Aqua skapar fraktsedel.</p>
           ) : null}
-          {shippedReady ? <FactoryBtn jobId={job.id} action="SHIPPED_TO_END_CUSTOMER" label="Markera skickad" /> : null}
+          {canShip ? <FactoryBtn jobId={job.id} action="SHIPPED" label="Markera skickad" /> : null}
         </div>
       </Panel>
     </div>
   );
 }
 
-function FactoryBtn({
-  jobId,
-  action,
-  label,
-  variant = "primary",
-  disabled,
-}: {
-  jobId: string;
-  action: string;
-  label: string;
-  variant?: "primary" | "secondary";
-  disabled?: boolean;
-}) {
+function FactoryBtn({ jobId, action, label }: { jobId: string; action: string; label: string }) {
   return (
     <form action={factoryAction}>
       <input type="hidden" name="jobId" value={jobId} />
       <input type="hidden" name="action" value={action} />
-      <Button type="submit" variant={variant} size="lg" className="w-full" disabled={disabled}>
+      <Button type="submit" size="lg" className="w-full">
         {label}
       </Button>
     </form>

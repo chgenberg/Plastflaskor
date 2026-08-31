@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { requireRole } from "@/server/rbac";
+import { priceListDisplayName } from "@/domain/priceLists";
 import { getPricesForReseller, resolveUnitPrice } from "@/server/services/catalog.service";
 import { DataRow, DataTable, EmptyState, LinkButton, PageHeader, Panel } from "@/ui/shell/primitives";
 
-const QTYS = [270, 540, 1080, 2500, 5000];
+const QTYS = [500, 1000, 2500, 5000];
 
 export default async function PricesPage() {
   const user = await requireRole(["RESELLER", "AQUA_STAFF", "AQUA_ADMIN"]);
@@ -32,7 +33,7 @@ export default async function PricesPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader title="Priser" subtitle={`Lista: ${list.name} · ${list.code}`} action={<LinkButton href="/designa">Designa / Beställ</LinkButton>} />
+      <PageHeader title="Priser" subtitle={`Lista: ${priceListDisplayName(list.name)}`} action={<LinkButton href="/designa">Designa / Beställ</LinkButton>} />
       <div className="space-y-5">
         {[...grouped.entries()].map(([name, items]) => {
           const variants = new Map<string, typeof items>();

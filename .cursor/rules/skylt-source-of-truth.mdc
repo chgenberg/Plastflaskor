@@ -1,0 +1,31 @@
+---
+description: Skylt och gravyr är logiskt facit för det här OS:et. Läs skillen innan catalog/studio/kassa/order/produktion.
+alwaysApply: true
+---
+
+# Skylt och gravyr är bakgrundsintelligensen
+
+Det här projektet är ett **syskon** till Skylt och Gravyrteknik
+(`/Users/christophergenberg/Desktop/Skyltochgravyr`, kod i `skyltmotor/`).
+Vi säljer framförallt **pappmuggar**, men OS-mönstret (design →
+auktoritativt pris → kundvagn → immutabel order → produktion →
+frakt/faktura) kommer därifrån.
+
+Innan du implementerar eller ändrar katalog, designer/studio, kundvagn,
+kassa, priser, ordrar, partnerportal, operations eller fabrik: läs skillen
+[`skylt-och-gravyr`](mdc:.cursor/skills/skylt-och-gravyr/SKILL.md).
+
+## Tills Word-dokumentet kommer
+
+Användaren skickar ett Word-dokument med exakt delta Skylt → Aqua/muggar.
+Tills dess: **skriv inte om Aqua till en skyltmotor-klon.** Använd
+Skylt som facit när du förklarar och jämför. Rör inte
+`Skyltochgravyr/skyltmotor/` utan explicit order.
+
+## Kontrakt att inte tappa
+
+Ett JSON-dokument är sanningen för preview/pris/order/produktion.
+Pris räknas på servern. Checkout repriserar. Order-snapshots är
+immutabla. Produkter är registry-drivna. Frontend importerar aldrig
+mock-adapters. Inga publika `kr` på katalogen. Gold-ÅF får inte
+Standard-priser. Fabrik ser inte ÅF-fakturor.

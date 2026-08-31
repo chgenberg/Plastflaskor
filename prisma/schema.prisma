@@ -9,51 +9,39 @@ datasource db {
 
 enum Role {
   PUBLIC
+  CUSTOMER
   RESELLER
   AQUA_STAFF
   AQUA_ADMIN
   FACTORY
 }
 
+enum BuyerType {
+  RESELLER
+  CUSTOMER
+}
+
 enum OrderStatus {
-  ORDER_RECEIVED
-  ARTWORK_UPLOADED
-  ARTWORK_APPROVED
-  LABELS_ORDERED
-  LABELS_PRINTED
-  LABELS_SHIPPED_TO_FACTORY
-  LABELS_RECEIVED_BY_FACTORY
-  PRODUCTION_PLANNED
-  PRODUCTION_STARTED
-  BOTTLES_FILLED
-  LABELS_APPLIED
-  PRODUCTION_DONE
-  WAYBILL_CREATED
-  SHIPPED_TO_END_CUSTOMER
+  SUBMITTED
+  AQUA_REVIEW
+  ARTWORK_AQUA_REVIEW
+  ARTWORK_CUSTOMER_APPROVAL
+  CONFIRMED
+  IN_PRODUCTION
+  READY_TO_SHIP
+  SHIPPED
   DELIVERED
   READY_TO_INVOICE
   INVOICED
   PAID
 }
 
-enum LabelStatus {
-  NOT_ORDERED
-  ORDERED
-  PRINTING
-  PRINTED
-  SHIPPED_TO_FACTORY
-  RECEIVED_BY_FACTORY
-}
-
 enum ProductionStatus {
   NOT_PLANNED
-  PLANNED
+  ACCEPTED
   STARTED
-  FILLING
-  FILLED
-  LABELING
-  LABELS_APPLIED
   DONE
+  ISSUE_FLAGGED
 }
 
 enum InvoiceStatus {
@@ -81,8 +69,8 @@ enum ProductCategory {
 }
 
 enum ShipmentType {
-  LABELS_TO_FACTORY
   GOODS_TO_CUSTOMER
+  LABELS_TO_FACTORY
 }
 
 enum AddressType {
@@ -109,21 +97,38 @@ enum DocumentKind {
   OTHER
 }
 
+enum RepeatLeadStatus {
+  UPCOMING
+  ACTIVE
+  CUSTOMER_REMINDED
+  CONTACTED
+  REPEAT_CREATED
+  SNOOZED
+  NOT_RELEVANT
+}
+
+enum ArtworkApprovalKind {
+  AQUA_PROOF
+  CUSTOMER_FINAL
+}
+
 model User {
-  id           String    @id @default(uuid())
-  email        String    @unique
-  name         String
-  passwordHash String
-  role         Role
-  isActive     Boolean   @default(true)
-  companyId    String?
-  resellerId   String?
-  factoryId    String?
-  company      Company?  @relation(fields: [companyId], references: [id])
-  reseller     Reseller? @relation(fields: [resellerId], references: [id])
-  factory      Factory?  @relation(fields: [factoryId], references: [id])
+  id            String         @id @default(uuid())
+  email         String         @unique
+  name          String
+  passwordHash  String
+  role          Role
+  isActive      Boolean        @default(true)
+  companyId     String?
+  resellerId    String?
+  factoryId     String?
+  customerId    String?
+  company       Company?       @relation(fields: [companyId], references: [id])
+  reseller      Reseller?      @relation(fields: [resellerId], references: [id])
+  factory       Factory?       @relation(fields: [factoryId], references: [id])
+  customer      Customer?      @relation(fields: [customerId], references: [id])
   notifications Notification[]
-  artworkFiles ArtworkFile[]
+  artworkFiles  ArtworkFile[]
 }
 
 model Company {
@@ -155,32 +160,37 @@ model Reseller {
 }
 
 model Customer {
-  id        String   @id @default(uuid())
-  resellerId String
-  companyId String?
-  name      String
-  orgNr     String?
-  email     String?
-  phone     String?
-  reseller  Reseller @relation(fields: [resellerId], references: [id])
-  company   Company? @relation(fields: [companyId], references: [id])
-  orders    Order[]
-  addresses Address[]
+  id          String               @id @default(uuid())
+  resellerId  String?
+  companyId   String?
+  priceListId String?
+  name        String
+  orgNr       String?
+  email       String?
+  phone       String?
+  reseller    Reseller?            @relation(fields: [resellerId], references: [id])
+  company     Company?             @relation(fields: [companyId], references: [id])
+  priceList   PriceList?           @relation(fields: [priceListId], references: [id])
+  orders      Order[]
+  addresses   Address[]
+  users       User[]
+  invoices    Invoice[]
+  leads       RepeatOpportunity[]
 }
 
 model Address {
-  id         String      @id @default(uuid())
-  companyId  String?
-  customerId String?
-  type       AddressType
-  line1      String
-  postalCode String
-  city       String
-  country    String      @default("SE")
-  company    Company?    @relation(fields: [companyId], references: [id])
-  customer   Customer?   @relation(fields: [customerId], references: [id])
-  factories  Factory[]
-  shippingOrders Order[] @relation("ShippingAddress")
+  id             String      @id @default(uuid())
+  companyId      String?
+  customerId     String?
+  type           AddressType
+  line1          String
+  postalCode     String
+  city           String
+  country        String      @default("SE")
+  company        Company?    @relation(fields: [companyId], references: [id])
+  customer       Customer?   @relation(fields: [customerId], references: [id])
+  factories      Factory[]
+  shippingOrders Order[]     @relation("ShippingAddress")
 }
 
 model Factory {
@@ -197,47 +207,69 @@ model Factory {
   orders    Order[]
 }
 
+model Supplier {
+  id       String  @id @default(uuid())
+  name     String
+  code     String  @unique
+  kind     String  @default("printer")
+  isActive Boolean @default(true)
+}
+
 model Product {
-  id          String          @id @default(uuid())
-  slug        String          @unique
-  skuBase     String          @unique
-  name        String
-  category    ProductCategory
-  categorySlug String
-  oneLiner    String
-  body        String
-  specText    String
-  moq         Int
-  leadTimeText String
-  country     String
-  environmentText String
-  isPublic    Boolean         @default(true)
-  studioEnabled Boolean       @default(true)
-  sortOrder   Int             @default(0)
-  variants    ProductVariant[]
+  id                String             @id @default(uuid())
+  slug              String             @unique
+  skuBase           String             @unique
+  name              String
+  category          ProductCategory
+  categorySlug      String
+  oneLiner          String
+  body              String
+  specText          String
+  moq               Int
+  leadTimeDays      Int                @default(21)
+  leadTimeText      String
+  country           String
+  environmentText   String
+  printFormat       String?
+  isPublic          Boolean            @default(true)
+  studioEnabled     Boolean            @default(true)
+  sortOrder         Int                @default(0)
+  variants          ProductVariant[]
+  printRequirements PrintRequirement[]
 }
 
 model ProductVariant {
-  id         String   @id @default(uuid())
-  productId  String
-  sku        String   @unique
-  name       String
-  volumeMl   Int?
-  packSize   Int      @default(1)
+  id          String          @id @default(uuid())
+  productId   String
+  sku         String          @unique
+  name        String
+  volumeMl    Int?
+  packSize    Int             @default(1)
   optionsJson String
-  isActive   Boolean  @default(true)
-  product    Product  @relation(fields: [productId], references: [id])
-  prices     PriceListItem[]
-  orderItems OrderItem[]
+  isActive    Boolean         @default(true)
+  product     Product         @relation(fields: [productId], references: [id])
+  prices      PriceListItem[]
+  orderItems  OrderItem[]
+}
+
+model PrintRequirement {
+  id        String  @id @default(uuid())
+  productId String
+  code      String
+  label     String
+  required  Boolean @default(true)
+  sortOrder Int     @default(0)
+  product   Product @relation(fields: [productId], references: [id])
 }
 
 model PriceList {
-  id       String        @id @default(uuid())
-  code     PriceListCode @unique
-  name     String
-  currency String        @default("SEK")
-  items    PriceListItem[]
+  id        String          @id @default(uuid())
+  code      PriceListCode   @unique
+  name      String
+  currency  String          @default("SEK")
+  items     PriceListItem[]
   resellers Reseller[]
+  customers Customer[]
 }
 
 model PriceListItem {
@@ -248,35 +280,53 @@ model PriceListItem {
   minQty         Int            @default(1)
   priceList      PriceList      @relation(fields: [priceListId], references: [id])
   variant        ProductVariant @relation(fields: [variantId], references: [id])
+
   @@unique([priceListId, variantId, minQty])
 }
 
 model Order {
-  id                String      @id @default(uuid())
-  orderNo           String      @unique
-  resellerId        String
-  customerId        String
-  currentStatus     OrderStatus
-  currency          String      @default("SEK")
-  shippingAddressId String
-  factoryId         String?
-  source            String      @default("reseller_order")
-  sourceOrderId     String?
-  notes             String?
-  requestedDate     String?
-  invoiceRef        String?
-  createdAt         DateTime    @default(now())
-  reseller          Reseller    @relation(fields: [resellerId], references: [id])
-  customer          Customer    @relation(fields: [customerId], references: [id])
-  shippingAddress   Address     @relation("ShippingAddress", fields: [shippingAddressId], references: [id])
-  factory           Factory?    @relation(fields: [factoryId], references: [id])
-  items             OrderItem[]
-  designs           Design[]
-  label             Label?
-  jobs              ProductionJob[]
-  shipments         Shipment[]
-  documents         Document[]
-  invoice           Invoice?
+  id                     String          @id @default(uuid())
+  orderNo                String          @unique
+  buyerType              BuyerType       @default(RESELLER)
+  resellerId             String?
+  customerId             String
+  currentStatus          OrderStatus
+  currency               String          @default("SEK")
+  shippingAddressId      String
+  factoryId              String?
+  source                 String          @default("reseller_order")
+  sourceOrderId          String?
+  notes                  String?
+  requestedDate          String?
+  preliminaryDate        String?
+  confirmedDate          String?
+  deliveryRequirement    String?
+  invoiceRef             String?
+  extrasJson             String          @default("[]")
+  priceSnapshotJson      String?
+  visualSpecJson         String?
+  cupDocumentJson        String?
+  lockedAt               DateTime?
+  repeatHorizonMonths    Int?
+  factoryDeadline        String?
+  factoryDeadlineAccepted Boolean        @default(false)
+  factoryIssueNote       String?
+  factoryReadyEstimate   String?
+  aquaApprovedDelivery   String?
+  createdAt              DateTime        @default(now())
+  reseller               Reseller?       @relation(fields: [resellerId], references: [id])
+  customer               Customer        @relation(fields: [customerId], references: [id])
+  shippingAddress        Address         @relation("ShippingAddress", fields: [shippingAddressId], references: [id])
+  factory                Factory?        @relation(fields: [factoryId], references: [id])
+  items                  OrderItem[]
+  designs                Design[]
+  jobs                   ProductionJob[]
+  shipments              Shipment[]
+  documents              Document[]
+  invoice                Invoice?
+  artworkVersions        ArtworkVersion[]
+  artworkApprovals       ArtworkApproval[]
+  leads                  RepeatOpportunity[]
 }
 
 model OrderItem {
@@ -286,26 +336,30 @@ model OrderItem {
   qty            Int
   unitPriceExVat Float
   designId       String?
+  cupDocumentJson String?
+  visualSpecJson String?
   order          Order          @relation(fields: [orderId], references: [id])
   variant        ProductVariant @relation(fields: [variantId], references: [id])
 }
 
 model Design {
-  id             String       @id @default(uuid())
-  orderId        String?
-  userId         String?
-  productId      String
-  variantId      String?
-  projectName    String
-  source         String
-  status         DesignStatus @default(DRAFT)
-  quantity       Int
-  optionsJson    String
-  canvasJson     String       @default("{}")
-  contactJson    String?
-  createdAt      DateTime     @default(now())
-  order          Order?       @relation(fields: [orderId], references: [id])
-  files          ArtworkFile[]
+  id              String         @id @default(uuid())
+  orderId         String?
+  userId          String?
+  productId       String
+  variantId       String?
+  projectName     String
+  source          String
+  status          DesignStatus   @default(DRAFT)
+  quantity        Int
+  optionsJson     String
+  canvasJson      String         @default("{}")
+  cupDocumentJson String         @default("{}")
+  contactJson     String?
+  createdAt       DateTime       @default(now())
+  order           Order?         @relation(fields: [orderId], references: [id])
+  files           ArtworkFile[]
+  versions        ArtworkVersion[]
 }
 
 model ArtworkFile {
@@ -320,32 +374,40 @@ model ArtworkFile {
   uploadedBy   User?   @relation(fields: [uploadedById], references: [id])
 }
 
-model Label {
-  id         String      @id @default(uuid())
-  orderId    String      @unique
-  status     LabelStatus @default(NOT_ORDERED)
-  qty        Int
-  trackingNo String?
-  orderedAt  DateTime?
-  printedAt  DateTime?
-  shippedAt  DateTime?
-  receivedAt DateTime?
-  order      Order       @relation(fields: [orderId], references: [id])
+model ArtworkVersion {
+  id        String   @id @default(uuid())
+  orderId   String
+  designId  String?
+  kind      String   @default("original")
+  storageKey String
+  title     String
+  isFinal   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  order     Order    @relation(fields: [orderId], references: [id])
+  design    Design?  @relation(fields: [designId], references: [id])
+}
+
+model ArtworkApproval {
+  id        String              @id @default(uuid())
+  orderId   String
+  kind      ArtworkApprovalKind
+  actorRole Role
+  note      String?
+  createdAt DateTime            @default(now())
+  order     Order               @relation(fields: [orderId], references: [id])
 }
 
 model ProductionJob {
-  id          String           @id @default(uuid())
-  orderId     String
-  factoryId   String
-  status      ProductionStatus @default(NOT_PLANNED)
-  plannedAt   DateTime?
-  startedAt   DateTime?
-  filledAt    DateTime?
-  labeledAt   DateTime?
-  completedAt DateTime?
+  id           String           @id @default(uuid())
+  orderId      String
+  factoryId    String
+  status       ProductionStatus @default(NOT_PLANNED)
+  plannedAt    DateTime?
+  startedAt    DateTime?
+  completedAt  DateTime?
   operatorNote String?
-  order       Order            @relation(fields: [orderId], references: [id])
-  factory     Factory          @relation(fields: [factoryId], references: [id])
+  order        Order            @relation(fields: [orderId], references: [id])
+  factory      Factory          @relation(fields: [factoryId], references: [id])
 }
 
 model Shipment {
@@ -379,8 +441,10 @@ model Document {
 model Invoice {
   id           String        @id @default(uuid())
   orderId      String        @unique
-  resellerId   String
+  resellerId   String?
+  customerId   String?
   invoiceNo    String        @unique
+  fortnoxId    String?
   status       InvoiceStatus @default(NOT_READY)
   amountExVat  Float
   vatAmount    Float
@@ -389,7 +453,22 @@ model Invoice {
   dueAt        DateTime?
   paidAt       DateTime?
   order        Order         @relation(fields: [orderId], references: [id])
-  reseller     Reseller      @relation(fields: [resellerId], references: [id])
+  reseller     Reseller?     @relation(fields: [resellerId], references: [id])
+  customer     Customer?     @relation(fields: [customerId], references: [id])
+}
+
+model RepeatOpportunity {
+  id             String           @id @default(uuid())
+  sourceOrderId  String
+  customerId     String
+  status         RepeatLeadStatus @default(UPCOMING)
+  expectedAt     DateTime
+  activateAt     DateTime
+  snoozedUntil   DateTime?
+  convertedOrderId String?
+  note           String?
+  sourceOrder    Order            @relation(fields: [sourceOrderId], references: [id])
+  customer       Customer         @relation(fields: [customerId], references: [id])
 }
 
 model StatusEvent {
@@ -419,8 +498,8 @@ model Notification {
 }
 
 model PageCopy {
-  id      String @id @default(uuid())
-  slug    String @unique
-  title   String
-  body    String
+  id    String @id @default(uuid())
+  slug  String @unique
+  title String
+  body  String
 }

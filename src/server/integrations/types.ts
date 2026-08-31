@@ -36,6 +36,7 @@ export interface EmailService {
   sendOrderConfirmation(orderId: string): Promise<{ id: string }>;
   sendArtworkApproval(orderId: string): Promise<{ id: string }>;
   sendDeliveryNotice(orderId: string): Promise<{ id: string }>;
+  sendRepeatReminder(orderId: string): Promise<{ id: string }>;
 }
 
 export interface DesignProposal {

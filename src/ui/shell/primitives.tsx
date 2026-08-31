@@ -37,6 +37,33 @@ export function KpiCard({ label, value, href }: { label: string; value: number |
   return href ? <Link href={href}>{inner}</Link> : inner;
 }
 
+const ACTION_TONE = {
+  green: "bg-[var(--av-status-done-bg)] text-[var(--av-status-done-fg)]",
+  yellow: "bg-[var(--av-status-next-bg)] text-[var(--av-status-next-fg)]",
+  red: "bg-[var(--av-status-blocked-bg)] text-[var(--av-status-blocked-fg)]",
+  grey: "bg-[var(--av-status-idle-bg)] text-[var(--av-status-idle-fg)]",
+} as const;
+
+export function ActionCard({
+  href,
+  label,
+  value,
+  tone,
+}: {
+  href: string;
+  label: string;
+  value: number | string;
+  tone: keyof typeof ACTION_TONE;
+}) {
+  return (
+    <Link href={href} className={`block rounded-[22px] p-5 shadow-[0_8px_30px_rgba(15,23,42,.04)] transition hover:brightness-[0.98] ${ACTION_TONE[tone]}`}>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] opacity-80">{label}</p>
+      <p className="mt-2 text-[28px] font-semibold tabular-nums tracking-tight">{value}</p>
+      <p className="mt-3 text-[13px] font-medium">Öppna →</p>
+    </Link>
+  );
+}
+
 export function EmptyState({ title, body }: { title: string; body: string }) {
   return (
     <div className="rounded-[22px] border border-dashed border-black/10 bg-white px-8 py-14 text-center">

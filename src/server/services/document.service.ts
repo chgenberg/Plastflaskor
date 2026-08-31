@@ -57,6 +57,7 @@ type SessionLike = {
   role: string;
   resellerId?: string | null;
   factoryId?: string | null;
+  customerId?: string | null;
 };
 
 export async function getAuthorizedDocument(id: string, user: SessionLike) {
@@ -65,6 +66,10 @@ export async function getAuthorizedDocument(id: string, user: SessionLike) {
     include: { order: { include: { customer: true, reseller: { include: { company: true } }, invoice: true } } },
   });
   if (!doc) return null;
+  if (user.role === "CUSTOMER") {
+    if (!user.customerId || doc.order?.customerId !== user.customerId) return null;
+    return doc;
+  }
   if (user.role === "RESELLER") {
     if (!user.resellerId || doc.order?.resellerId !== user.resellerId) return null;
     return doc;
@@ -84,6 +89,12 @@ export async function getAuthorizedArtworkFile(id: string, user: SessionLike) {
     include: { design: { include: { order: true } } },
   });
   if (!file) return null;
+  if (user.role === "CUSTOMER") {
+    const ownUser = file.design.userId === user.id;
+    const ownOrder = Boolean(user.customerId && file.design.order?.customerId === user.customerId);
+    if (!ownUser && !ownOrder) return null;
+    return file;
+  }
   if (user.role === "RESELLER") {
     const ownUser = file.design.userId === user.id;
     const ownOrder = Boolean(user.resellerId && file.design.order?.resellerId === user.resellerId);
@@ -91,8 +102,12 @@ export async function getAuthorizedArtworkFile(id: string, user: SessionLike) {
     return file;
   }
   if (user.role === "FACTORY") {
-    if (user.factoryId && file.design.order && file.design.order.factoryId !== user.factoryId) return null;
     if (!file.design.orderId) return null;
+    if (user.factoryId && file.design.order && file.design.order.factoryId !== user.factoryId) return null;
+    const final = await prisma.artworkVersion.findFirst({
+      where: { orderId: file.design.orderId, storageKey: file.storageKey, isFinal: true },
+    });
+    if (!final) return null;
     return file;
   }
   if (user.role === "AQUA_STAFF" || user.role === "AQUA_ADMIN") return file;
@@ -107,7 +122,7 @@ export function documentPdf(doc: {
   order?: {
     orderNo: string;
     customer?: { name: string; email?: string | null };
-    reseller?: { company?: { name: string } };
+    reseller?: { company?: { name: string } } | null;
     invoice?: {
       invoiceNo: string;
       status: string;
@@ -149,6 +164,16 @@ export function artworkFilePdf(file: { fileName: string; kind: string; storageKe
 }
 
 export async function listDesignsForUser(user: SessionLike) {
+  if (user.role === "CUSTOMER") {
+    return prisma.design.findMany({
+      where: {
+        OR: [{ userId: user.id }, ...(user.customerId ? [{ order: { customerId: user.customerId } }] : [])],
+      },
+      include: { files: true, order: true },
+      orderBy: { createdAt: "desc" },
+      take: 40,
+    });
+  }
   if (user.role === "RESELLER") {
     return prisma.design.findMany({
       where: {

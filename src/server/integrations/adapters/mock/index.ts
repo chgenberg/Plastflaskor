@@ -20,15 +20,25 @@ export function createMockIntegrations(): IntegrationRegistry {
           include: { items: true, reseller: true },
         });
         if (!order) throw new Error("Order saknas");
-        const amountExVat = order.items.reduce((s, i) => s + i.unitPriceExVat * i.qty, 0);
+        let amountExVat = order.items.reduce((s, i) => s + i.unitPriceExVat * i.qty, 0);
+        try {
+          if (order.priceSnapshotJson) {
+            amountExVat = (JSON.parse(order.priceSnapshotJson) as { amountExVat: number }).amountExVat;
+          }
+        } catch {
+          /* keep line total */
+        }
         const vatAmount = Math.round(amountExVat * 0.25 * 100) / 100;
         const invoiceNo = String(10400 + Math.floor(Math.random() * 80));
+        const fortnoxId = `FX-${invoiceNo}`;
         await prisma.invoice.upsert({
           where: { orderId },
           create: {
             orderId,
             resellerId: order.resellerId,
+            customerId: order.customerId,
             invoiceNo,
+            fortnoxId,
             status: "ISSUED",
             amountExVat,
             vatAmount,
@@ -36,7 +46,7 @@ export function createMockIntegrations(): IntegrationRegistry {
             issuedAt: new Date(),
             dueAt: new Date(Date.now() + 30 * 86400000),
           },
-          update: { status: "ISSUED", issuedAt: new Date(), invoiceNo },
+          update: { status: "ISSUED", issuedAt: new Date(), invoiceNo, fortnoxId },
         });
         await prisma.order.update({ where: { id: orderId }, data: { currentStatus: "INVOICED" } });
         await prisma.statusEvent.create({
@@ -87,13 +97,12 @@ export function createMockIntegrations(): IntegrationRegistry {
             status: "CREATED",
           },
         });
-        await prisma.order.update({ where: { id: input.orderId }, data: { currentStatus: "WAYBILL_CREATED" } });
         await prisma.statusEvent.create({
           data: {
             entityType: "ORDER",
             entityId: input.orderId,
-            toStatus: "WAYBILL_CREATED",
-            actorRole: "FACTORY",
+            toStatus: "WAYBILL_READY",
+            actorRole: "AQUA_STAFF",
             source: "shipment",
           },
         });
@@ -107,7 +116,7 @@ export function createMockIntegrations(): IntegrationRegistry {
             storageKey: `waybills/${trackingNo}.pdf`,
           },
         });
-        await notifyOrderChange(input.orderId, "WAYBILL_CREATED");
+        await notifyOrderChange(input.orderId, "READY_TO_SHIP");
         return {
           shipmentId: shipment.id,
           trackingNo,
@@ -128,23 +137,6 @@ export function createMockIntegrations(): IntegrationRegistry {
     label: {
       async orderLabels(orderId) {
         await delay();
-        const existing = await prisma.label.findUnique({ where: { orderId } });
-        if (existing) {
-          await prisma.label.update({
-            where: { orderId },
-            data: { status: "ORDERED", orderedAt: new Date() },
-          });
-        } else {
-          const order = await prisma.order.findUnique({ where: { id: orderId }, include: { items: true } });
-          await prisma.label.create({
-            data: { orderId, qty: order?.items[0]?.qty ?? 1, status: "ORDERED", orderedAt: new Date() },
-          });
-        }
-        await prisma.order.update({ where: { id: orderId }, data: { currentStatus: "LABELS_ORDERED" } });
-        await prisma.statusEvent.create({
-          data: { entityType: "ORDER", entityId: orderId, toStatus: "LABELS_ORDERED", actorRole: "AQUA_STAFF", source: "label" },
-        });
-        await notifyOrderChange(orderId, "LABELS_ORDERED");
         return { labelOrderId: orderId, status: "ORDERED" };
       },
       async getPrintStatus() {
@@ -170,6 +162,26 @@ export function createMockIntegrations(): IntegrationRegistry {
     email: {
       async sendOrderConfirmation(orderId) {
         await delay(200);
+        const order = await prisma.order.findUnique({
+          where: { id: orderId },
+          include: { customer: { include: { users: true } }, reseller: { include: { users: true } } },
+        });
+        const recipients = [
+          ...(order?.customer.users ?? []),
+          ...(order?.reseller?.users ?? []),
+        ];
+        if (recipients.length && order) {
+          await prisma.notification.createMany({
+            data: recipients.map((u) => ({
+              userId: u.id,
+              type: "email",
+              title: "Order mottagen",
+              body: `${order.orderNo} är mottagen. Slutlig OB med korrektur skickas inom 24 timmar.`,
+              entityType: "ORDER",
+              entityId: orderId,
+            })),
+          });
+        }
         return { id: `mail-confirm-${orderId}` };
       },
       async sendArtworkApproval(orderId) {
@@ -177,6 +189,9 @@ export function createMockIntegrations(): IntegrationRegistry {
       },
       async sendDeliveryNotice(orderId) {
         return { id: `mail-ship-${orderId}` };
+      },
+      async sendRepeatReminder(orderId) {
+        return { id: `mail-repeat-${orderId}` };
       },
     },
     designAI: {

@@ -3,6 +3,12 @@ import bcrypt from "bcryptjs";
 import { prisma } from "../db";
 import { resolveUnitPrice } from "./catalog.service";
 import { renderSimplePdf } from "../pdf/simplePdf";
+import { buildPriceSnapshot } from "@/domain/extras";
+import { emptyCupDocument, parseCupDocument } from "@/domain/cupDocument";
+import { visualSpecFromOptions } from "@/domain/visualSpec";
+import { parseCupOptions } from "@/domain/cupCatalog";
+import { imageForProduct } from "@/domain/productImages";
+import { addLeadTimeDays } from "@/domain/orderBrief";
 
 export class CheckoutError extends Error {
   constructor(
@@ -31,12 +37,26 @@ export function assertCheckoutToken(orderNo: string, token: string) {
   }
 }
 
-export async function previewCheckout(productId: string, qty: number, resellerId?: string | null) {
+export const CHECKOUT_PAPER_CUP_ONLY = "Endast pappersmuggar kan beställas i kassan.";
+
+export function assertCheckoutPaperCup(category: string) {
+  if (category !== "PAPER_CUP") {
+    throw new CheckoutError(CHECKOUT_PAPER_CUP_ONLY);
+  }
+}
+
+export async function previewCheckout(
+  productId: string,
+  qty: number,
+  resellerId?: string | null,
+  customerId?: string | null,
+) {
   const product = await prisma.product.findUnique({
     where: { id: productId },
-    include: { variants: true },
+    include: { variants: true, printRequirements: { orderBy: { sortOrder: "asc" } } },
   });
   if (!product?.isPublic) throw new CheckoutError("Produkten saknas.");
+  assertCheckoutPaperCup(product.category);
   const variant = product.variants[0];
   if (!variant) throw new CheckoutError("Produktvariant saknas.");
   const safeQty = Math.max(product.moq, Math.floor(qty) || product.moq);
@@ -48,16 +68,48 @@ export async function previewCheckout(productId: string, qty: number, resellerId
       include: { priceList: { include: { items: true } } },
     });
     items = reseller?.priceList.items ?? [];
-  }
-  if (!items.length) {
-    const standard = await prisma.priceList.findUnique({
-      where: { code: "STANDARD" },
-      include: { items: true },
+  } else if (customerId) {
+    const customer = await prisma.customer.findUnique({
+      where: { id: customerId },
+      include: { priceList: { include: { items: true } } },
     });
-    items = standard?.items ?? [];
+    items = customer?.priceList?.items ?? [];
+    if (!items.length) {
+      const standard = await prisma.priceList.findUnique({
+        where: { code: "STANDARD" },
+        include: { items: true },
+      });
+      items = standard?.items ?? [];
+    }
+  }
+  if (!resellerId && !customerId) {
+    return {
+      product,
+      variant,
+      qty: safeQty,
+      unitPriceExVat: null as number | null,
+      amountExVat: null as number | null,
+      vatAmount: null as number | null,
+      amountIncVat: null as number | null,
+      listName: "Logga in för pris",
+      pricesHidden: true,
+    };
   }
   const price = resolveUnitPrice(items, variant.id, safeQty);
-  const unit = price?.unitPriceExVat ?? 18;
+  const unit = price?.unitPriceExVat ?? null;
+  if (unit == null) {
+    return {
+      product,
+      variant,
+      qty: safeQty,
+      unitPriceExVat: null,
+      amountExVat: null,
+      vatAmount: null,
+      amountIncVat: null,
+      listName: "Kontakta oss för pris",
+      pricesHidden: true,
+    };
+  }
   const amountExVat = Math.round(unit * safeQty * 100) / 100;
   const vatAmount = Math.round(amountExVat * 0.25 * 100) / 100;
   return {
@@ -68,7 +120,8 @@ export async function previewCheckout(productId: string, qty: number, resellerId
     amountExVat,
     vatAmount,
     amountIncVat: Math.round((amountExVat + vatAmount) * 100) / 100,
-    listName: resellerId ? "Din lista" : "Standard (demo)",
+    listName: "Din lista",
+    pricesHidden: false,
   };
 }
 
@@ -96,7 +149,7 @@ export async function completeCheckout(input: {
   cardNumber: string;
   cardExp: string;
   cardCvc: string;
-  existing?: { id: string; role: string; resellerId?: string | null; name?: string | null };
+  existing?: { id: string; role: string; resellerId?: string | null; customerId?: string | null; name?: string | null };
 }) {
   const company = input.company.trim();
   const email = input.email.toLowerCase().trim();
@@ -120,13 +173,63 @@ export async function completeCheckout(input: {
     }
   }
 
-  const preview = await previewCheckout(input.productId, input.qty, input.existing?.resellerId);
-  if (input.designId) {
-    const design = await prisma.design.findUnique({ where: { id: input.designId } });
-    if (!design || design.productId !== input.productId) {
-      throw new CheckoutError("Designen hör inte till den valda produkten.");
-    }
+  if (!input.existing?.resellerId && input.existing?.role !== "CUSTOMER") {
+    throw new CheckoutError("Logga in för att se pris och slutföra order.", 401);
   }
+  const preview = await previewCheckout(
+    input.productId,
+    input.qty,
+    input.existing?.resellerId,
+    input.existing?.customerId,
+  );
+  if (
+    preview.pricesHidden ||
+    preview.unitPriceExVat == null ||
+    preview.amountExVat == null ||
+    preview.vatAmount == null ||
+    preview.amountIncVat == null
+  ) {
+    throw new CheckoutError("Logga in för att se pris och slutföra order.", 401);
+  }
+  const unitPriceExVat = preview.unitPriceExVat;
+  const amountIncVat = preview.amountIncVat;
+  const design = input.designId
+    ? await prisma.design.findUnique({ where: { id: input.designId } })
+    : null;
+  if (input.designId && (!design || design.productId !== input.productId)) {
+    throw new CheckoutError("Designen hör inte till den valda produkten.");
+  }
+
+  const cupOpts = parseCupOptions(preview.variant.optionsJson);
+  const fromDesign = parseCupDocument(design?.cupDocumentJson);
+  const cupDoc = fromDesign
+    ? { ...fromDesign, productSlug: preview.product.slug, quantity: preview.qty }
+    : emptyCupDocument({
+        productSlug: preview.product.slug,
+        quantity: preview.qty,
+        variantSku: preview.variant.sku,
+        wall: cupOpts.wall,
+        eco: cupOpts.eco ?? false,
+        finish: cupOpts.finish ?? "matte",
+        lid: cupOpts.lid ?? "none",
+        requirements: preview.product.printRequirements.map((r) => ({
+          code: r.code,
+          label: r.label,
+          placed: false,
+          required: r.required,
+        })),
+      });
+  const visual = visualSpecFromOptions({
+    productName: preview.product.name,
+    qty: preview.qty,
+    volumeMl: preview.variant.volumeMl,
+    optionsJson: JSON.stringify({ ...cupOpts, ...cupDoc.options }),
+    imageSrc: imageForProduct(preview.product.slug),
+  });
+  const priceSnapshot = buildPriceSnapshot({
+    lines: [{ name: preview.product.name, qty: preview.qty, unitPriceExVat }],
+    extras: [],
+  });
 
   const result = await prisma.$transaction(async (tx) => {
     let resellerId = input.existing?.resellerId ?? null;
@@ -185,21 +288,36 @@ export async function completeCheckout(input: {
     });
     const count = await tx.order.count();
     const orderNo = `AV-${10500 + count}`;
+    const factory = await tx.factory.findFirst({ where: { isActive: true } });
+    const actorRole =
+      createdAccount || input.existing?.role === "RESELLER"
+        ? "RESELLER"
+        : input.existing?.role === "CUSTOMER"
+          ? "CUSTOMER"
+          : "PUBLIC";
     const order = await tx.order.create({
       data: {
         orderNo,
         resellerId,
         customerId: customer.id,
-        currentStatus: input.designId ? "ARTWORK_UPLOADED" : "ORDER_RECEIVED",
+        currentStatus: "SUBMITTED",
+        buyerType: input.existing?.role === "CUSTOMER" ? "CUSTOMER" : "RESELLER",
         shippingAddressId: addr.id,
+        factoryId: factory?.id,
         source: createdAccount || input.existing?.resellerId ? "web_checkout" : "public_checkout",
-        notes: "Testdebitering Stripe — ingen affär.",
+        notes: "Testdebitering validerad — order mottagen, orderbekräftelse med korrektur inom 24h.",
+        preliminaryDate: addLeadTimeDays(preview.product.leadTimeDays),
+        visualSpecJson: JSON.stringify(visual),
+        cupDocumentJson: JSON.stringify(cupDoc),
+        priceSnapshotJson: JSON.stringify(priceSnapshot),
         items: {
           create: {
             variantId: preview.variant.id,
             qty: preview.qty,
-            unitPriceExVat: preview.unitPriceExVat,
+            unitPriceExVat,
             designId: input.designId,
+            visualSpecJson: JSON.stringify(visual),
+            cupDocumentJson: JSON.stringify(cupDoc),
           },
         },
       },
@@ -211,42 +329,26 @@ export async function completeCheckout(input: {
       });
     }
 
-    const invoiceNo = `DEMO-${orderNo}`;
-    await tx.invoice.create({
-      data: {
-        orderId: order.id,
-        resellerId,
-        invoiceNo,
-        status: "PAID",
-        amountExVat: preview.amountExVat,
-        vatAmount: preview.vatAmount,
-        amountIncVat: preview.amountIncVat,
-        issuedAt: new Date(),
-        dueAt: new Date(),
-        paidAt: new Date(),
-      },
+    if (factory) {
+      await tx.productionJob.create({
+        data: { orderId: order.id, factoryId: factory.id, status: "NOT_PLANNED" },
+      });
+    }
+
+    await tx.order.update({
+      where: { id: order.id },
+      data: { currentStatus: "AQUA_REVIEW" },
     });
 
-    await tx.label.create({ data: { orderId: order.id, qty: preview.qty, status: "NOT_ORDERED" } });
-    await tx.document.createMany({
-      data: [
-        {
-          orderId: order.id,
-          entityType: "ORDER",
-          entityId: order.id,
-          kind: "ORDER",
-          title: `Orderbekräftelse ${orderNo}`,
-          storageKey: `orders/${orderNo}.pdf`,
-        },
-        {
-          orderId: order.id,
-          entityType: "ORDER",
-          entityId: order.id,
-          kind: "FINANCE",
-          title: `Faktura ${invoiceNo}`,
-          storageKey: `invoices/${invoiceNo}.pdf`,
-        },
-      ],
+    await tx.document.create({
+      data: {
+        orderId: order.id,
+        entityType: "ORDER",
+        entityId: order.id,
+        kind: "ORDER",
+        title: `Orderbekräftelse ${orderNo}`,
+        storageKey: `orders/${orderNo}.pdf`,
+      },
     });
 
     await tx.statusEvent.createMany({
@@ -254,31 +356,23 @@ export async function completeCheckout(input: {
         {
           entityType: "ORDER",
           entityId: order.id,
-          toStatus: order.currentStatus,
-          actorRole: createdAccount || input.existing?.role === "RESELLER" ? "RESELLER" : "PUBLIC",
+          toStatus: "SUBMITTED",
+          actorRole,
           source: "checkout",
           payload: JSON.stringify({ email, demo: true }),
         },
         {
           entityType: "ORDER",
           entityId: order.id,
-          fromStatus: order.currentStatus,
-          toStatus: "INVOICED",
-          actorRole: "PUBLIC",
-          source: "stripe-test",
-        },
-        {
-          entityType: "ORDER",
-          entityId: order.id,
-          fromStatus: "INVOICED",
-          toStatus: "PAID",
-          actorRole: "PUBLIC",
-          source: "stripe-test",
+          fromStatus: "SUBMITTED",
+          toStatus: "AQUA_REVIEW",
+          actorRole,
+          source: "checkout",
         },
       ],
     });
 
-    return { orderNo, invoiceNo, createdAccount, resellerId };
+    return { orderNo, createdAccount, resellerId };
   });
 
   return {
@@ -286,7 +380,7 @@ export async function completeCheckout(input: {
     token: checkoutToken(result.orderNo),
     email,
     password: wantAccount ? input.password : undefined,
-    amountIncVat: preview.amountIncVat,
+    amountIncVat,
     productName: preview.product.name,
     qty: preview.qty,
   };

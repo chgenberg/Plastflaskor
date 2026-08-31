@@ -1,7 +1,7 @@
 import type { Role } from "@prisma/client";
 
 export function canSeePrices(role?: Role | string | null) {
-  return role === "RESELLER" || role === "AQUA_STAFF" || role === "AQUA_ADMIN";
+  return role === "RESELLER" || role === "CUSTOMER" || role === "AQUA_STAFF" || role === "AQUA_ADMIN";
 }
 
 export function canSeeFinance(role?: Role | string | null) {

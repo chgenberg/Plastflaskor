@@ -29,6 +29,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           role: user.role,
           resellerId: user.resellerId,
           factoryId: user.factoryId,
+          customerId: user.customerId,
         };
       },
     }),
@@ -39,6 +40,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.role = (user as { role?: string }).role;
         token.resellerId = (user as { resellerId?: string | null }).resellerId;
         token.factoryId = (user as { factoryId?: string | null }).factoryId;
+        token.customerId = (user as { customerId?: string | null }).customerId;
         token.sub = user.id;
       }
       return token;
@@ -49,6 +51,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.role = (token.role as string) ?? "PUBLIC";
         session.user.resellerId = (token.resellerId as string | null) ?? null;
         session.user.factoryId = (token.factoryId as string | null) ?? null;
+        session.user.customerId = (token.customerId as string | null) ?? null;
       }
       return session;
     },
@@ -64,6 +67,7 @@ declare module "next-auth" {
       role: string;
       resellerId?: string | null;
       factoryId?: string | null;
+      customerId?: string | null;
     };
   }
 }

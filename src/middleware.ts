@@ -15,6 +15,7 @@ export async function middleware(req: NextRequest) {
   };
 
   return (
+    needs("/konto", ["CUSTOMER", "AQUA_STAFF", "AQUA_ADMIN"]) ||
     needs("/partner", ["RESELLER", "AQUA_STAFF", "AQUA_ADMIN"]) ||
     needs("/operations/ledning", ["AQUA_ADMIN", "AQUA_STAFF"]) ||
     needs("/operations", ["AQUA_STAFF", "AQUA_ADMIN"]) ||
@@ -24,5 +25,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/partner/:path*", "/operations/:path*", "/factory/:path*"],
+  matcher: ["/konto", "/konto/:path*", "/partner", "/partner/:path*", "/operations", "/operations/:path*", "/factory", "/factory/:path*"],
 };

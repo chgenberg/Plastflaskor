@@ -1,11 +1,19 @@
-import Link from "next/link";
+import { ORDER_STEP_LABELS, type OrderStatusCode } from "@/domain/enums";
+import { specFromOrderItem } from "@/domain/visualSpec";
+import { imageForProduct } from "@/domain/productImages";
 import { getSessionUser } from "@/server/rbac";
 import { listAllOrders } from "@/server/services/order.service";
+import { getFortnoxConnection } from "@/server/integrations/status";
 import { markInvoicePaid } from "@/actions";
-import { Button, EmptyState, KpiCard, PageHeader, Panel } from "@/ui/shell/primitives";
+import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
+import { Button, EmptyState, KpiCard, LinkButton, PageHeader, StatusChip } from "@/ui/shell/primitives";
+import { FortnoxBadge } from "@/ui/shell/FortnoxBadge";
+
+const CARD = "rounded-[22px] bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,.04)]";
 
 export default async function FinancePage() {
   const user = await getSessionUser();
+  const fortnox = getFortnoxConnection();
   const orders = await listAllOrders();
   const ready = orders.filter((o) => o.currentStatus === "READY_TO_INVOICE" || o.currentStatus === "DELIVERED");
   const invoiced = orders.filter((o) => o.invoice && o.invoice.status === "ISSUED");
@@ -18,7 +26,11 @@ export default async function FinancePage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader title="Ekonomi" subtitle="Redo att fakturera, utfärdade och väntar betalning." />
+      <PageHeader
+        title="Fakturering"
+        subtitle="Redo att fakturera, utfärdade och väntar betalning."
+        action={<FortnoxBadge label={fortnox.label} />}
+      />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard label="Redo att faktureras" value={ready.length} />
         <KpiCard label="Fakturerade" value={invoiced.length} />
@@ -28,57 +40,102 @@ export default async function FinancePage() {
       {ready.length === 0 ? (
         <EmptyState title="Inget att fakturera" body="När en order är levererad eller redo för faktura syns den här." />
       ) : (
-        <Panel padded={false} title="Redo att faktureras">
-          <ul className="divide-y divide-black/5">
-            {ready.map((o) => {
-              const value = o.items.reduce((s, i) => s + i.unitPriceExVat * i.qty, 0);
-              return (
-                <li key={o.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm">
+        <section className="space-y-4">
+          <h2 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">Redo att faktureras</h2>
+          {ready.map((o) => {
+            const value = o.items.reduce((s, i) => s + i.unitPriceExVat * i.qty, 0);
+            const item = o.items[0];
+            const spec = specFromOrderItem({
+              visualSpecJson: o.visualSpecJson,
+              item,
+              imageSrc: item ? imageForProduct(item.variant.product.slug) : null,
+            });
+            return (
+              <article key={o.id} className={CARD}>
+                <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="font-mono">{o.orderNo}</p>
-                    <p>{o.reseller.company.name}</p>
-                    <p className="text-[#6b7280]">
-                      {o.items[0]?.qty} × {o.items[0]?.variant.product.name} · {value.toLocaleString("sv-SE")} kr
-                    </p>
+                    <p className="font-mono text-sm font-medium">{o.orderNo}</p>
+                    <p className="mt-0.5 text-sm text-[#6b7280]">{o.reseller?.company.name ?? o.customer.name}</p>
                   </div>
-                  <div className="flex gap-3">
-                    <Link href={`/operations/ordrar/${o.orderNo}`} className="text-[#6b7280]">
-                      Granska
-                    </Link>
-                    <Link href={`/operations/ekonomi/${o.orderNo}/fakturera`} className="font-medium text-[#3B5BAA]">
-                      Slutför & fakturera
-                    </Link>
+                  <StatusChip
+                    status={o.currentStatus}
+                    label={ORDER_STEP_LABELS[o.currentStatus as OrderStatusCode]}
+                    requestedDate={o.requestedDate}
+                  />
+                </div>
+                {spec ? (
+                  <div className="mt-4">
+                    <VisualSpecCard spec={spec} compact />
                   </div>
-                </li>
-              );
-            })}
-          </ul>
-        </Panel>
+                ) : (
+                  <p className="mt-4 text-sm text-[#6b7280]">
+                    {item?.qty} × {item?.variant.product.name}
+                  </p>
+                )}
+                <p className="mt-4 text-sm tabular-nums text-[#6b7280]">{value.toLocaleString("sv-SE")} kr</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <LinkButton href={`/operations/ordrar/${o.orderNo}`} variant="secondary">
+                    Öppna
+                  </LinkButton>
+                  <LinkButton href={`/operations/ekonomi/${o.orderNo}/fakturera`}>Fakturera</LinkButton>
+                </div>
+              </article>
+            );
+          })}
+        </section>
       )}
       {waiting.length === 0 ? null : (
-        <Panel padded={false} title="Väntar betalning">
-          <ul className="divide-y divide-black/5">
-            {waiting.map((o) => (
-              <li key={o.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm">
-                <div>
-                  <p className="font-mono">{o.invoice?.invoiceNo}</p>
-                  <p>{o.reseller.company.name}</p>
-                  <p className="text-[#6b7280]">{o.orderNo}</p>
+        <section className="space-y-4">
+          <h2 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">Väntar betalning</h2>
+          {waiting.map((o) => {
+            const value = o.items.reduce((s, i) => s + i.unitPriceExVat * i.qty, 0);
+            const item = o.items[0];
+            const spec = specFromOrderItem({
+              visualSpecJson: o.visualSpecJson,
+              item,
+              imageSrc: item ? imageForProduct(item.variant.product.slug) : null,
+            });
+            return (
+              <article key={o.id} className={CARD}>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="font-mono text-sm font-medium">{o.invoice?.invoiceNo ?? o.orderNo}</p>
+                    <p className="mt-0.5 text-sm text-[#6b7280]">{o.reseller?.company.name ?? o.customer.name}</p>
+                    <p className="mt-0.5 font-mono text-sm text-[#6b7280]">{o.orderNo}</p>
+                  </div>
+                  <StatusChip
+                    status={o.currentStatus}
+                    label={ORDER_STEP_LABELS[o.currentStatus as OrderStatusCode]}
+                    requestedDate={o.requestedDate}
+                  />
                 </div>
-                {isAdmin && o.invoice ? (
-                  <form action={markInvoicePaid}>
-                    <input type="hidden" name="invoiceNo" value={o.invoice.invoiceNo} />
-                    <Button type="submit" variant="secondary">
-                      Markera betald
-                    </Button>
-                  </form>
-                ) : (
-                  <span className="text-[#6b7280]">Väntar</span>
-                )}
-              </li>
-            ))}
-          </ul>
-        </Panel>
+                {spec ? (
+                  <div className="mt-4">
+                    <VisualSpecCard spec={spec} dense />
+                  </div>
+                ) : null}
+                <p className="mt-4 text-sm tabular-nums text-[#6b7280]">{value.toLocaleString("sv-SE")} kr</p>
+                {o.invoice ? (
+                  <div className="mt-2">
+                    <FortnoxBadge label={fortnox.label} invoiceNo={o.invoice.invoiceNo} fortnoxId={o.invoice.fortnoxId} />
+                  </div>
+                ) : null}
+                <div className="mt-4">
+                  {isAdmin && o.invoice ? (
+                    <form action={markInvoicePaid}>
+                      <input type="hidden" name="invoiceNo" value={o.invoice.invoiceNo} />
+                      <Button type="submit" variant="secondary">
+                        Markera betald
+                      </Button>
+                    </form>
+                  ) : (
+                    <span className="text-sm text-[#6b7280]">Väntar</span>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </section>
       )}
     </div>
   );

@@ -1,9 +1,8 @@
 import { notFound } from "next/navigation";
 import { requireRole } from "@/server/rbac";
 import { getJob } from "@/server/services/production.service";
-import { createWaybillAction } from "@/actions";
 import { PrintButton } from "@/ui/shell/PrintButton";
-import { Button, PageHeader, Panel } from "@/ui/shell/primitives";
+import { EmptyState, FileLink, PageHeader, Panel } from "@/ui/shell/primitives";
 
 export default async function WaybillPage({
   params,
@@ -19,78 +18,77 @@ export default async function WaybillPage({
   if (!job) notFound();
   const addr = job.order.shippingAddress;
   const item = job.order.items[0];
-  const ship = job.order.shipments.find((s) => s.trackingNo === tracking);
+  const ship =
+    job.order.shipments.find((s) => tracking && s.trackingNo === tracking) ??
+    job.order.shipments.find((s) => s.type === "GOODS_TO_CUSTOMER") ??
+    job.order.shipments[0];
+  const waybillDocs = job.order.documents.filter((d) => d.kind === "WAYBILL");
+
+  if (!ship) {
+    return (
+      <div className="mx-auto max-w-xl space-y-8">
+        <PageHeader title="Fraktsedel" subtitle={job.order.orderNo} />
+        <EmptyState
+          title="Ingen fraktsedel ännu"
+          body="Fraktsedel skapas av AquaVisibility. När den finns kan ni ladda ner den och markera jobbet som skickat."
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-xl space-y-8">
-      {!tracking ? (
-        <>
-          <PageHeader title="Fraktsedel" subtitle={job.order.orderNo} />
-          <Panel>
-            <form action={createWaybillAction} className="space-y-4">
-              <input type="hidden" name="orderId" value={job.orderId} />
-              <input type="hidden" name="jobId" value={job.id} />
-              <label className="block text-sm">
-                Kolli
-                <input name="packages" defaultValue={4} className="mt-1 h-12 w-full rounded-xl border border-black/10 px-3" />
-              </label>
-              <label className="block text-sm">
-                Vikt kg
-                <input name="weightKg" defaultValue={80} className="mt-1 h-12 w-full rounded-xl border border-black/10 px-3" />
-              </label>
-              <label className="block text-sm">
-                Transportör
-                <select name="carrier" className="mt-1 h-12 w-full rounded-xl border border-black/10 px-3">
-                  <option>PostNord</option>
-                  <option>DHL</option>
-                  <option>Schenker</option>
-                </select>
-              </label>
-              <Button type="submit" size="lg" className="w-full">
-                Skapa sändning
-              </Button>
-            </form>
-          </Panel>
-        </>
-      ) : (
-        <Panel>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Fraktsedel</p>
-          <p className="mt-2 font-mono text-lg">{tracking}</p>
-          <dl className="mt-6 space-y-3 text-sm">
-            <div>
-              <dt className="text-[#6b7280]">Mottagare</dt>
-              <dd>{job.order.customer.name}</dd>
-            </div>
-            <div>
-              <dt className="text-[#6b7280]">Adress</dt>
-              <dd>
-                {addr.line1}, {addr.postalCode} {addr.city}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-[#6b7280]">Ordernummer</dt>
-              <dd className="font-mono">{job.order.orderNo}</dd>
-            </div>
-            <div>
-              <dt className="text-[#6b7280]">Antal</dt>
-              <dd>{item?.qty}</dd>
-            </div>
-            <div>
-              <dt className="text-[#6b7280]">Kolli</dt>
-              <dd>{ship?.packages ?? "–"}</dd>
-            </div>
-            <div>
-              <dt className="text-[#6b7280]">Vikt</dt>
-              <dd>{ship ? `${ship.weightKg} kg` : "–"}</dd>
-            </div>
-            <div>
-              <dt className="text-[#6b7280]">Transportör</dt>
-              <dd>{ship?.carrier ?? "–"}</dd>
-            </div>
-          </dl>
-          <PrintButton />
-        </Panel>
-      )}
+      <PageHeader title="Fraktsedel" subtitle={job.order.orderNo} />
+      <Panel>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Fraktsedel</p>
+        <p className="mt-2 font-mono text-lg">{ship.trackingNo ?? "–"}</p>
+        <dl className="mt-6 space-y-3 text-sm">
+          <div>
+            <dt className="text-[#6b7280]">Mottagare</dt>
+            <dd>{job.order.customer.name}</dd>
+          </div>
+          <div>
+            <dt className="text-[#6b7280]">Adress</dt>
+            <dd>
+              {addr.line1}, {addr.postalCode} {addr.city}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-[#6b7280]">Ordernummer</dt>
+            <dd className="font-mono">{job.order.orderNo}</dd>
+          </div>
+          <div>
+            <dt className="text-[#6b7280]">Antal</dt>
+            <dd>{item?.qty != null ? `${item.qty.toLocaleString("sv-SE")} st` : "–"}</dd>
+          </div>
+          <div>
+            <dt className="text-[#6b7280]">Kolli</dt>
+            <dd>{ship.packages ?? "–"}</dd>
+          </div>
+          <div>
+            <dt className="text-[#6b7280]">Vikt</dt>
+            <dd>{`${ship.weightKg} kg`}</dd>
+          </div>
+          <div>
+            <dt className="text-[#6b7280]">Transportör</dt>
+            <dd>{ship.carrier ?? "–"}</dd>
+          </div>
+          <div>
+            <dt className="text-[#6b7280]">Spårning</dt>
+            <dd className="font-mono">{ship.trackingNo ?? "–"}</dd>
+          </div>
+        </dl>
+        {waybillDocs.length > 0 ? (
+          <div className="mt-4 space-y-1.5">
+            {waybillDocs.map((d) => (
+              <p key={d.id} className="text-sm">
+                <FileLink href={`/api/documents/${d.id}`}>{d.title}</FileLink>
+              </p>
+            ))}
+          </div>
+        ) : null}
+        <PrintButton />
+      </Panel>
     </div>
   );
 }

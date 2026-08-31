@@ -57,7 +57,7 @@ export function RealityView({
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-white">
             <div className="h-full rounded-full bg-[#5B7FD4] transition-[width] duration-150 ease-out" style={{ width: `${pct}%` }} />
           </div>
-          <p className="mt-1.5 text-[12px] text-[#6b7280]">Din uppladdade etikett trycks på produkten. Det tar oftast 10–20 sekunder.</p>
+          <p className="mt-1.5 text-[12px] text-[#6b7280]">Din uppladdade tryckfilen trycks på muggen. Det tar oftast 10–20 sekunder.</p>
         </div>
       ) : null}
 
@@ -73,7 +73,7 @@ export function RealityView({
           <div className="flex aspect-[4/5] w-full flex-col items-center justify-center rounded-2xl bg-[#F4F5F7] px-6 text-center">
             <p className="text-[15px] font-semibold text-[#1d1d1f]">Se produkten i verkligheten</p>
             <p className="mt-2 text-[13px] leading-relaxed text-[#6b7280]">
-              Först etiketten med din logotyp. Sedan Generera — vi startar inte förrän du klickar.
+              Först tryckytan med din logotyp. Sedan Generera — vi startar inte förrän du klickar.
             </p>
           </div>
         )}
@@ -81,7 +81,7 @@ export function RealityView({
 
       <div className="flex flex-wrap items-center justify-between gap-2 px-4 pb-4">
         <button type="button" onClick={onBack} className="h-9 rounded-full px-3 text-[13px] text-[#6b7280] hover:bg-black/[0.04]">
-          ← Tillbaka till etikett
+          ← Tillbaka till tryckytan
         </button>
         <button
           type="button"

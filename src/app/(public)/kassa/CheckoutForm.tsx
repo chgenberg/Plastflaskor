@@ -7,12 +7,13 @@ type Preview = {
   productName: string;
   qty: number;
   moq: number;
-  unitPriceExVat: number;
-  amountExVat: number;
-  vatAmount: number;
-  amountIncVat: number;
+  unitPriceExVat: number | null;
+  amountExVat: number | null;
+  vatAmount: number | null;
+  amountIncVat: number | null;
   listName: string;
   designId?: string;
+  pricesHidden?: boolean;
 };
 
 export function CheckoutForm({
@@ -28,6 +29,8 @@ export function CheckoutForm({
   const [cardNumber, setCardNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const amount = preview.amountIncVat;
+  const payBlocked = !loggedIn || Boolean(preview.pricesHidden) || amount == null || amount === 0;
 
   function formatPan(value: string) {
     return value
@@ -38,6 +41,7 @@ export function CheckoutForm({
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (payBlocked) return;
     const form = new FormData(e.currentTarget);
     setLoading(true);
     setError(null);
@@ -192,10 +196,14 @@ export function CheckoutForm({
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={loading || payBlocked}
         className="h-[52px] w-full rounded-full bg-[#635BFF] text-sm font-semibold text-white disabled:opacity-60"
       >
-        {loading ? "Bekräftar testdebitering…" : `Betala ${preview.amountIncVat.toFixed(2)} kr med Stripe-test`}
+        {loading
+          ? "Bekräftar testdebitering…"
+          : payBlocked
+            ? "Logga in för pris"
+            : `Betala ${amount.toFixed(2)} kr med Stripe-test`}
       </button>
     </form>
   );

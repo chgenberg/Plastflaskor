@@ -5,7 +5,16 @@ export type StudioProduct = {
   moq: number;
   categorySlug: string;
   volumeMl?: number | null;
+  variantSku?: string;
+  wrap?: { widthMm: number; heightMm: number; bleedMm: number };
+  printRequirements?: { code: string; label: string; required: boolean }[];
 };
+
+export function wrapForVolume(volumeMl?: number | null) {
+  if (volumeMl && volumeMl <= 120) return { widthMm: 170, heightMm: 62, bleedMm: 3 };
+  if (volumeMl && volumeMl >= 350) return { widthMm: 260, heightMm: 110, bleedMm: 3 };
+  return { widthMm: 220, heightMm: 90, bleedMm: 3 };
+}
 
 export type LayerType = "artwork" | "logo" | "text" | "qr";
 
@@ -33,7 +42,7 @@ export function defaultLayers(): Layer[] {
     {
       id: "artwork",
       type: "artwork",
-      name: "Bakgrund",
+      name: "Tryckyta",
       x: 50,
       y: 50,
       scale: 1,
@@ -79,19 +88,9 @@ export function skuLabel(p: StudioProduct) {
       ? `${ml / 10} cl`
       : `${ml} ml`
     : "—";
-  const pack =
-    p.categorySlug === "pappersmuggar"
-      ? "Kartong"
-      : p.categorySlug === "energidryck"
-        ? "Aluminium"
-        : p.categorySlug === "kyl"
-          ? "Kyl"
-          : p.categorySlug === "sportflaskor"
-            ? "Sport PET"
-            : p.categorySlug === "lask-must"
-              ? "PET"
-              : "Klar PET";
-  return `${volume} // ${pack}`;
+  const wall = p.slug.includes("dv") ? "Dubbelvägg" : "Enkelvägg";
+  const eco = p.slug.includes("eco") ? " · ECO" : "";
+  return `${volume} · ${wall}${eco}`;
 }
 
 export function shapeFor(categorySlug: string): "bottle" | "can" | "cup" | "sport" | "cooler" {

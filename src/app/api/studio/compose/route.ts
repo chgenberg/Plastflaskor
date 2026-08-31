@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     if (err instanceof RealityPreviewError) {
       return Response.json({ error: err.message }, { status: err.status });
     }
-    const message = err instanceof Error ? err.message : "Kunde inte skapa etiketten.";
+    const message = err instanceof Error ? err.message : "Kunde inte skapa tryckytan.";
     return Response.json({ error: message }, { status: 502 });
   }
 }

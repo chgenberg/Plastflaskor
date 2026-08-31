@@ -1,7 +1,9 @@
 import { getSessionUser } from "@/server/rbac";
 import { getIntegrations } from "@/server/integrations/composition";
 import { prisma } from "@/server/db";
-import { EmptyState, PageHeader, Panel } from "@/ui/shell/primitives";
+import { EmptyState, PageHeader } from "@/ui/shell/primitives";
+
+const CARD = "rounded-[22px] bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,.04)]";
 
 export default async function NotificationsPage() {
   const user = await getSessionUser();
@@ -15,16 +17,14 @@ export default async function NotificationsPage() {
       {items.length === 0 ? (
         <EmptyState title="Inga notiser" body="När något behöver din uppmärksamhet syns det här." />
       ) : (
-        <Panel padded={false}>
-          <ul className="divide-y divide-black/5">
-            {items.map((n) => (
-              <li key={n.id} className="px-5 py-3">
-                <p className="font-medium">{n.title}</p>
-                <p className="mt-1 text-sm text-[#6b7280]">{n.body}</p>
-              </li>
-            ))}
-          </ul>
-        </Panel>
+        <div className="space-y-4">
+          {items.map((n) => (
+            <article key={n.id} className={CARD}>
+              <p className="font-medium">{n.title}</p>
+              <p className="mt-1 text-sm text-[#6b7280]">{n.body}</p>
+            </article>
+          ))}
+        </div>
       )}
     </div>
   );

@@ -4,7 +4,7 @@ import { requireRole } from "@/server/rbac";
 import { getPricesForReseller, getProductBySlug, resolveUnitPrice } from "@/server/services/catalog.service";
 import { DataRow, DataTable, EmptyState, LinkButton, PageHeader, Panel } from "@/ui/shell/primitives";
 
-const QTYS = [270, 540, 1080, 2500, 5000];
+const QTYS = [500, 1000, 2500, 5000];
 
 export default async function PartnerProductPrice({ params }: { params: Promise<{ productSlug: string }> }) {
   const { productSlug } = await params;

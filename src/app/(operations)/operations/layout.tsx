@@ -1,27 +1,27 @@
 import { requireRole } from "@/server/rbac";
-import { unreadCountFor } from "@/server/services/notify";
 import { AppShell } from "@/ui/shell/AppShell";
 
 export const dynamic = "force-dynamic";
 
 export default async function OpsLayout({ children }: { children: React.ReactNode }) {
   const user = await requireRole(["AQUA_STAFF", "AQUA_ADMIN"]);
-  const unread = await unreadCountFor(user.id);
   return (
     <AppShell
-      title="Operations"
+      title="Drift"
       email={user.email}
       role={user.role}
       nav={[
-        { href: "/operations", label: "Idag" },
-        { href: "/operations/pipeline", label: "Pipeline" },
+        { href: "/operations", label: "Översikt" },
         { href: "/operations/ordrar", label: "Ordrar" },
+        { href: "/operations/pipeline", label: "Tavla" },
+        { href: "/operations/leads", label: "Återbeställningar" },
         { href: "/operations/produktion", label: "Produktion" },
-        { href: "/operations/etiketter", label: "Etiketter" },
-        { href: "/operations/ekonomi", label: "Ekonomi" },
-        { href: "/operations/ledning", label: "Ledning" },
-        { href: "/operations/sok", label: "Sök" },
-        { href: "/operations/notiser", label: "Notiser", badge: unread || undefined },
+        { href: "/operations/frakt", label: "Frakt" },
+        { href: "/operations/ekonomi", label: "Fakturering" },
+        { href: "/operations/kunder", label: "Kunder" },
+        { href: "/operations/produkter", label: "Produkter" },
+        { href: "/operations/priser", label: "Prislistor" },
+        { href: "/operations/installningar", label: "Inställningar" },
       ]}
     >
       {children}

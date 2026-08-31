@@ -22,14 +22,14 @@ export async function POST(req: Request) {
     try {
       form = await req.formData();
     } catch {
-      return Response.json({ error: "Etiketten saknas." }, { status: 400 });
+      return Response.json({ error: "Tryckytan saknas." }, { status: 400 });
     }
     const file = form.get("label");
     if (!(file instanceof Blob) || file.size < 32) {
-      return Response.json({ error: "Etiketten saknas." }, { status: 400 });
+      return Response.json({ error: "Tryckytan saknas." }, { status: 400 });
     }
     if (file.size > 8_000_000) {
-      return Response.json({ error: "Etiketten är för stor." }, { status: 413 });
+      return Response.json({ error: "Tryckytan är för stor." }, { status: 413 });
     }
 
     const parsed = metaSchema.safeParse(JSON.parse(String(form.get("meta") ?? "{}")));

@@ -21,9 +21,22 @@ Lösenord: `AquaDemo26!`
 |---|---|
 | reseller.standard@demo.aqua | /partner (Standard) |
 | reseller.gold@demo.aqua | /partner (Gold) |
+| kund@demo.aqua | /konto (slutkund) |
 | staff@demo.aqua | /operations |
 | admin@demo.aqua | /operations |
 | factory@demo.aqua | /factory |
+
+## Demo-vandring (QA)
+
+1. Logga in som `kund@demo.aqua` → `/konto` → Ny order (pappersmugg, MOQ, leveranskrav).
+2. Staff: `/operations` → New Orders → granska, extras, skicka till korrektur.
+3. Skapa korrektur (PROOF) → kund godkänner på `/konto`.
+4. Staff skickar OB med repeat-horisont → ordern låses.
+5. Factory: Accept deadline → Startad → Klar.
+6. Staff skapar fraktsedel → factory Mark as Shipped → Delivered.
+7. Invoice (mock Fortnox) syns på `/konto/fakturor` och `/partner/fakturor` — inte på `/factory`.
+8. Lead skapas en månad före horisont; `/operations/leads` kan öppna/repeat/snooza.
+9. Publik `/produkter` och `/kassa` visar inga `kr` för gäst.
 
 ## Integrationer
 

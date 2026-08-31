@@ -1,7 +1,8 @@
 import { requireRole } from "@/server/rbac";
 import { listDesignsForUser } from "@/server/services/document.service";
+import { DESIGN_STATUS_LABELS } from "@/domain/enums";
 import { ArtworkUpload } from "@/ui/shell/ArtworkUpload";
-import { EmptyState, FileLink, LinkButton, PageHeader, Panel } from "@/ui/shell/primitives";
+import { EmptyState, FileLink, LinkButton, PageHeader, Panel, StatusChip } from "@/ui/shell/primitives";
 
 export default async function ArtworkPage() {
   const user = await requireRole(["RESELLER", "AQUA_STAFF", "AQUA_ADMIN"]);
@@ -9,7 +10,7 @@ export default async function ArtworkPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Artwork"
+        title="Tryckfiler"
         subtitle={user.role === "RESELLER" ? "Era mallar och tidigare designer." : "Alla designer i systemet."}
         action={<LinkButton href="/designa">Ny design</LinkButton>}
       />
@@ -19,11 +20,16 @@ export default async function ArtworkPage() {
         <div className="grid gap-4 md:grid-cols-3">
           {designs.map((d) => (
             <Panel key={d.id}>
-              <p className="font-medium">{d.projectName}</p>
-              <p className="mt-1 text-xs text-[#6b7280]">
-                {d.status}
-                {d.order?.orderNo ? ` · ${d.order.orderNo}` : ""}
-              </p>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">Design</p>
+                  <h2 className="mt-1 text-lg font-semibold tracking-tight">{d.projectName}</h2>
+                </div>
+                <StatusChip status={d.status} label={DESIGN_STATUS_LABELS[d.status] ?? "Utkast"} />
+              </div>
+              {d.order?.orderNo ? (
+                <p className="mt-3 font-mono text-sm text-[#6b7280]">{d.order.orderNo}</p>
+              ) : null}
               {d.files.length === 0 ? (
                 <p className="mt-3 text-sm text-[#6b7280]">Inga filer.</p>
               ) : (
@@ -35,7 +41,7 @@ export default async function ArtworkPage() {
                   ))}
                 </ul>
               )}
-              {d.order?.id && (d.order.currentStatus === "ORDER_RECEIVED" || d.order.currentStatus === "ARTWORK_UPLOADED") ? (
+              {d.order?.id && ["SUBMITTED", "AQUA_REVIEW", "ARTWORK_AQUA_REVIEW"].includes(d.order.currentStatus) ? (
                 <ArtworkUpload orderId={d.order.id} returnTo="/partner/artwork" />
               ) : null}
             </Panel>

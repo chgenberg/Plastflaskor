@@ -54,7 +54,7 @@ export async function generateWithReferences(input: {
 }) {
   const client = new OpenAI({ apiKey: requireOpenAiKey() });
   const images = usableImages(input.images);
-  if (!images.length) throw new RealityPreviewError("Etiketten saknas.", 400);
+  if (!images.length) throw new RealityPreviewError("Tryckytan saknas.", 400);
   const files = await Promise.all(images.map((img) => toFile(img.bytes, img.name, { type: mimeFor(img.name, img.bytes) })));
 
   const models = ["gpt-image-2", "gpt-image-1"] as const;

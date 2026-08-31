@@ -8,7 +8,7 @@ export default async function FactoryDocs() {
     return (
       <div className="space-y-8">
         <PageHeader title="Dokument" />
-        <EmptyState title="Ingen fabrik kopplad" body="Produktions- och logistikdokument visas för fabrikskonton." />
+        <EmptyState title="Ingen tryckeri kopplat" body="Produktions- och logistikdokument för muggjobb visas här." />
       </div>
     );
   }
@@ -23,7 +23,7 @@ export default async function FactoryDocs() {
     <div className="space-y-8">
       <PageHeader title="Dokument" subtitle="Produktion, logistik och fraktsedlar. Inga fakturor." />
       {docs.length === 0 ? (
-        <EmptyState title="Inga dokument" body="När jobb får underlag syns de här. Inga priser eller fakturor." />
+        <EmptyState title="Inga muggdokument" body="När jobb får tryckfil, produktionsfil eller fraktsedel syns de här. Inga priser eller fakturor." />
       ) : (
         <Panel padded={false}>
           <ul className="divide-y divide-black/5">

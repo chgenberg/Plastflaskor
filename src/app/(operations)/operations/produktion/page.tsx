@@ -1,15 +1,18 @@
 import Link from "next/link";
+import { FACTORY_JOB_LABELS, ORDER_STEP_LABELS, type OrderStatusCode } from "@/domain/enums";
+import { specFromOrderItem } from "@/domain/visualSpec";
+import { imageForProduct } from "@/domain/productImages";
 import { prisma } from "@/server/db";
-import { DataRow, DataTable, EmptyState, KpiCard, PageHeader, Panel } from "@/ui/shell/primitives";
+import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
+import { EmptyState, KpiCard, PageHeader, StatusChip } from "@/ui/shell/primitives";
 
 const GROUPS = [
   { id: "date", label: "Datum" },
   { id: "week", label: "Vecka" },
   { id: "product", label: "Produkt" },
   { id: "size", label: "Storlek" },
-  { id: "water", label: "Vatten" },
-  { id: "label", label: "Etikett" },
-  { id: "factory", label: "Fabrik" },
+  { id: "wall", label: "Vägg" },
+  { id: "eco", label: "ECO" },
   { id: "status", label: "Status" },
 ] as const;
 
@@ -17,13 +20,12 @@ function groupKey(
   j: {
     plannedAt: Date | null;
     status: string;
-    factory: { name: string };
     order: { items: { qty: number; variant: { volumeMl: number | null; optionsJson: string; product: { name: string } } }[] };
   },
   group: string,
 ) {
   const item = j.order.items[0];
-  const opt = JSON.parse(item?.variant.optionsJson || "{}") as { waterType?: string; label?: string };
+  const opt = JSON.parse(item?.variant.optionsJson || "{}") as { wall?: string; eco?: string };
   if (group === "week" && j.plannedAt) {
     const d = new Date(j.plannedAt);
     const onejan = new Date(d.getFullYear(), 0, 1);
@@ -33,29 +35,30 @@ function groupKey(
   if (group === "date") return j.plannedAt?.toLocaleDateString("sv-SE") ?? "Ej planerad";
   if (group === "product") return item?.variant.product.name ?? "–";
   if (group === "size") return item?.variant.volumeMl ? `${item.variant.volumeMl / 10} cl` : "–";
-  if (group === "water") return opt.waterType ?? "–";
-  if (group === "label") return opt.label ?? "–";
-  if (group === "factory") return j.factory.name;
-  return j.status;
+  if (group === "wall") return opt.wall === "dubbel" ? "Dubbelvägg" : "Enkelvägg";
+  if (group === "eco") return opt.eco === "ja" ? "ECO" : "Utan ECO";
+  return FACTORY_JOB_LABELS[j.status] ?? j.status;
 }
 
 export default async function ProductionBoard({ searchParams }: { searchParams: Promise<{ group?: string }> }) {
-  const { group = "date" } = await searchParams;
+  const raw = (await searchParams).group ?? "date";
+  const group = GROUPS.some((g) => g.id === raw) ? raw : "date";
   const jobs = await prisma.productionJob.findMany({
-    include: { order: { include: { items: { include: { variant: { include: { product: true } } } } } }, factory: true },
+    include: { order: { include: { items: { include: { variant: { include: { product: true } } } } } } },
     orderBy: { plannedAt: "asc" },
   });
   const week = jobs.reduce(
     (acc, j) => {
       const qty = j.order.items.reduce((s, i) => s + i.qty, 0);
       const cat = j.order.items[0]?.variant.product.category;
-      if (cat === "WATER") acc.bottles += qty;
       if (cat === "PAPER_CUP") acc.cups += qty;
-      if ((j.order.items[0]?.variant.volumeMl ?? 0) <= 330) acc.size33 += qty;
-      else acc.size50 += qty;
+      const ml = j.order.items[0]?.variant.volumeMl ?? 0;
+      if (ml <= 120) acc.size12 += qty;
+      else if (ml <= 230) acc.size23 += qty;
+      else acc.size35 += qty;
       return acc;
     },
-    { bottles: 0, cups: 0, size33: 0, size50: 0 },
+    { cups: 0, size12: 0, size23: 0, size35: 0 },
   );
   const grouped = new Map<string, typeof jobs>();
   for (const j of jobs) {
@@ -65,7 +68,7 @@ export default async function ProductionBoard({ searchParams }: { searchParams: 
 
   return (
     <div className="space-y-8">
-      <PageHeader title="Produktion" subtitle="Gruppera jobb efter datum, vecka, produkt, storlek, vatten, etikett, fabrik eller status." />
+      <PageHeader title="Produktion" subtitle="Gruppera tryckjobb efter datum, produkt, storlek, vägg eller ECO." />
       <form className="flex flex-wrap gap-2">
         {GROUPS.map((g) => (
           <Link
@@ -78,40 +81,58 @@ export default async function ProductionBoard({ searchParams }: { searchParams: 
         ))}
       </form>
       <div className="grid gap-3 sm:grid-cols-4">
-        <KpiCard label="33 cl" value={week.size33} />
-        <KpiCard label="50 cl+" value={week.size50} />
-        <KpiCard label="Flaskor" value={week.bottles} />
+        <KpiCard label="12 cl" value={week.size12} />
+        <KpiCard label="23 cl" value={week.size23} />
+        <KpiCard label="35 cl" value={week.size35} />
         <KpiCard label="Muggar" value={week.cups} />
       </div>
       {jobs.length === 0 ? (
         <EmptyState title="Inga jobb" body="När produktion planeras syns den här." />
       ) : (
         [...grouped.entries()].map(([key, rows]) => (
-          <Panel key={key} title={key} padded={false}>
-            <DataTable
-              headers={[
-                { label: "Order" },
-                { label: "Fabrik" },
-                { label: "Planerad" },
-                { label: "Status" },
-                { label: "Antal", align: "right" },
-              ]}
-            >
-              {rows.map((j) => (
-                <DataRow key={j.id} href={`/operations/ordrar/${j.order.orderNo}`}>
-                  <td className="px-5 py-3">
-                    <Link href={`/operations/ordrar/${j.order.orderNo}`} className="font-mono text-[#3B5BAA]">
-                      {j.order.orderNo}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3">{j.factory.name}</td>
-                  <td className="px-5 py-3">{j.plannedAt?.toLocaleDateString("sv-SE") ?? "–"}</td>
-                  <td className="px-5 py-3">{j.status}</td>
-                  <td className="px-5 py-3 text-right tabular-nums">{j.order.items[0]?.qty}</td>
-                </DataRow>
-              ))}
-            </DataTable>
-          </Panel>
+          <div key={key} className="space-y-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">{key}</p>
+            <div className="grid gap-3">
+              {rows.map((j) => {
+                const item = j.order.items[0];
+                const spec = specFromOrderItem({
+                  visualSpecJson: j.order.visualSpecJson,
+                  item,
+                  imageSrc: item ? imageForProduct(item.variant.product.slug) : null,
+                });
+                return (
+                  <Link
+                    key={j.id}
+                    href={`/operations/ordrar/${j.order.orderNo}`}
+                    className="block rounded-[22px] bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,.04)]"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="font-mono text-[#3B5BAA]">{j.order.orderNo}</p>
+                        <p className="mt-1 font-medium">
+                          {spec?.productName ?? item?.variant.product.name ?? "–"}
+                          {item ? ` · ${item.qty.toLocaleString("sv-SE")} st` : ""}
+                        </p>
+                        {spec ? (
+                          <div className="mt-2">
+                            <VisualSpecCard spec={spec} dense />
+                          </div>
+                        ) : null}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <StatusChip status={j.status} label={FACTORY_JOB_LABELS[j.status] ?? j.status} />
+                        <StatusChip
+                          status={j.order.currentStatus}
+                          label={ORDER_STEP_LABELS[j.order.currentStatus as OrderStatusCode]}
+                          requestedDate={j.order.requestedDate}
+                        />
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
         ))
       )}
     </div>

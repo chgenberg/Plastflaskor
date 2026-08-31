@@ -22,7 +22,7 @@ export async function POST(req: Request) {
       cardExp: String(body.cardExp ?? ""),
       cardCvc: String(body.cardCvc ?? ""),
       existing: existing
-        ? { id: existing.id, role: existing.role, resellerId: existing.resellerId, name: existing.name }
+        ? { id: existing.id, role: existing.role, resellerId: existing.resellerId, customerId: existing.customerId, name: existing.name }
         : undefined,
     });
 
@@ -37,6 +37,9 @@ export async function POST(req: Request) {
     }
     if (existing?.role === "RESELLER") {
       return Response.json({ ok: true, redirect: `/partner/ordrar/${result.orderNo}`, orderNo: result.orderNo });
+    }
+    if (existing?.role === "CUSTOMER") {
+      return Response.json({ ok: true, redirect: `/konto/ordrar/${result.orderNo}`, orderNo: result.orderNo });
     }
     return Response.json({
       ok: true,

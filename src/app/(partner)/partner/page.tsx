@@ -1,31 +1,22 @@
-import Link from "next/link";
 import { requireRole } from "@/server/rbac";
 import { listOrdersForReseller } from "@/server/services/order.service";
-import { DataRow, DataTable, EmptyState, KpiCard, LinkButton, PageHeader, Panel, StatusChip } from "@/ui/shell/primitives";
-import { RESELLER_STATUS } from "@/domain/enums";
+import { BUYER_STATUS } from "@/domain/enums";
+import { buyerNextAction } from "@/domain/orderBrief";
+import { specFromOrderItem } from "@/domain/visualSpec";
+import { imageForProduct } from "@/domain/productImages";
+import { BuyerOrderCard } from "@/ui/order/BuyerOrderCard";
+import { EmptyState, KpiCard, LinkButton, PageHeader, Panel } from "@/ui/shell/primitives";
 
 export default async function PartnerHome() {
   const user = await requireRole(["RESELLER", "AQUA_STAFF", "AQUA_ADMIN"]);
   const resellerId = user.resellerId;
   const firstName = user.name?.split(" ")[0] ?? "där";
   const orders = resellerId ? await listOrdersForReseller(resellerId) : [];
-  const active = orders.filter((o) => !["PAID", "DELIVERED"].includes(o.currentStatus)).length;
-  const proof = orders.filter((o) => o.currentStatus === "ARTWORK_UPLOADED").length;
-  const prod = orders.filter((o) =>
-    [
-      "ARTWORK_APPROVED",
-      "LABELS_ORDERED",
-      "LABELS_PRINTED",
-      "LABELS_SHIPPED_TO_FACTORY",
-      "LABELS_RECEIVED_BY_FACTORY",
-      "PRODUCTION_PLANNED",
-      "PRODUCTION_STARTED",
-      "BOTTLES_FILLED",
-      "LABELS_APPLIED",
-      "PRODUCTION_DONE",
-    ].includes(o.currentStatus),
-  ).length;
-  const shipped = orders.filter((o) => ["SHIPPED_TO_END_CUSTOMER", "WAYBILL_CREATED"].includes(o.currentStatus)).length;
+  const active = orders.filter((o) => !["PAID", "DELIVERED", "INVOICED"].includes(o.currentStatus)).length;
+  const proof = orders.filter((o) => o.currentStatus === "ARTWORK_CUSTOMER_APPROVAL").length;
+  const shipped = orders.filter((o) => o.currentStatus === "SHIPPED").length;
+  const invoices = orders.filter((o) => o.invoice).length;
+  const next = buyerNextAction(orders);
 
   if (!resellerId) {
     return (
@@ -40,53 +31,54 @@ export default async function PartnerHome() {
     <div className="space-y-8">
       <PageHeader
         title={`Hej ${firstName}`}
-        subtitle="Ordrar, korrektur och leveranser för din lista."
-        action={<LinkButton href="/designa">Ny order</LinkButton>}
+        subtitle="Ordrar, korrektur och leveranser för er lista."
+        action={<LinkButton href="/partner/ordrar/ny">Ny order</LinkButton>}
       />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard label="Aktiva ordrar" value={active} href="/partner/ordrar" />
         <KpiCard label="Väntar på korrektur" value={proof} href="/partner/ordrar" />
-        <KpiCard label="I produktion" value={prod} href="/partner/ordrar" />
-        <KpiCard label="Skickade" value={shipped} href="/partner/ordrar" />
+        <KpiCard label="På väg" value={shipped} href="/partner/ordrar" />
+        <KpiCard label="Fakturor" value={invoices} href="/partner/fakturor" />
       </div>
+      <Panel title="Nästa steg">
+        <p className="text-lg font-semibold">{next.title}</p>
+        <p className="mt-1 text-sm text-[#6b7280]">{next.body}</p>
+        <div className="mt-4">
+          <LinkButton href={`/partner${next.hrefSuffix}`}>{next.cta}</LinkButton>
+        </div>
+      </Panel>
       {orders.length === 0 ? (
         <EmptyState title="Inga ordrar ännu" body="När du lägger en order syns den här. Starta i studion eller beställ från prislistan." />
       ) : (
-        <Panel title="Senaste ordrar" padded={false}>
-          <DataTable
-            headers={[
-              { label: "Order" },
-              { label: "Kund" },
-              { label: "Produkt" },
-              { label: "Antal", align: "right" },
-              { label: "Leverans" },
-              { label: "Status" },
-              { label: "" },
-            ]}
-          >
-            {orders.slice(0, 8).map((o) => (
-              <DataRow key={o.id} href={`/partner/ordrar/${o.orderNo}`}>
-                <td className="px-5 py-3">
-                  <Link href={`/partner/ordrar/${o.orderNo}`} className="font-mono text-[#3B5BAA]">
-                    {o.orderNo}
-                  </Link>
-                </td>
-                <td className="px-5 py-3">{o.customer.name}</td>
-                <td className="px-5 py-3">{o.items[0]?.variant.product.name}</td>
-                <td className="px-5 py-3 text-right tabular-nums">{o.items[0]?.qty}</td>
-                <td className="px-5 py-3 text-sm text-[#6b7280]">{o.requestedDate ?? "–"}</td>
-                <td className="px-5 py-3">
-                  <StatusChip status={o.currentStatus} label={RESELLER_STATUS[o.currentStatus]} requestedDate={o.requestedDate} />
-                </td>
-                <td className="px-5 py-3 text-right">
-                  <Link href={`/partner/ordrar/${o.orderNo}/repeat`} className="text-[13px] font-medium text-[#3B5BAA]">
-                    Beställ igen
-                  </Link>
-                </td>
-              </DataRow>
-            ))}
-          </DataTable>
-        </Panel>
+        <div className="grid gap-4 lg:grid-cols-2">
+          {orders.slice(0, 6).map((o) => {
+            const item = o.items[0];
+            const spec = specFromOrderItem({
+              visualSpecJson: o.visualSpecJson,
+              item,
+              imageSrc: item ? imageForProduct(item.variant.product.slug) : null,
+            });
+            const delivery = o.aquaApprovedDelivery
+              ? `Leverans ${o.aquaApprovedDelivery}`
+              : o.preliminaryDate
+                ? `Preliminärt ${o.preliminaryDate}`
+                : null;
+            return (
+              <BuyerOrderCard
+                key={o.id}
+                href={`/partner/ordrar/${o.orderNo}`}
+                orderNo={o.orderNo}
+                spec={spec}
+                status={o.currentStatus}
+                statusLabel={BUYER_STATUS[o.currentStatus]}
+                delivery={delivery}
+                customer={o.customer.name}
+                actionHref={o.lockedAt ? `/partner/ordrar/${o.orderNo}/repeat` : null}
+                actionLabel={o.lockedAt ? "Beställ igen" : null}
+              />
+            );
+          })}
+        </div>
       )}
     </div>
   );

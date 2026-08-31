@@ -1,0 +1,77 @@
+import Link from "next/link";
+import { requireRole } from "@/server/rbac";
+import { listOrdersForCustomer } from "@/server/services/order.service";
+import { BUYER_STATUS } from "@/domain/enums";
+import { buyerNextAction } from "@/domain/orderBrief";
+import { specFromOrderItem } from "@/domain/visualSpec";
+import { imageForProduct } from "@/domain/productImages";
+import { BuyerOrderCard } from "@/ui/order/BuyerOrderCard";
+import { EmptyState, KpiCard, LinkButton, PageHeader, Panel } from "@/ui/shell/primitives";
+
+export default async function KontoHome() {
+  const user = await requireRole(["CUSTOMER", "AQUA_STAFF", "AQUA_ADMIN"]);
+  const orders = user.customerId ? await listOrdersForCustomer(user.customerId) : [];
+  const active = orders.filter((o) => !["PAID", "DELIVERED", "INVOICED"].includes(o.currentStatus)).length;
+  const proof = orders.filter((o) => o.currentStatus === "ARTWORK_CUSTOMER_APPROVAL").length;
+  const shipped = orders.filter((o) => o.currentStatus === "SHIPPED").length;
+  const invoices = orders.filter((o) => o.invoice).length;
+  const next = buyerNextAction(orders);
+
+  return (
+    <div className="space-y-8">
+      <PageHeader
+        title={`Hej ${user.name?.split(" ")[0] ?? ""}`}
+        subtitle="Era pappersmuggar — status, korrektur och fakturor."
+        action={<LinkButton href="/konto/ordrar/ny">Ny order</LinkButton>}
+      />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <KpiCard label="Aktiva ordrar" value={active} href="/konto/ordrar" />
+        <KpiCard label="Väntar på ditt godkännande" value={proof} href="/konto/ordrar" />
+        <KpiCard label="På väg" value={shipped} href="/konto/ordrar" />
+        <KpiCard label="Fakturor" value={invoices} href="/konto/fakturor" />
+      </div>
+      <Panel title="Nästa steg">
+        <p className="text-lg font-semibold">{next.title}</p>
+        <p className="mt-1 text-sm text-[#6b7280]">{next.body}</p>
+        <div className="mt-4">
+          <LinkButton href={`/konto${next.hrefSuffix}`}>{next.cta}</LinkButton>
+        </div>
+      </Panel>
+      {orders.length === 0 ? (
+        <EmptyState title="Inga ordrar ännu" body="Skapa en ny order eller starta från en tidigare mugg i studion." />
+      ) : (
+        <div className="grid gap-4 lg:grid-cols-2">
+          {orders.slice(0, 6).map((o) => {
+            const item = o.items[0];
+            const spec = specFromOrderItem({
+              visualSpecJson: o.visualSpecJson,
+              item,
+              imageSrc: item ? imageForProduct(item.variant.product.slug) : null,
+            });
+            const delivery = o.aquaApprovedDelivery
+              ? `Leverans ${o.aquaApprovedDelivery}`
+              : o.preliminaryDate
+                ? `Preliminärt ${o.preliminaryDate}`
+                : null;
+            return (
+              <BuyerOrderCard
+                key={o.id}
+                href={`/konto/ordrar/${o.orderNo}`}
+                orderNo={o.orderNo}
+                spec={spec}
+                status={o.currentStatus}
+                statusLabel={BUYER_STATUS[o.currentStatus]}
+                delivery={delivery}
+                actionHref={o.lockedAt ? `/konto/ordrar/${o.orderNo}/repeat` : null}
+                actionLabel={o.lockedAt ? "Beställ igen" : null}
+              />
+            );
+          })}
+        </div>
+      )}
+      <p className="text-sm text-[#6b7280]">
+        Behöver ni en tryckfil? <Link href="/designa" className="text-[#3B5BAA]">Öppna designern</Link>
+      </p>
+    </div>
+  );
+}

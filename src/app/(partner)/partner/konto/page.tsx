@@ -1,6 +1,7 @@
 import { prisma } from "@/server/db";
 import { requireRole } from "@/server/rbac";
 import { addAddressAction } from "@/actions";
+import { priceListDisplayName } from "@/domain/priceLists";
 import { Button, EmptyState, PageHeader, Panel } from "@/ui/shell/primitives";
 
 export default async function AccountPage() {
@@ -30,7 +31,7 @@ export default async function AccountPage() {
               </div>
               <div>
                 <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Prislista</dt>
-                <dd className="mt-1">{reseller.priceList.name}</dd>
+                <dd className="mt-1">{priceListDisplayName(reseller.priceList.name)}</dd>
               </div>
               <div>
                 <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Kontakt Aqua</dt>

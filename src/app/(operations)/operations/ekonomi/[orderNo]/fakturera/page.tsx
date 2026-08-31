@@ -1,8 +1,14 @@
 import { notFound } from "next/navigation";
 import { getSessionUser } from "@/server/rbac";
 import { getOrderByNo } from "@/server/services/order.service";
+import { getFortnoxConnection } from "@/server/integrations/status";
 import { invoiceAction, markInvoicePaid } from "@/actions";
+import { buildPriceSnapshot, parseExtras, parseSnapshot } from "@/domain/extras";
+import { specFromOrderItem } from "@/domain/visualSpec";
+import { imageForProduct } from "@/domain/productImages";
+import { OrderConfirmationPreview } from "@/ui/order/OrderConfirmationPreview";
 import { Button, FileLink, PageHeader, Panel } from "@/ui/shell/primitives";
+import { FortnoxBadge } from "@/ui/shell/FortnoxBadge";
 
 export default async function InvoicePage({
   params,
@@ -14,20 +20,57 @@ export default async function InvoicePage({
   const { orderNo } = await params;
   const { ok, invoice } = await searchParams;
   const user = await getSessionUser();
+  const fortnox = getFortnoxConnection();
   const order = await getOrderByNo(orderNo);
   if (!order) notFound();
-  const amount = order.items.reduce((s, i) => s + i.unitPriceExVat * i.qty, 0);
-  const vat = amount * 0.25;
+  const extras = parseExtras(order.extrasJson);
+  const snapshot =
+    parseSnapshot(order.priceSnapshotJson) ??
+    buildPriceSnapshot({
+      lines: order.items.map((i) => ({
+        name: i.variant.product.name,
+        qty: i.qty,
+        unitPriceExVat: i.unitPriceExVat,
+      })),
+      extras,
+    });
+  const item = order.items[0];
+  const spec = specFromOrderItem({
+    visualSpecJson: order.visualSpecJson,
+    item,
+    imageSrc: item ? imageForProduct(item.variant.product.slug) : null,
+  });
+  const amount = snapshot.amountExVat;
+  const vat = snapshot.vatAmount;
   const invoiceDoc = order.documents.find((d) => d.kind === "FINANCE");
   const issued = order.invoice?.status === "ISSUED";
   const billing =
-    order.reseller.company.addresses.find((a) => a.type === "BILLING") ??
-    order.reseller.company.addresses[0] ??
+    order.reseller?.company.addresses.find((a) => a.type === "BILLING") ??
+    order.reseller?.company.addresses[0] ??
     order.shippingAddress;
   const freight = order.shipments[0];
   return (
     <div className="mx-auto max-w-xl space-y-8">
-      <PageHeader title="Slutför order & fakturera" subtitle={order.orderNo} />
+      <PageHeader
+        title="Slutför order & fakturera"
+        subtitle={order.orderNo}
+        action={
+          <FortnoxBadge
+            label={fortnox.label}
+            invoiceNo={order.invoice?.invoiceNo ?? invoice}
+            fortnoxId={order.invoice?.fortnoxId}
+          />
+        }
+      />
+      <OrderConfirmationPreview
+        spec={spec}
+        extras={snapshot.extras}
+        snapshot={snapshot}
+        confirmedDate={order.confirmedDate ?? order.aquaApprovedDelivery}
+        repeatHorizonMonths={order.repeatHorizonMonths}
+        locked={Boolean(order.lockedAt)}
+        lockedCopy="Låst snapshot. Ändringar via AquaVisibility."
+      />
       <Panel>
         {ok ? (
           <p className="mb-5 rounded-2xl bg-[var(--av-status-done-bg)] p-3 text-sm text-[var(--av-status-done-fg)]">
@@ -37,11 +80,11 @@ export default async function InvoicePage({
         <dl className="space-y-3 text-sm">
           <div>
             <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Kund / ÅF</dt>
-            <dd className="mt-1">{order.reseller.company.name}</dd>
+            <dd className="mt-1">{order.reseller?.company.name ?? order.customer.name}</dd>
           </div>
           <div>
             <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Organisationsnummer</dt>
-            <dd className="mt-1">{order.reseller.company.orgNr}</dd>
+            <dd className="mt-1">{order.reseller?.company.orgNr ?? order.customer.orgNr ?? "–"}</dd>
           </div>
           <div>
             <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Fakturaadress</dt>
@@ -51,7 +94,7 @@ export default async function InvoicePage({
           </div>
           <div>
             <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">E-post</dt>
-            <dd className="mt-1">{order.reseller.company.email ?? order.customer.email ?? "–"}</dd>
+            <dd className="mt-1">{order.reseller?.company.email ?? order.customer.email ?? "–"}</dd>
           </div>
           <div>
             <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Produkter</dt>
@@ -70,14 +113,43 @@ export default async function InvoicePage({
             </dd>
           </div>
           <div>
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Totalsumma</dt>
-            <dd className="mt-1 tabular-nums">{(amount + vat).toLocaleString("sv-SE")} kr inkl. moms</dd>
-          </div>
-          <div>
             <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Betalningsvillkor</dt>
             <dd className="mt-1">30 dagar</dd>
           </div>
+          {order.invoice?.invoiceNo ? (
+            <div>
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Fortnox</dt>
+              <dd className="mt-1 font-mono">
+                {order.invoice.invoiceNo}
+                {order.invoice.fortnoxId ? ` · ${order.invoice.fortnoxId}` : ""}
+              </dd>
+            </div>
+          ) : null}
         </dl>
+        <div className="mt-6 space-y-2 border-t border-black/5 pt-4 text-sm">
+          {snapshot.extras.map((e) => (
+            <p key={e.kind} className="flex justify-between gap-4 text-[#6b7280]">
+              <span>{e.label}</span>
+              <span className="tabular-nums">{e.amountExVat.toLocaleString("sv-SE")} kr</span>
+            </p>
+          ))}
+          <p className="flex justify-between gap-4 text-[#6b7280]">
+            <span>Varor</span>
+            <span className="tabular-nums">{snapshot.goodsExVat.toLocaleString("sv-SE")} kr</span>
+          </p>
+          <p className="flex justify-between gap-4 text-[#6b7280]">
+            <span>Tillägg</span>
+            <span className="tabular-nums">{snapshot.extrasExVat.toLocaleString("sv-SE")} kr</span>
+          </p>
+          <p className="flex justify-between gap-4 font-medium">
+            <span>Totalt ex moms</span>
+            <span className="tabular-nums">{amount.toLocaleString("sv-SE")} kr</span>
+          </p>
+          <p className="flex justify-between gap-4 text-lg font-semibold">
+            <span>Totalsumma inkl. moms</span>
+            <span className="tabular-nums">{(amount + vat).toLocaleString("sv-SE")} kr</span>
+          </p>
+        </div>
         {invoiceDoc ? (
           <p className="mt-4 text-sm">
             <FileLink href={`/api/documents/${invoiceDoc.id}`}>{invoiceDoc.title}</FileLink>

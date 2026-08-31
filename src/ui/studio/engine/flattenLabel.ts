@@ -119,7 +119,7 @@ export async function composeLabelCanvas(layers: Layer[], w = 1536, h = 768) {
 export async function flattenLabelBlob(layers: Layer[]) {
   const canvas = await composeLabelCanvas(layers);
   const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
-  if (!blob) throw new Error("Kunde inte läsa etiketten.");
+  if (!blob) throw new Error("Kunde inte läsa wrapen.");
   return blob;
 }
 

@@ -11,12 +11,29 @@ export const quoteSchema = z.object({
   designId: z.string().min(1).optional(),
 });
 
+export const buyerOrderSchema = z.object({
+  variantId: z.string().min(1),
+  qty: z.number().int().min(1),
+  addressId: z.string().min(1).optional(),
+  line1: z.string().trim().optional(),
+  postalCode: z.string().trim().optional(),
+  city: z.string().trim().optional(),
+  invoiceRef: z.string().trim().optional(),
+  requestedDate: z.string().optional(),
+  deliveryRequirement: z.string().trim().optional(),
+  notes: z.string().trim().optional(),
+  lid: z.enum(["none", "white", "black"]).default("none"),
+  finish: z.enum(["matte", "glossy"]).default("matte"),
+  designId: z.string().optional(),
+  customerId: z.string().optional(),
+});
+
 export const repeatSchema = z.object({
   sourceOrderId: z.string().min(1),
   qty: z.number().int().min(1),
-  requestedDate: z.string().min(4),
+  requestedDate: z.string().optional(),
   addressId: z.string().min(1).optional(),
-  sameArtwork: z.boolean(),
+  notes: z.string().optional(),
   invoiceRef: z.string().optional(),
 });
 
@@ -25,4 +42,10 @@ export const addressSchema = z.object({
   postalCode: z.string().trim().min(3),
   city: z.string().trim().min(2),
   type: z.enum(["SHIPPING", "BILLING"]).default("SHIPPING"),
+});
+
+export const extraLineSchema = z.object({
+  kind: z.enum(["freight", "express", "setup", "special", "discount", "other"]),
+  label: z.string().trim().min(1),
+  amountExVat: z.number(),
 });

@@ -8,8 +8,11 @@ export default function AiPage() {
         <Link href="/designa" className="text-sm text-[#3B5BAA]">
           ← Tillbaka till designmotorn
         </Link>
+        <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#6b7280]">
+          AI-studio är ett tillval — inte kärnan i designflödet. Primär väg är att ladda upp tryckfil i designmotorn.
+        </p>
         <div className="mt-4">
-          <AiStudio productName="Naturligt Mineralvatten 33cl" />
+          <AiStudio productName="Pappersmugg EV 23 cl" />
         </div>
       </div>
     </main>

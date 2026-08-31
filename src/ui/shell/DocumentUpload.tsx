@@ -18,7 +18,7 @@ export function DocumentUpload({
       <label className="block text-sm">
         Typ
         <select name="kind" className="mt-1 h-10 w-full rounded-xl border border-black/10 px-3">
-          <option value="ARTWORK">Artwork</option>
+          <option value="ARTWORK">Tryckfil</option>
           <option value="PROOF">Korrektur</option>
           <option value="PRODUCTION">Produktion</option>
           <option value="ORDER">Order</option>

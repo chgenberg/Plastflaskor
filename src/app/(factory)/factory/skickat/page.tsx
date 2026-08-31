@@ -1,6 +1,7 @@
 import { requireRole } from "@/server/rbac";
 import { prisma } from "@/server/db";
-import { EmptyState, PageHeader, Panel } from "@/ui/shell/primitives";
+import { shipmentTrackingSteps } from "@/domain/orderBrief";
+import { EmptyState, PageHeader, Panel, StatusChip } from "@/ui/shell/primitives";
 
 export default async function ShippedPage() {
   const user = await requireRole(["FACTORY", "AQUA_STAFF", "AQUA_ADMIN"]);
@@ -8,33 +9,61 @@ export default async function ShippedPage() {
     return (
       <div className="space-y-8">
         <PageHeader title="Skickat" />
-        <EmptyState title="Ingen fabrik kopplad" body="Logga in som fabrikskonto för att se sändningar." />
+        <EmptyState title="Ingen tryckeri kopplat" body="Logga in som tryckeri för att se skickade muggjobb." />
       </div>
     );
   }
   const shipments = await prisma.shipment.findMany({
-    where: user.factoryId ? { order: { factoryId: user.factoryId } } : undefined,
-    include: { order: true },
+    where: {
+      ...(user.factoryId ? { order: { factoryId: user.factoryId } } : {}),
+      OR: [{ status: { in: ["PICKED_UP", "IN_TRANSIT", "DELIVERED"] } }, { shippedAt: { not: null } }],
+    },
+    include: { order: { select: { orderNo: true } } },
     orderBy: { shippedAt: "desc" },
   });
   return (
     <div className="space-y-8">
       <PageHeader title="Skickat" subtitle="Sändningar från fabriken." />
       {shipments.length === 0 ? (
-        <EmptyState title="Inget skickat ännu" body="När en fraktsedel skapas syns sändningen här." />
+        <EmptyState title="Inga muggar skickade" body="När ett muggjobb markeras som skickat syns sändningen här." />
       ) : (
-        <Panel padded={false}>
-          <ul className="divide-y divide-black/5">
-            {shipments.map((s) => (
-              <li key={s.id} className="flex flex-wrap justify-between gap-3 px-5 py-3 text-sm">
-                <span className="font-mono">{s.order.orderNo}</span>
-                <span>{s.carrier}</span>
-                <span className="font-mono text-[#6b7280]">{s.trackingNo}</span>
-                <span>{s.status}</span>
-              </li>
-            ))}
-          </ul>
-        </Panel>
+        <div className="grid gap-4">
+          {shipments.map((s) => {
+            const steps = shipmentTrackingSteps(s.status);
+            const current = steps.find((st) => st.current);
+            return (
+              <Panel key={s.id}>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">Order</p>
+                    <p className="mt-1 font-mono text-lg font-semibold">{s.order.orderNo}</p>
+                  </div>
+                  <StatusChip status={s.status} label={current?.label ?? "Skapad"} />
+                </div>
+                <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2">
+                  <div>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Transportör</dt>
+                    <dd className="mt-1 font-medium">{s.carrier}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Spårning</dt>
+                    <dd className="mt-1 font-mono text-[#6b7280]">{s.trackingNo}</dd>
+                  </div>
+                </dl>
+                <ol className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-sm">
+                  {steps.map((st) => (
+                    <li
+                      key={st.id}
+                      className={st.current ? "font-semibold" : st.done ? "font-medium" : "text-[#6b7280]"}
+                    >
+                      {st.label}
+                    </li>
+                  ))}
+                </ol>
+              </Panel>
+            );
+          })}
+        </div>
       )}
     </div>
   );

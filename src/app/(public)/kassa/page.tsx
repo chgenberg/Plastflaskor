@@ -1,4 +1,4 @@
-import { listProducts } from "@/server/services/catalog.service";
+import { listCupProducts } from "@/server/services/catalog.service";
 import { previewCheckout } from "@/server/services/checkout.service";
 import { getSessionUser } from "@/server/rbac";
 import { PageIntro } from "@/ui/public/PageIntro";
@@ -11,7 +11,7 @@ export default async function CheckoutPage({
 }) {
   const { product, design, qty } = await searchParams;
   const user = await getSessionUser();
-  const products = await listProducts();
+  const products = (await listCupProducts()).filter((p) => p.isPublic);
   const selected = products.find((p) => p.id === product) ?? products[0];
   if (!selected) {
     return (
@@ -22,13 +22,14 @@ export default async function CheckoutPage({
     );
   }
 
-  const preview = await previewCheckout(selected.id, Number(qty ?? selected.moq), user?.resellerId);
+  const preview = await previewCheckout(selected.id, Number(qty ?? selected.moq), user?.resellerId, user?.customerId);
+  const loggedIn = user?.role === "RESELLER" || user?.role === "CUSTOMER";
 
   return (
     <main className="mx-auto max-w-xl px-4 pb-20 pt-36">
       <PageIntro badge="Kassa" title="Slutför beställning" />
       <p className="mt-3 text-sm leading-relaxed text-[var(--av-text-secondary)]">
-        Stripe-testläge. Dummyfaktura och testkort — ingen affär sker och inget kort debiteras.
+        Priser visas efter inloggning. Logga in som kund eller ÅF för att slutföra.
       </p>
 
       <aside className="mt-8 rounded-[28px] bg-white p-6 shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
@@ -39,28 +40,30 @@ export default async function CheckoutPage({
             <dt>Lista</dt>
             <dd>{preview.listName}</dd>
           </div>
-          <div className="flex justify-between">
-            <dt>{preview.qty} st à</dt>
-            <dd>{preview.unitPriceExVat.toFixed(2)} kr</dd>
-          </div>
-          <div className="flex justify-between">
-            <dt>Ex moms</dt>
-            <dd>{preview.amountExVat.toFixed(2)} kr</dd>
-          </div>
-          <div className="flex justify-between">
-            <dt>Moms 25%</dt>
-            <dd>{preview.vatAmount.toFixed(2)} kr</dd>
-          </div>
-          <div className="flex justify-between font-semibold text-[#1d1d1f]">
-            <dt>Att betala</dt>
-            <dd>{preview.amountIncVat.toFixed(2)} kr</dd>
-          </div>
+          {preview.pricesHidden || preview.unitPriceExVat == null ? (
+            <p className="pt-2 text-sm">Logga in för pris</p>
+          ) : (
+            <>
+              <div className="flex justify-between">
+                <dt>{preview.qty} st à</dt>
+                <dd>{preview.unitPriceExVat.toFixed(2)} kr</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt>Ex moms</dt>
+                <dd>{preview.amountExVat?.toFixed(2)} kr</dd>
+              </div>
+              <div className="flex justify-between font-semibold text-[#1d1d1f]">
+                <dt>Att betala</dt>
+                <dd>{preview.amountIncVat?.toFixed(2)} kr</dd>
+              </div>
+            </>
+          )}
         </dl>
       </aside>
 
       <div className="mt-6 rounded-[28px] bg-white p-7 shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
         <CheckoutForm
-          loggedIn={user?.role === "RESELLER"}
+          loggedIn={loggedIn}
           defaults={{ company: user?.name ?? "", email: user?.email ?? "" }}
           preview={{
             productId: preview.product.id,
@@ -72,6 +75,7 @@ export default async function CheckoutPage({
             vatAmount: preview.vatAmount,
             amountIncVat: preview.amountIncVat,
             listName: preview.listName,
+            pricesHidden: preview.pricesHidden,
             designId: design,
           }}
         />

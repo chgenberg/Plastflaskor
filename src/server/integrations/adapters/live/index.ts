@@ -31,6 +31,7 @@ export function createLiveIntegrations(): IntegrationRegistry {
       sendOrderConfirmation: () => notImplemented("email.sendOrderConfirmation"),
       sendArtworkApproval: () => notImplemented("email.sendArtworkApproval"),
       sendDeliveryNotice: () => notImplemented("email.sendDeliveryNotice"),
+      sendRepeatReminder: () => notImplemented("email.sendRepeatReminder"),
     },
     designAI: {
       extractBrand: () => notImplemented("designAI.extractBrand"),

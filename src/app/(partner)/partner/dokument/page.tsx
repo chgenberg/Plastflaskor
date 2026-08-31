@@ -1,7 +1,7 @@
+import { DOCUMENT_KIND_LABELS } from "@/domain/enums";
 import { requireRole } from "@/server/rbac";
 import { listOrdersForReseller } from "@/server/services/order.service";
-import { DocumentUpload } from "@/ui/shell/DocumentUpload";
-import { EmptyState, FileLink, PageHeader, Panel } from "@/ui/shell/primitives";
+import { EmptyState, FileLink, PageHeader } from "@/ui/shell/primitives";
 
 export default async function DocsPage() {
   const user = await requireRole(["RESELLER", "AQUA_STAFF", "AQUA_ADMIN"]);
@@ -15,28 +15,29 @@ export default async function DocsPage() {
       ) : docs.length === 0 ? (
         <EmptyState title="Inga dokument" body="När en order får korrektur eller fraktsedel syns den här." />
       ) : (
-        <Panel padded={false}>
-          <ul className="divide-y divide-black/5">
-            {docs.map((d) => (
-              <li key={d.id} className="flex flex-wrap items-center justify-between gap-4 px-5 py-3 text-sm">
-                <span>
-                  <FileLink href={`/api/documents/${d.id}`}>{d.title}</FileLink>
-                  <span className="ml-2 text-[#6b7280]">v{d.version}</span>
-                  {" · "}
-                  <FileLink href={`/api/documents/${d.id}?inline=1`}>Förhandsvisa</FileLink>
-                </span>
-                <span className="font-mono text-[#6b7280]">{d.orderNo}</span>
-              </li>
-            ))}
-          </ul>
-        </Panel>
+        <div className="space-y-4">
+          {docs.map((d) => (
+            <article key={d.id} className="rounded-[22px] bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,.04)]">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <span className="inline-flex rounded-full bg-[#E8EEFA] px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#3B5BAA]">
+                    {DOCUMENT_KIND_LABELS[d.kind] ?? d.kind}
+                  </span>
+                  <p className="mt-2">
+                    <FileLink href={`/api/documents/${d.id}`}>{d.title}</FileLink>
+                    <span className="ml-2 text-sm text-[#6b7280]">v{d.version}</span>
+                  </p>
+                </div>
+                <span className="font-mono text-sm text-[#6b7280]">{d.orderNo}</span>
+              </div>
+              <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
+                <FileLink href={`/api/documents/${d.id}?inline=1`}>Förhandsvisa</FileLink>
+                <FileLink href={`/api/documents/${d.id}`}>Ladda ner</FileLink>
+              </div>
+            </article>
+          ))}
+        </div>
       )}
-      {user.resellerId && orders[0] ? (
-        <Panel title="Ladda upp dokument">
-          <DocumentUpload orderId={orders[0].id} returnTo="/partner/dokument" />
-          <p className="mt-2 text-[12px] text-[#6b7280]">Bifogas senaste ordern ({orders[0].orderNo}). Öppna en order för att ladda upp där.</p>
-        </Panel>
-      ) : null}
     </div>
   );
 }

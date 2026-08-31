@@ -21,14 +21,22 @@ export async function listProducts(categorySlug?: string) {
   return prisma.product.findMany({
     where: { isPublic: true, ...(categorySlug ? { categorySlug } : {}) },
     orderBy: { sortOrder: "asc" },
-    include: { variants: true },
+    include: { variants: true, printRequirements: { orderBy: { sortOrder: "asc" } } },
+  });
+}
+
+export async function listCupProducts() {
+  return prisma.product.findMany({
+    where: { category: "PAPER_CUP" },
+    orderBy: { sortOrder: "asc" },
+    include: { variants: true, printRequirements: { orderBy: { sortOrder: "asc" } } },
   });
 }
 
 export async function getProductBySlug(slug: string) {
   return prisma.product.findUnique({
     where: { slug },
-    include: { variants: true },
+    include: { variants: true, printRequirements: { orderBy: { sortOrder: "asc" } } },
   });
 }
 
@@ -37,6 +45,37 @@ export async function getPublicProductBySlug(slug: string) {
     where: { slug, isPublic: true },
     include: { variants: true },
   });
+}
+
+export async function getPriceListForBuyer(input: { resellerId?: string | null; customerId?: string | null; variantId?: string }) {
+  if (input.resellerId) return getPricesForReseller(input.resellerId, input.variantId);
+  if (input.customerId) {
+    const customer = await prisma.customer.findUnique({
+      where: { id: input.customerId },
+      include: {
+        priceList: {
+          include: {
+            items: {
+              where: input.variantId ? { variantId: input.variantId } : undefined,
+              include: { variant: { include: { product: true } } },
+              orderBy: { minQty: "asc" },
+            },
+          },
+        },
+      },
+    });
+    return customer?.priceList ?? (await prisma.priceList.findUnique({
+      where: { code: "STANDARD" },
+      include: {
+        items: {
+          where: input.variantId ? { variantId: input.variantId } : undefined,
+          include: { variant: { include: { product: true } } },
+          orderBy: { minQty: "asc" },
+        },
+      },
+    }));
+  }
+  return null;
 }
 
 export async function getPricesForReseller(resellerId: string, variantId?: string) {
@@ -67,9 +106,68 @@ export function resolveUnitPrice(
   return matches.sort((a, b) => b.minQty - a.minQty)[0];
 }
 
+export async function setPrintRequirementRequired(id: string, required: boolean) {
+  return prisma.printRequirement.update({
+    where: { id },
+    data: { required },
+  });
+}
+
+export async function updateCupProduct(
+  id: string,
+  data: {
+    moq: number;
+    leadTimeDays: number;
+    leadTimeText: string;
+    printFormat?: string | null;
+    oneLiner: string;
+  },
+) {
+  const product = await prisma.product.findUnique({ where: { id } });
+  if (!product) throw new Error("Produkten finns inte.");
+  if (product.category !== "PAPER_CUP") throw new Error("Endast pappersmuggar kan redigeras här.");
+  if (!Number.isFinite(data.moq) || data.moq < 1) throw new Error("Minsta order måste vara minst 1.");
+  if (!Number.isFinite(data.leadTimeDays) || data.leadTimeDays < 1) {
+    throw new Error("Ledtid måste vara minst 1 dag.");
+  }
+  const printFormat = data.printFormat?.trim() ? data.printFormat.trim() : null;
+  return prisma.product.update({
+    where: { id },
+    data: {
+      moq: Math.floor(data.moq),
+      leadTimeDays: Math.floor(data.leadTimeDays),
+      leadTimeText: data.leadTimeText.trim(),
+      printFormat,
+      oneLiner: data.oneLiner.trim(),
+    },
+  });
+}
+
+export async function updatePriceListItem(id: string, data: { minQty: number; unitPriceExVat: number }) {
+  const item = await prisma.priceListItem.findUnique({
+    where: { id },
+    include: { variant: { include: { product: { select: { category: true } } } } },
+  });
+  if (!item) throw new Error("Prisraden finns inte.");
+  if (item.variant.product.category !== "PAPER_CUP") {
+    throw new Error("Endast pappersmugg-rader kan redigeras.");
+  }
+  if (!Number.isFinite(data.minQty) || data.minQty < 1) throw new Error("Min antal måste vara minst 1.");
+  if (!Number.isFinite(data.unitPriceExVat) || data.unitPriceExVat < 0) {
+    throw new Error("Pris exkl. moms måste vara 0 eller mer.");
+  }
+  return prisma.priceListItem.update({
+    where: { id },
+    data: {
+      minQty: Math.floor(data.minQty),
+      unitPriceExVat: data.unitPriceExVat,
+    },
+  });
+}
+
 export function assertCanSeePrices(role?: string | null) {
   if (!canSeePrices(role)) {
-    throw new Error("Priser visas endast för inloggade återförsäljare.");
+    throw new Error("Priser visas endast för inloggade köpare.");
   }
 }
 

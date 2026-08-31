@@ -6,10 +6,11 @@ import { usePathname } from "next/navigation";
 import { logoutAction } from "@/actions";
 
 const ROLE_LABEL: Record<string, string> = {
+  CUSTOMER: "Kund",
   RESELLER: "Återförsäljare",
-  AQUA_STAFF: "Operations",
+  AQUA_STAFF: "Drift",
   AQUA_ADMIN: "Admin",
-  FACTORY: "Fabrik",
+  FACTORY: "Tryckeri",
 };
 
 export function AppShell({
@@ -29,9 +30,10 @@ export function AppShell({
 }) {
   const path = usePathname();
   const tap = dense ? "min-h-12 px-4 py-3 text-[15px]" : "px-3 py-2 text-[13px]";
+  const showOpsSearch = title === "Operations" || path.startsWith("/operations");
 
   function active(href: string) {
-    if (href === "/partner" || href === "/operations" || href === "/factory") return path === href;
+    if (href === "/partner" || href === "/operations" || href === "/factory" || href === "/konto") return path === href;
     return path === href || path.startsWith(`${href}/`);
   }
 
@@ -44,6 +46,20 @@ export function AppShell({
           </Link>
           <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">{title}</p>
         </div>
+        {showOpsSearch ? (
+          <form action="/operations/sok" method="get" className="px-3 pb-3">
+            <label className="sr-only" htmlFor="ops-search-desktop">
+              Sök ordrar
+            </label>
+            <input
+              id="ops-search-desktop"
+              name="q"
+              type="search"
+              placeholder="Sök order, kund, ÅF, faktura, spårning, org.nr…"
+              className="h-10 w-full rounded-full border border-black/10 bg-[#F4F5F7] px-4 text-[13px] outline-none focus:border-[#3B5BAA]/40"
+            />
+          </form>
+        ) : null}
         <nav className="flex flex-1 flex-col gap-0.5 px-3">
           {nav.map((n) => (
             <Link
@@ -100,8 +116,22 @@ export function AppShell({
               </Link>
             ))}
           </nav>
+          {showOpsSearch ? (
+            <form action="/operations/sok" method="get" className="mt-3">
+              <label className="sr-only" htmlFor="ops-search-mobile">
+                Sök ordrar
+              </label>
+              <input
+                id="ops-search-mobile"
+                name="q"
+                type="search"
+                placeholder="Sök order, kund, ÅF, faktura, spårning, org.nr…"
+                className="h-10 w-full rounded-full border border-black/10 bg-[#F4F5F7] px-4 text-[13px] outline-none focus:border-[#3B5BAA]/40"
+              />
+            </form>
+          ) : null}
         </header>
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 md:px-8">{children}</main>
+        <main className={`mx-auto w-full max-w-6xl flex-1 ${dense ? "px-3 py-4 md:px-5" : "px-4 py-8 md:px-8"}`}>{children}</main>
       </div>
     </div>
   );
