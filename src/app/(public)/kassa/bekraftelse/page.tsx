@@ -30,7 +30,7 @@ export default async function CheckoutThanksPage({
   const statusLabel = BUYER_STATUS[order.currentStatus] ?? order.currentStatus;
 
   return (
-    <main className="mx-auto max-w-xl px-4 pb-20 pt-36">
+    <main className="mx-auto max-w-xl px-4 pb-20 pt-16">
       <PageIntro badge="Mottagen" title="Ordern är mottagen" />
       <p className="mt-4 text-[var(--av-text-secondary)]">
         Testdebitering validerad — order mottagen, orderbekräftelse med korrektur inom 24h.

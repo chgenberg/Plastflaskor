@@ -1,44 +1,44 @@
 :root {
-  --av-blue-50: #e8f3fc;
-  --av-blue-100: #c9e3f7;
+  --av-blue-50: #eaf3fa;
+  --av-blue-100: #d4e6f4;
   --av-blue-500: #005caf;
-  --av-blue-600: #004e94;
+  --av-blue-600: #004a8c;
   --av-white: #ffffff;
-  --av-gray-50: #f4f6f8;
-  --av-gray-100: #e8ebef;
-  --av-gray-200: #d5dae2;
-  --av-gray-500: #64748b;
-  --av-gray-600: #475569;
-  --av-gray-900: #0f172a;
-  --av-green-50: #ecfdf3;
-  --av-green-500: #16a34a;
-  --av-green-700: #15803d;
-  --av-yellow-50: #fffbeb;
-  --av-yellow-500: #d97706;
-  --av-yellow-700: #b45309;
-  --av-red-50: #fef2f2;
-  --av-red-500: #dc2626;
-  --av-red-700: #b91c1c;
-  --av-slate-50: #f1f5f9;
-  --av-slate-500: #64748b;
+  --av-gray-50: #f6f5f2;
+  --av-gray-100: #eceae4;
+  --av-gray-200: #ddd9d1;
+  --av-gray-500: #6b6862;
+  --av-gray-600: #3f3d39;
+  --av-gray-900: #141414;
+  --av-green-50: #eef8f1;
+  --av-green-500: #1b7f45;
+  --av-green-700: #146638;
+  --av-yellow-50: #fbf4e6;
+  --av-yellow-500: #b7791f;
+  --av-yellow-700: #8a5a14;
+  --av-red-50: #f9eeee;
+  --av-red-500: #c23b3b;
+  --av-red-700: #9b2c2c;
+  --av-slate-50: #f1f0ec;
+  --av-slate-500: #6b6862;
   --av-teal: #1a4a5c;
 
   --av-font: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --av-font-serif: var(--font-fraunces), "Times New Roman", serif;
   --av-font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
-  --av-bg: #f4f6f8;
+  --av-bg: #f6f5f2;
   --av-surface: #ffffff;
-  --av-text: #0f172a;
-  --av-text-secondary: #475569;
-  --av-text-muted: #64748b;
+  --av-text: #141414;
+  --av-text-secondary: #3f3d39;
+  --av-text-muted: #6b6862;
   --av-accent: #005caf;
-  --av-accent-hover: #004e94;
-  --av-accent-soft: #e8f3fc;
+  --av-accent-hover: #004a8c;
+  --av-accent-soft: #eaf3fa;
   --av-accent-italic: #005caf;
-  --av-ink: #0f172a;
-  --av-border: rgba(15, 23, 42, 0.08);
-  --av-border-strong: rgba(15, 23, 42, 0.14);
+  --av-ink: #141414;
+  --av-border: rgba(20, 20, 20, 0.08);
+  --av-border-strong: rgba(20, 20, 20, 0.14);
 
   --av-status-done-fg: var(--av-green-700);
   --av-status-done-bg: var(--av-green-50);
@@ -49,25 +49,26 @@
   --av-status-idle-fg: var(--av-slate-500);
   --av-status-idle-bg: var(--av-slate-50);
 
-  --av-radius-sm: 8px;
-  --av-radius-md: 10px;
-  --av-radius-lg: 14px;
-  --av-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
-  --av-shadow-md: 0 8px 24px rgba(15, 23, 42, 0.06);
+  --av-radius-sm: 6px;
+  --av-radius-md: 8px;
+  --av-radius-lg: 12px;
+  --av-shadow-sm: 0 1px 2px rgba(20, 20, 20, 0.04);
+  --av-shadow-md: 0 12px 32px rgba(20, 20, 20, 0.06);
 }
 
 .av-card {
   background: var(--av-surface);
   border: 1px solid var(--av-border);
   border-radius: var(--av-radius-lg);
-  box-shadow: var(--av-shadow-sm);
+  box-shadow: none;
 }
 
 .av-label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--av-text-muted);
-  letter-spacing: 0.01em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .av-mono {

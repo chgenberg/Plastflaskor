@@ -26,7 +26,7 @@ export default async function ProductsIndex() {
   }
 
   return (
-    <main className="mx-auto max-w-6xl px-4 pb-20 pt-36">
+    <main className="mx-auto max-w-6xl px-4 pb-20 pt-16">
       <PageIntro badge="Sortiment" title="Produkter" align="center" />
       <EditorialShot src={PAGE_IMAGES.produkterHero} alt="Vårt sortiment" className="mx-auto mt-10 max-w-4xl aspect-[16/9]" />
       <div className="mt-12 grid gap-5 md:grid-cols-2">

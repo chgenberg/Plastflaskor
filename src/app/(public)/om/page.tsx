@@ -3,7 +3,7 @@ import { EditorialShot, PageIntro } from "@/ui/public/PageIntro";
 
 export default function AboutPage() {
   return (
-    <main className="mx-auto max-w-3xl px-4 pb-20 pt-36">
+    <main className="mx-auto max-w-3xl px-4 pb-20 pt-16">
       <PageIntro badge="Om oss" title="Mässprodukter och profilprodukter för företag" />
       <EditorialShot src={PAGE_IMAGES.omService} alt="Service och kommunikation" />
       <div className="mt-8 space-y-4 text-[var(--av-text-secondary)]">

@@ -3,7 +3,7 @@ import { EditorialShot, PageIntro, PillLink } from "@/ui/public/PageIntro";
 
 export default function ResellerLanding() {
   return (
-    <main className="mx-auto max-w-3xl px-4 pb-20 pt-36">
+    <main className="mx-auto max-w-3xl px-4 pb-20 pt-16">
       <PageIntro badge="Återförsäljare" title="För återförsäljare" />
       <EditorialShot src={PAGE_IMAGES.aterforsaljareKit} alt="Samplekit för återförsäljare" />
       <p className="mt-5 text-[var(--av-text-secondary)]">

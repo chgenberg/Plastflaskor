@@ -7,7 +7,7 @@ import { PageIntro } from "@/ui/public/PageIntro";
 export default async function OvrigaPage() {
   const products = await listProducts("kyl");
   return (
-    <main className="mx-auto max-w-6xl px-4 pb-20 pt-36">
+    <main className="mx-auto max-w-6xl px-4 pb-20 pt-16">
       <PageIntro badge="Övriga" title="Kyl och tillbehör" align="center" />
       <p className="mx-auto mt-4 max-w-2xl text-center text-[var(--av-text-secondary)]">
         En profilerbar kyl med avtagbart energibesparande lock.

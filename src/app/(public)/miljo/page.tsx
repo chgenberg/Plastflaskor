@@ -3,7 +3,7 @@ import { EditorialShot, PageIntro } from "@/ui/public/PageIntro";
 
 export default function EnvironmentPage() {
   return (
-    <main className="mx-auto max-w-3xl px-4 pb-20 pt-36">
+    <main className="mx-auto max-w-3xl px-4 pb-20 pt-16">
       <PageIntro badge="Miljö" title="Vi tar ansvar för miljön - miljövänliga profilerade muggar och flaskor" />
       <EditorialShot src={PAGE_IMAGES.miljoKompost} alt="Komposterbar pappersmugg" />
       <div className="mt-8 space-y-4 text-[var(--av-text-secondary)]">

@@ -3,7 +3,7 @@ import { EditorialShot, PageIntro } from "@/ui/public/PageIntro";
 
 export default function NewsPage() {
   return (
-    <main className="mx-auto max-w-3xl px-4 pb-20 pt-36">
+    <main className="mx-auto max-w-3xl px-4 pb-20 pt-16">
       <PageIntro badge="Aktuellt" title="Nyheter" />
       <article className="av-card mt-10 overflow-hidden">
         <EditorialShot src={PAGE_IMAGES.nyheterEco} alt="ECO-pappersmugg" className="aspect-[16/10] rounded-none" />

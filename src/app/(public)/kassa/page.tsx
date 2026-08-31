@@ -15,7 +15,7 @@ export default async function CheckoutPage({
   const selected = products.find((p) => p.id === product) ?? products[0];
   if (!selected) {
     return (
-      <main className="mx-auto max-w-xl px-4 pb-20 pt-36">
+      <main className="mx-auto max-w-xl px-4 pb-20 pt-16">
         <PageIntro title="Kassan är tom" />
         <p className="mt-4 text-[var(--av-text-secondary)]">Välj en produkt först.</p>
       </main>
@@ -26,7 +26,7 @@ export default async function CheckoutPage({
   const loggedIn = user?.role === "RESELLER" || user?.role === "CUSTOMER";
 
   return (
-    <main className="mx-auto max-w-xl px-4 pb-20 pt-36">
+    <main className="mx-auto max-w-xl px-4 pb-20 pt-16">
       <PageIntro badge="Kassa" title="Slutför beställning" />
       <p className="mt-3 text-sm leading-relaxed text-[var(--av-text-secondary)]">
         Priser visas efter inloggning. Logga in som kund eller ÅF för att slutföra.

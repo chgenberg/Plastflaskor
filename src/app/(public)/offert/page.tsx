@@ -8,7 +8,7 @@ export default async function QuotePage({ searchParams }: { searchParams: Promis
   const { product, design, qty, error } = await searchParams;
   const products = await listProducts();
   return (
-    <main className="mx-auto max-w-xl px-4 pb-20 pt-36">
+    <main className="mx-auto max-w-xl px-4 pb-20 pt-16">
       <PageIntro badge="Kontakt" title="Begär offert" />
       {error ? <p className="mt-3 text-sm text-[var(--av-status-blocked-fg)]">Kontrollera e-post, företag och antal och försök igen.</p> : null}
       <p className="mt-3 text-sm text-[var(--av-text-secondary)]">

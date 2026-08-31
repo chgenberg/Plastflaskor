@@ -12,7 +12,7 @@ const SHOTS = [
 
 export default function InspirationPage() {
   return (
-    <main className="mx-auto max-w-6xl px-4 pb-20 pt-36">
+    <main className="mx-auto max-w-6xl px-4 pb-20 pt-16">
       <PageIntro badge="Inspiration" title="Produkter människor faktiskt använder" />
       <p className="mt-4 max-w-2xl text-[var(--av-text-secondary)]">
         Profilvatten, muggar, dryck och flaskor med egen design. Bläddra och starta sedan i studion.

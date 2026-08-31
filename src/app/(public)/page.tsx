@@ -26,56 +26,36 @@ export default async function HomePage() {
 
   return (
     <main>
-      <section className="relative overflow-hidden px-4 pb-8 pt-32 text-center md:pt-36">
-        <Badge>aqua visibility</Badge>
-        <h1 className="av-serif mx-auto mt-6 max-w-4xl text-5xl leading-[1.05] tracking-[-0.01em] text-[var(--av-text)] md:text-7xl">
-          Behöver ni <em className="italic text-[var(--av-accent-italic)]">svalka?</em>
-        </h1>
-        <p className="mt-5 text-[13px] font-medium text-[var(--av-text-muted)]">Lugn, vi hjälper er!</p>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <PillLink href="/produkter">Se produkter →</PillLink>
-          <PillLink href="/designa" variant="ghost">
-            Starta design
-          </PillLink>
+      <section className="mx-auto grid max-w-6xl items-center gap-12 px-4 pb-8 pt-16 md:grid-cols-2 md:pt-20">
+        <div>
+          <Badge>aqua visibility</Badge>
+          <h1 className="av-serif mt-6 max-w-xl text-5xl leading-[1.05] tracking-[-0.02em] text-[var(--av-text)] md:text-6xl">
+            Behöver ni <em className="italic text-[var(--av-accent-italic)]">svalka?</em>
+          </h1>
+          <p className="mt-5 max-w-md text-[16px] leading-relaxed text-[var(--av-text-secondary)]">Lugn, vi hjälper er!</p>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <PillLink href="/produkter">Se produkter →</PillLink>
+            <PillLink href="/login" variant="ghost">
+              Logga in för priser
+            </PillLink>
+          </div>
+          <ul className="mt-10 flex flex-col gap-3 text-[13px] text-[var(--av-text-muted)] sm:flex-row sm:gap-8">
+            <li className="flex items-center gap-2">
+              <TruckIcon />
+              Från 270 flaskor
+            </li>
+            <li className="flex items-center gap-2">
+              <LeafIcon />
+              Tollagården i Dalarna
+            </li>
+            <li className="flex items-center gap-2">
+              <StarIcon />
+              Superb service
+            </li>
+          </ul>
         </div>
-
-        <ul className="mx-auto mt-10 flex max-w-3xl flex-col items-center justify-center gap-6 text-[12px] text-[var(--av-text-muted)] sm:flex-row sm:gap-10">
-          <li className="flex items-center gap-2">
-            <TruckIcon />
-            Från 270 flaskor
-          </li>
-          <li className="flex items-center gap-2">
-            <LeafIcon />
-            Tollagården i Dalarna
-          </li>
-          <li className="flex items-center gap-2">
-            <StarIcon />
-            Superb service
-          </li>
-        </ul>
-
-        <div className="relative mx-auto mt-16 flex h-[240px] max-w-5xl items-end justify-center md:h-[340px]">
-          {[
-            { src: PAGE_IMAGES.valAntal, alt: "Profilvatten på event", i: 0 },
-            { src: PAGE_IMAGES.omService, alt: "Service och profilprodukter", i: 1 },
-            { src: PAGE_IMAGES.omBryggeri, alt: "Läsk och julmust", i: 2 },
-          ].map((c) => (
-            <div
-              key={c.src}
-              className="absolute overflow-hidden rounded-full ring-4 ring-[var(--av-bg)]"
-              style={{
-                width: c.i === 1 ? "min(38vw, 340px)" : "min(30vw, 260px)",
-                height: c.i === 1 ? "min(38vw, 340px)" : "min(30vw, 260px)",
-                left: c.i === 0 ? "8%" : c.i === 1 ? "50%" : "auto",
-                right: c.i === 2 ? "8%" : "auto",
-                transform: c.i === 1 ? "translateX(-50%)" : undefined,
-                bottom: c.i === 1 ? "-12%" : "-6%",
-                zIndex: c.i === 1 ? 2 : 1,
-              }}
-            >
-              <Image src={c.src} alt={c.alt} fill className="object-cover" sizes="340px" priority={c.i === 1} />
-            </div>
-          ))}
+        <div className="relative aspect-[4/5] overflow-hidden rounded-[var(--av-radius-lg)] md:aspect-[5/6]">
+          <Image src={PAGE_IMAGES.valAntal} alt="Profilvatten på event" fill className="object-cover" sizes="560px" priority />
         </div>
       </section>
 
@@ -113,7 +93,7 @@ export default async function HomePage() {
 
       <section className="mx-auto max-w-6xl px-4 py-16">
         <div className="grid items-center gap-10 md:grid-cols-2">
-          <div className="relative mx-auto aspect-square w-full max-w-[460px] overflow-hidden rounded-full">
+          <div className="relative mx-auto aspect-[4/5] w-full max-w-[460px] overflow-hidden rounded-[var(--av-radius-lg)]">
             <Image src={PAGE_IMAGES.miljoKompost} alt="Pappersmugg och profilvatten" fill className="object-cover" sizes="460px" />
           </div>
           <div>
@@ -179,7 +159,7 @@ export default async function HomePage() {
               kvalitet.
             </p>
           </div>
-          <div className="relative order-1 mx-auto aspect-square w-full max-w-[460px] overflow-hidden rounded-full md:order-2">
+          <div className="relative order-1 mx-auto aspect-[4/5] w-full max-w-[460px] overflow-hidden rounded-[var(--av-radius-lg)] md:order-2">
             <Image src={PAGE_IMAGES.aterforsaljarePortal} alt="Profilvatten på kontoret" fill className="object-cover" sizes="460px" />
           </div>
         </div>

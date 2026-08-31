@@ -21,7 +21,7 @@ export function StatusChip({
           ? "bg-[var(--av-status-blocked-bg)] text-[var(--av-status-blocked-fg)]"
           : "bg-[var(--av-status-idle-bg)] text-[var(--av-status-idle-fg)]";
   return (
-    <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[12px] font-medium ${cls}`}>
+    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[12px] font-medium ${cls}`}>
       {label ?? eventLabel(status)}
     </span>
   );
@@ -121,7 +121,7 @@ export function PageHeader({
   return (
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 className="text-[26px] font-semibold tracking-tight text-[var(--av-text)]">{title}</h1>
+        <h1 className="text-[28px] font-semibold tracking-tight text-[var(--av-text)]">{title}</h1>
         {subtitle ? <p className="mt-1 max-w-2xl text-[14px] text-[var(--av-text-muted)]">{subtitle}</p> : null}
       </div>
       {action}

@@ -8,7 +8,7 @@ import { logoutAction } from "@/actions";
 type Child = { href: string; label: string };
 type Parent = { label: string; href: string; children: Child[] };
 
-const LEFT: Parent[] = [
+const ITEMS: Parent[] = [
   {
     label: "Produkter",
     href: "/produkter",
@@ -32,9 +32,6 @@ const LEFT: Parent[] = [
       { href: "/valmojligheter", label: "Valmöjligheter" },
     ],
   },
-];
-
-const RIGHT: Parent[] = [
   {
     label: "Om oss",
     href: "/om",
@@ -54,8 +51,6 @@ const RIGHT: Parent[] = [
   },
 ];
 
-const ALL = [...LEFT, ...RIGHT];
-
 export function PublicNav({ email }: { email?: string | null }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
@@ -72,79 +67,72 @@ export function PublicNav({ email }: { email?: string | null }) {
   }, []);
 
   return (
-    <header className="pointer-events-none fixed inset-x-0 top-[34px] z-50">
-      <div className="relative mx-auto flex max-w-6xl items-start px-4 pt-3">
+    <header className="sticky top-0 z-50 border-b border-[var(--av-border)] bg-[var(--av-surface)]/85 backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4">
+        <Link href="/" className="shrink-0" onClick={() => setOpen(null)}>
+          <Image
+            src="/brand/aqua-visibility-logo.png"
+            alt="aqua visibility"
+            width={148}
+            height={40}
+            priority
+            className="h-8 w-auto"
+          />
+        </Link>
+
+        <nav className="hidden flex-1 items-center gap-0.5 md:flex">
+          {ITEMS.map((item) => (
+            <NavParent key={item.label} item={item} open={open} setOpen={setOpen} />
+          ))}
+        </nav>
+
+        <div className="ml-auto hidden items-center gap-2 md:flex">
+          {email ? (
+            <form action={logoutAction}>
+              <button type="submit" className="h-9 rounded-[var(--av-radius-md)] px-3 text-[13px] font-medium text-[var(--av-text-secondary)] hover:bg-[var(--av-bg)]">
+                Logga ut
+              </button>
+            </form>
+          ) : (
+            <Link
+              href="/login"
+              className="h-9 rounded-[var(--av-radius-md)] px-3 text-[13px] font-medium text-[var(--av-text-secondary)] hover:bg-[var(--av-bg)] hover:text-[var(--av-text)]"
+            >
+              Logga in
+            </Link>
+          )}
+          <Link
+            href="/designa"
+            className="inline-flex h-9 items-center rounded-[var(--av-radius-md)] bg-[var(--av-accent)] px-4 text-[13px] font-semibold text-white hover:bg-[var(--av-accent-hover)]"
+          >
+            Starta design
+          </Link>
+        </div>
+
         <button
           type="button"
           aria-label="Meny"
           aria-expanded={mobileOpen}
           onClick={() => setMobileOpen((v) => !v)}
-          className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-[var(--av-radius-md)] bg-[var(--av-surface)] text-[var(--av-text)] shadow-[var(--av-shadow-sm)] md:hidden"
+          className="ml-auto flex h-10 w-10 items-center justify-center rounded-[var(--av-radius-md)] text-[var(--av-text)] md:hidden"
         >
           <span className="flex flex-col gap-[5px]">
             <span className="block h-[1.5px] w-4 bg-[var(--av-text)]" />
             <span className="block h-[1.5px] w-4 bg-[var(--av-text)]" />
           </span>
         </button>
-
-        <nav className="pointer-events-auto absolute left-1/2 top-3 hidden h-[72px] -translate-x-1/2 items-center gap-1 rounded-[var(--av-radius-lg)] border border-[var(--av-border)] bg-[var(--av-surface)] px-3 shadow-[var(--av-shadow-sm)] md:flex">
-          {LEFT.map((item) => (
-            <NavParent key={item.label} item={item} open={open} setOpen={setOpen} align="left" />
-          ))}
-
-          <Link href="/" className="mx-3 flex h-12 items-center justify-center md:h-14" onClick={() => setOpen(null)}>
-            <Image
-              src="/brand/aqua-visibility-logo.png"
-              alt="aqua visibility"
-              width={176}
-              height={56}
-              priority
-              className="block h-10 w-auto -translate-y-1 object-contain md:h-11"
-            />
-          </Link>
-
-          {RIGHT.map((item) => (
-            <NavParent key={item.label} item={item} open={open} setOpen={setOpen} align="right" />
-          ))}
-        </nav>
-
-        <div className="pointer-events-auto ml-auto flex h-12 min-w-[168px] items-center justify-center gap-2 rounded-[var(--av-radius-lg)] border border-[var(--av-border)] bg-[var(--av-surface)] px-5 shadow-[var(--av-shadow-sm)] md:absolute md:right-4 md:top-3 md:ml-0 md:h-[72px] md:min-w-[240px] md:px-7">
-          <Link href="/kassa" aria-label="Beställ" className="flex h-10 w-10 items-center justify-center rounded-[var(--av-radius-md)] text-[var(--av-text)] hover:bg-[var(--av-bg)]">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path d="M6 8h12l-1.1 9.2a1.6 1.6 0 0 1-1.6 1.4H8.7a1.6 1.6 0 0 1-1.6-1.4L6 8Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-              <path d="M9 8V7.2A3 3 0 0 1 12 4.2 3 3 0 0 1 15 7.2V8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-            </svg>
-          </Link>
-          {email ? (
-            <form action={logoutAction}>
-              <button type="submit" className="flex h-10 items-center rounded-[var(--av-radius-md)] px-3 text-[13px] font-medium text-[var(--av-text)] hover:bg-[var(--av-bg)]">
-                Logga ut
-              </button>
-            </form>
-          ) : (
-            <Link href="/login" aria-label="Logga in" className="flex h-10 w-10 items-center justify-center rounded-[var(--av-radius-md)] text-[var(--av-text)] hover:bg-[var(--av-bg)]">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <circle cx="12" cy="8" r="3.2" stroke="currentColor" strokeWidth="1.6" />
-                <path d="M5 19.2c1.6-3 4-4.5 7-4.5s5.4 1.5 7 4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-              </svg>
-            </Link>
-          )}
-          <Link href="/designa" className="hidden h-10 items-center rounded-[var(--av-radius-md)] bg-[var(--av-accent)] px-5 text-[13px] font-semibold text-white hover:bg-[var(--av-accent-hover)] sm:flex">
-            Starta design
-          </Link>
-        </div>
       </div>
 
       {mobileOpen ? (
-        <div className="pointer-events-auto av-card mx-4 mt-3 max-h-[70vh] overflow-auto p-4 text-[var(--av-text)] md:hidden">
-          <Link href="/" className="mb-4 flex items-center" onClick={() => setMobileOpen(false)}>
-            <Image src="/brand/aqua-visibility-logo.png" alt="aqua visibility" width={160} height={52} className="h-12 w-auto" />
-          </Link>
+        <div className="border-t border-[var(--av-border)] bg-[var(--av-surface)] px-4 py-4 md:hidden">
           <div className="flex flex-col gap-1">
-            {ALL.map((item) => (
+            {ITEMS.map((item) => (
               <MobileGroup key={item.label} item={item} onNavigate={() => setMobileOpen(false)} />
             ))}
-            <Link href="/designa" onClick={() => setMobileOpen(false)} className="mt-3 rounded-[var(--av-radius-md)] bg-[var(--av-accent)] px-4 py-3 text-center text-sm font-semibold text-white">
+            <Link href="/login" onClick={() => setMobileOpen(false)} className="mt-3 rounded-[var(--av-radius-md)] px-3 py-2.5 text-sm font-medium">
+              Logga in
+            </Link>
+            <Link href="/designa" onClick={() => setMobileOpen(false)} className="rounded-[var(--av-radius-md)] bg-[var(--av-accent)] px-4 py-3 text-center text-sm font-semibold text-white">
               Starta design
             </Link>
           </div>
@@ -158,12 +146,10 @@ function NavParent({
   item,
   open,
   setOpen,
-  align,
 }: {
   item: Parent;
   open: string | null;
   setOpen: (v: string | null) => void;
-  align: "left" | "right";
 }) {
   const id = useId();
   const wrap = useRef<HTMLDivElement>(null);
@@ -189,25 +175,23 @@ function NavParent({
         aria-expanded={shown}
         aria-controls={id}
         onClick={() => setOpen(shown ? null : item.label)}
-        className="inline-flex items-center gap-1 rounded-[var(--av-radius-md)] px-3 py-2 text-[13px] font-medium text-[var(--av-text)] hover:bg-[var(--av-bg)] xl:px-4"
+        className="inline-flex h-9 items-center gap-1 rounded-[var(--av-radius-md)] px-3 text-[13px] font-medium text-[var(--av-text-secondary)] hover:bg-[var(--av-bg)] hover:text-[var(--av-text)]"
       >
         {item.label}
-        <svg width="10" height="10" viewBox="0 0 12 12" aria-hidden className={`transition-transform ${shown ? "rotate-180" : ""}`}>
+        <svg width="10" height="10" viewBox="0 0 12 12" aria-hidden className={`opacity-50 transition-transform ${shown ? "rotate-180" : ""}`}>
           <path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
         </svg>
       </button>
       {shown ? (
-        <div
-          className={`absolute top-full z-50 min-w-[220px] pt-2 ${align === "right" ? "right-0" : "left-0"}`}
-        >
-          <div id={id} role="menu" className="av-card py-2 text-[var(--av-text)]">
+        <div className="absolute left-0 top-full z-50 min-w-[220px] pt-2">
+          <div id={id} role="menu" className="av-card py-1.5">
             {item.children.map((child) => (
               <Link
                 key={child.href + child.label}
                 href={child.href}
                 role="menuitem"
                 onClick={() => setOpen(null)}
-                className="block px-4 py-2.5 text-[13px] font-medium text-[var(--av-text)] hover:bg-[var(--av-bg)]"
+                className="block px-3.5 py-2 text-[13px] text-[var(--av-text-secondary)] hover:bg-[var(--av-bg)] hover:text-[var(--av-text)]"
               >
                 {child.label}
               </Link>
@@ -222,24 +206,24 @@ function NavParent({
 function MobileGroup({ item, onNavigate }: { item: Parent; onNavigate: () => void }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b border-black/5 py-1">
+    <div className="border-b border-[var(--av-border)] py-1">
       <button
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between rounded-[var(--av-radius-md)] px-3 py-2.5 text-left text-sm font-semibold text-[var(--av-text)]"
+        className="flex w-full items-center justify-between rounded-[var(--av-radius-md)] px-3 py-2.5 text-left text-sm font-medium"
       >
         {item.label}
         <span className={`text-[var(--av-text-muted)] transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
       </button>
       {open ? (
-        <div className="mb-2 ml-3 flex flex-col border-l border-black/10 pl-3">
+        <div className="mb-2 ml-3 flex flex-col border-l border-[var(--av-border)] pl-3">
           {item.children.map((child) => (
             <Link
               key={child.href + child.label}
               href={child.href}
               onClick={onNavigate}
-              className="rounded-[var(--av-radius-md)] px-2 py-2 text-sm text-[var(--av-text)] hover:bg-[var(--av-bg)]"
+              className="rounded-[var(--av-radius-md)] px-2 py-2 text-sm text-[var(--av-text-secondary)]"
             >
               {child.label}
             </Link>

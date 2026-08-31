@@ -17,10 +17,16 @@
     background: var(--av-bg);
     color: var(--av-text);
     font-family: var(--av-font);
+    -webkit-font-smoothing: antialiased;
   }
 
   body {
     margin: 0;
+  }
+
+  ::selection {
+    background: var(--av-accent-soft);
+    color: var(--av-text);
   }
 
   a {

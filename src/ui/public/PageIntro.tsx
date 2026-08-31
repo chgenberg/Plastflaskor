@@ -24,7 +24,7 @@ export function PageIntro({
   return (
     <header className={align === "center" ? "text-center" : ""}>
       {badge ? <Badge>{badge}</Badge> : null}
-      <h1 className={`av-serif text-4xl leading-[1.1] tracking-[-0.01em] text-[var(--av-text)] md:text-5xl ${badge ? "mt-5" : ""}`}>
+      <h1 className={`av-serif text-4xl leading-[1.08] tracking-[-0.02em] text-[var(--av-text)] md:text-[52px] ${badge ? "mt-5" : ""}`}>
         {title}
       </h1>
       {children}

@@ -36,7 +36,7 @@ export default async function ProductPage({ params }: { params: Promise<{ catego
   };
 
   return (
-    <main className="mx-auto max-w-3xl px-4 pb-20 pt-36">
+    <main className="mx-auto max-w-3xl px-4 pb-20 pt-16">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <p className="av-label">{category}</p>
       <PageIntro title={item.name} />
@@ -59,7 +59,7 @@ export default async function ProductPage({ params }: { params: Promise<{ catego
       </pre>
       <div className="mt-8 flex flex-wrap gap-3">
         <PillLink href={`/designa/${item.slug}`}>
-          {item.categorySlug === "kyl" ? "Designa din kyl" : "Designa din flaska"}
+          {item.categorySlug === "kyl" ? "Designa din kyl" : item.categorySlug === "pappersmuggar" ? "Designa din mugg" : "Designa din flaska"}
         </PillLink>
         <PillLink href={`/kassa?product=${item.id}`} variant="ghost">
           Beställ

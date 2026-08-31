@@ -28,7 +28,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
   const products = await listProducts(category);
 
   return (
-    <main className="mx-auto max-w-6xl px-4 pb-20 pt-36">
+    <main className="mx-auto max-w-6xl px-4 pb-20 pt-16">
       <PageIntro badge="Produkter" title={meta.name} align="center" />
       {INTRO[category] ? (
         <p className="mx-auto mt-4 max-w-2xl text-center text-[var(--av-text-secondary)]">{INTRO[category]}</p>
