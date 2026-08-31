@@ -2,13 +2,14 @@ import { notFound } from "next/navigation";
 import { getSessionUser } from "@/server/rbac";
 import { getOrderByNo } from "@/server/services/order.service";
 import { getFortnoxConnection } from "@/server/integrations/status";
-import { invoiceAction, markInvoicePaid } from "@/actions";
+import { markInvoicePaid } from "@/actions";
 import { buildPriceSnapshot, parseExtras, parseSnapshot } from "@/domain/extras";
 import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
 import { OrderConfirmationPreview } from "@/ui/order/OrderConfirmationPreview";
 import { Button, FileLink, PageHeader, Panel } from "@/ui/shell/primitives";
 import { FortnoxBadge } from "@/ui/shell/FortnoxBadge";
+import { FortnoxInvoiceForm } from "@/ui/ops/FortnoxInvoiceForm";
 
 export default async function InvoicePage({
   params,
@@ -69,7 +70,11 @@ export default async function InvoicePage({
         confirmedDate={order.confirmedDate ?? order.aquaApprovedDelivery}
         repeatHorizonMonths={order.repeatHorizonMonths}
         locked={Boolean(order.lockedAt)}
-        lockedCopy="Låst snapshot. Ändringar via AquaVisibility."
+        lockedCopy="Ordern är godkänd och låst. Kontakta AquaVisibility för ändringar."
+        orderNo={order.orderNo}
+        customer={order.reseller?.company.name ?? order.customer.name}
+        address={`${order.shippingAddress.line1}, ${order.shippingAddress.postalCode} ${order.shippingAddress.city}`}
+        invoiceRef={order.invoiceRef}
       />
       <Panel>
         {ok ? (
@@ -95,6 +100,14 @@ export default async function InvoicePage({
           <div>
             <dt className="av-label">E-post</dt>
             <dd className="mt-1">{order.reseller?.company.email ?? order.customer.email ?? "–"}</dd>
+          </div>
+          <div>
+            <dt className="av-label">Fakturareferens</dt>
+            <dd className="mt-1">{order.invoiceRef ?? "–"}</dd>
+          </div>
+          <div>
+            <dt className="av-label">Ordernummer</dt>
+            <dd className="mt-1 font-mono">{order.orderNo}</dd>
           </div>
           <div>
             <dt className="av-label">Produkter</dt>
@@ -145,6 +158,10 @@ export default async function InvoicePage({
             <span>Totalt ex moms</span>
             <span className="tabular-nums">{amount.toLocaleString("sv-SE")} kr</span>
           </p>
+          <p className="flex justify-between gap-4 text-[var(--av-text-muted)]">
+            <span>Moms</span>
+            <span className="tabular-nums">{vat.toLocaleString("sv-SE")} kr</span>
+          </p>
           <p className="flex justify-between gap-4 text-lg font-semibold">
             <span>Totalsumma inkl. moms</span>
             <span className="tabular-nums">{(amount + vat).toLocaleString("sv-SE")} kr</span>
@@ -156,12 +173,7 @@ export default async function InvoicePage({
           </p>
         ) : null}
         {!issued ? (
-          <form action={invoiceAction} className="mt-6">
-            <input type="hidden" name="orderNo" value={order.orderNo} />
-            <Button type="submit" className="w-full">
-              Skicka faktura via Fortnox
-            </Button>
-          </form>
+          <FortnoxInvoiceForm orderNo={order.orderNo} />
         ) : user?.role === "AQUA_ADMIN" && order.invoice ? (
           <form action={markInvoicePaid} className="mt-6">
             <input type="hidden" name="invoiceNo" value={order.invoice.invoiceNo} />

@@ -61,14 +61,31 @@ export default async function OpsOrderDetail({ params }: { params: Promise<{ ord
         </Panel>
         <div className="space-y-5">
           {order.currentStatus === "AQUA_REVIEW" ? (
-            <Panel title="Granska och acceptera order">
+            <Panel title="Nya ordrar att granska">
+              {spec ? (
+                <div className="mb-5">
+                  <VisualSpecCard spec={spec} compact />
+                </div>
+              ) : null}
               <dl className="grid gap-3 text-sm sm:grid-cols-2">
                 <Field label="Produkt">{item?.variant.product.name ?? "–"}</Field>
                 <Field label="Antal">{item ? `${item.qty.toLocaleString("sv-SE")} st` : "–"}</Field>
                 <Field label="Pris">{value.toLocaleString("sv-SE")} kr ex moms</Field>
+                <Field label="Storlek / vägg">{spec ? [spec.volumeLabel, spec.wall, spec.eco ? "ECO" : null].filter(Boolean).join(" · ") : "–"}</Field>
                 <Field label="Preliminärt datum">{order.preliminaryDate ?? "Beräknas från ledtid"}</Field>
+                <Field label="Fakturareferens">{order.invoiceRef ?? "–"}</Field>
+                <div className="sm:col-span-2">
+                  <Field label="Leveransadress">
+                    {order.shippingAddress
+                      ? `${order.shippingAddress.line1}, ${order.shippingAddress.postalCode} ${order.shippingAddress.city}`
+                      : "–"}
+                  </Field>
+                </div>
                 <div className="sm:col-span-2">
                   <Field label="Leveranskrav">{order.deliveryRequirement ?? "Inget särskilt krav"}</Field>
+                </div>
+                <div className="sm:col-span-2">
+                  <Field label="Övriga instruktioner">{order.notes ?? "Inga"}</Field>
                 </div>
               </dl>
               <p className="av-label mt-5">Kontrollera innan du accepterar</p>
@@ -102,7 +119,23 @@ export default async function OpsOrderDetail({ params }: { params: Promise<{ ord
               confirmedDate={order.confirmedDate ?? order.preliminaryDate}
               repeatHorizonMonths={order.repeatHorizonMonths}
               locked={Boolean(order.lockedAt)}
-              lockedCopy="Låst snapshot. Ändringar via AquaVisibility."
+              lockedCopy="Ordern är godkänd och låst. Kontakta AquaVisibility för ändringar."
+              orderNo={order.orderNo}
+              customer={order.reseller?.company.name ?? order.customer.name}
+              address={
+                order.shippingAddress
+                  ? `${order.shippingAddress.line1}, ${order.shippingAddress.postalCode} ${order.shippingAddress.city}`
+                  : undefined
+              }
+              invoiceRef={order.invoiceRef}
+              artworkHref={
+                order.documents.find((d) => d.kind === "PROOF")
+                  ? `/api/documents/${order.documents.find((d) => d.kind === "PROOF")!.id}`
+                  : order.designs[0]?.files[0]
+                    ? `/api/artwork-files/${order.designs[0].files[0].id}`
+                    : null
+              }
+              artworkLabel={order.documents.find((d) => d.kind === "PROOF")?.title ?? order.designs[0]?.files[0]?.fileName}
             />
           ) : null}
           <Panel>

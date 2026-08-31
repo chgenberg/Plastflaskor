@@ -39,7 +39,7 @@ export default async function JobPage({ params }: { params: Promise<{ jobId: str
   return (
     <div className="mx-auto max-w-lg space-y-5">
       <PageHeader title={job.order.customer.name} subtitle={job.order.orderNo} />
-      {spec ? <VisualSpecCard spec={spec} /> : null}
+      {spec ? <VisualSpecCard spec={spec} hero /> : null}
       <Panel>
         <StatusChip status={job.status} label={FACTORY_JOB_LABELS[job.status] ?? job.status} />
         <ol className="mt-4 flex items-center gap-2 text-sm">

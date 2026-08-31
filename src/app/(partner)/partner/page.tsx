@@ -43,7 +43,7 @@ export default async function PartnerHome() {
       />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard label="Aktiva ordrar" value={active} href="/partner/ordrar" />
-        <KpiCard label="Väntar på korrektur" value={proof} href="/partner/ordrar" />
+        <KpiCard label="Väntar på ditt godkännande" value={proof} href="/partner/ordrar" />
         <KpiCard label="På väg" value={shipped} href="/partner/ordrar" />
         <KpiCard label="Fakturor" value={invoices} href="/partner/fakturor" />
       </div>

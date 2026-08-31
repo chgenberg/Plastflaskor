@@ -89,7 +89,7 @@ export default async function FactoryHome() {
               <article key={j.id} className="av-card flex flex-col p-5">
                 <p className="av-mono text-[13px] text-[var(--av-text-muted)]">{j.order.orderNo}</p>
                 <h2 className="mt-1 text-[18px] font-semibold tracking-tight">{j.order.customer.name}</h2>
-                {spec ? <div className="mt-4"><VisualSpecCard spec={spec} compact /></div> : null}
+                {spec ? <div className="mt-4"><VisualSpecCard spec={spec} /></div> : null}
                 <p className="mt-3 text-sm">
                   Antal:{" "}
                   <span className="font-semibold tabular-nums">

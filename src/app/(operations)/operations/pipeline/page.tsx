@@ -6,7 +6,7 @@ export default async function PipelinePage() {
   const orders = await listAllOrders();
   return (
     <div className="space-y-8">
-      <PageHeader title="Tavla" subtitle="Muggpipeline per fas. Klicka på ett kort för att öppna ordern." />
+      <PageHeader title="Pipeline" subtitle="Klicka på ett kort för att öppna ordern." />
       <KanbanBoard orders={orders} />
     </div>
   );

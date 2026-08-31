@@ -94,13 +94,13 @@ function latestProofAt(o: OrderLike) {
 const RULES: { kind: ExceptionKind; label: string; href: (o: OrderLike) => string; match: (o: OrderLike) => boolean }[] = [
   {
     kind: "review",
-    label: "Nya ordrar att granska",
+    label: "Nya ordrar behöver granskas",
     href: () => `/operations/ordrar?alert=review`,
     match: (o) => o.currentStatus === "SUBMITTED" || o.currentStatus === "AQUA_REVIEW",
   },
   {
     kind: "artwork_aqua",
-    label: "Tryckfil behöver Aqua-godkännande",
+    label: "Artwork behöver Aqua-godkännande",
     href: () => `/operations/ordrar?alert=artwork_aqua`,
     match: (o) => o.currentStatus === "ARTWORK_AQUA_REVIEW",
   },
@@ -130,7 +130,7 @@ const RULES: { kind: ExceptionKind; label: string; href: (o: OrderLike) => strin
   },
   {
     kind: "ready_date",
-    label: "Tryckeri-datum att godkänna",
+    label: "Tryckeri-datum behöver godkännas",
     href: () => `/operations/ordrar?alert=ready_date`,
     match: (o) => Boolean(o.factoryReadyEstimate) && !o.aquaApprovedDelivery,
   },
@@ -142,7 +142,7 @@ const RULES: { kind: ExceptionKind; label: string; href: (o: OrderLike) => strin
   },
   {
     kind: "waybill",
-    label: "Fraktsedel saknas",
+    label: "Fraktsedlar behöver skapas",
     href: () => `/operations/ordrar?alert=waybill`,
     match: (o) => o.currentStatus === "READY_TO_SHIP" && !hasWaybill(o),
   },
@@ -160,7 +160,7 @@ const RULES: { kind: ExceptionKind; label: string; href: (o: OrderLike) => strin
   },
   {
     kind: "invoice",
-    label: "Levererad, ej fakturerad",
+    label: "Ordrar är redo att faktureras",
     href: () => `/operations/ekonomi`,
     match: (o) =>
       (o.currentStatus === "READY_TO_INVOICE" || o.currentStatus === "DELIVERED") &&

@@ -57,6 +57,7 @@ export const PIPELINE_PHASES = [
   { id: "shipped", label: "Skickade", statuses: ["SHIPPED"] },
   { id: "delivered", label: "Levererade", statuses: ["DELIVERED"] },
   { id: "ready_invoice", label: "Redo att faktureras", statuses: ["READY_TO_INVOICE"] },
+  { id: "invoiced", label: "Fakturerade", statuses: ["INVOICED", "PAID"] },
 ] as const;
 
 export const ORDER_STATUS_TRANSITIONS: Record<OrderStatusCode, readonly OrderStatusCode[]> = {

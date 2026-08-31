@@ -15,7 +15,13 @@ export function OrderConfirmationPreview({
   repeatHorizonMonths,
   locked,
   showPrices = true,
-  lockedCopy = "Kontakta AquaVisibility.",
+  lockedCopy = "Ordern är godkänd och låst. Kontakta AquaVisibility för ändringar.",
+  orderNo,
+  customer,
+  address,
+  invoiceRef,
+  artworkHref,
+  artworkLabel,
 }: {
   spec: VisualSpec | null;
   extras: ExtraLine[];
@@ -25,6 +31,12 @@ export function OrderConfirmationPreview({
   locked?: boolean;
   showPrices?: boolean;
   lockedCopy?: string;
+  orderNo?: string;
+  customer?: string;
+  address?: string;
+  invoiceRef?: string | null;
+  artworkHref?: string | null;
+  artworkLabel?: string | null;
 }) {
   const goods = snapshot?.goodsExVat;
   const extrasEx = snapshot?.extrasExVat ?? extras.reduce((s, e) => s + e.amountExVat, 0);
@@ -38,8 +50,20 @@ export function OrderConfirmationPreview({
 
   return (
     <Panel title={locked ? "Orderbekräftelse" : "Förhandsvisning av orderbekräftelse"}>
-      {spec ? <VisualSpecCard spec={spec} /> : null}
+      {spec ? <VisualSpecCard spec={spec} hero={Boolean(locked)} /> : null}
       <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
+        {orderNo ? (
+          <div>
+            <dt className="av-label">Ordernummer</dt>
+            <dd className="mt-1 font-mono font-medium">{orderNo}</dd>
+          </div>
+        ) : null}
+        {customer ? (
+          <div>
+            <dt className="av-label">Kund</dt>
+            <dd className="mt-1 font-medium">{customer}</dd>
+          </div>
+        ) : null}
         <div>
           <dt className="av-label">Bekräftat leveransdatum</dt>
           <dd className="mt-1 font-medium">{confirmedDate ?? "Välj datum nedan"}</dd>
@@ -48,6 +72,28 @@ export function OrderConfirmationPreview({
           <dt className="av-label">Förväntad återbeställning</dt>
           <dd className="mt-1 font-medium">{horizon ?? "Anges innan OB skickas"}</dd>
         </div>
+        {address ? (
+          <div className="sm:col-span-2">
+            <dt className="av-label">Leveransadress</dt>
+            <dd className="mt-1 font-medium">{address}</dd>
+          </div>
+        ) : null}
+        {invoiceRef ? (
+          <div>
+            <dt className="av-label">Fakturareferens</dt>
+            <dd className="mt-1 font-medium">{invoiceRef}</dd>
+          </div>
+        ) : null}
+        {artworkHref ? (
+          <div>
+            <dt className="av-label">Artwork / korrektur</dt>
+            <dd className="mt-1">
+              <a href={artworkHref} className="font-medium text-[var(--av-accent)]">
+                {artworkLabel ?? "Öppna fil"}
+              </a>
+            </dd>
+          </div>
+        ) : null}
       </dl>
       {extras.length ? (
         <ul className="mt-4 space-y-1 text-sm">

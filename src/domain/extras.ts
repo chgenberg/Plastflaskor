@@ -12,7 +12,7 @@ export const EXTRA_KINDS: { kind: ExtraKind; label: string }[] = [
   { kind: "setup", label: "Startkostnad" },
   { kind: "special", label: "Specialkostnad" },
   { kind: "discount", label: "Rabatt" },
-  { kind: "other", label: "Övrigt" },
+  { kind: "other", label: "Annan avgift" },
 ];
 
 export function parseExtras(raw?: string | null): ExtraLine[] {

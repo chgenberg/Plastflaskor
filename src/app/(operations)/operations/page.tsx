@@ -2,8 +2,7 @@ import { listAllOrders } from "@/server/services/order.service";
 import { weekProduction } from "@/server/services/production.service";
 import { activateDueLeads, listLeads } from "@/server/services/lead.service";
 import { exceptionSummary, exceptionsFor } from "@/domain/exceptions";
-import { PIPELINE_PHASES } from "@/domain/enums";
-import { ActionCard, DataRow, DataTable, EmptyState, KpiCard, LinkButton, PageHeader, Panel } from "@/ui/shell/primitives";
+import { ActionCard, DataRow, DataTable, EmptyState, LinkButton, PageHeader, Panel } from "@/ui/shell/primitives";
 
 export default async function OpsHome() {
   const orders = await listAllOrders();
@@ -33,7 +32,7 @@ export default async function OpsHome() {
     <div className="space-y-7">
       <PageHeader
         title="Vad behöver du göra nu?"
-        subtitle={`Den här veckan · ${cups.toLocaleString("sv-SE")} muggar`}
+        subtitle={`Kräver åtgärd · ${cups.toLocaleString("sv-SE")} muggar denna vecka`}
         action={
           <div className="flex flex-wrap gap-2">
             <LinkButton href="/operations/pipeline">Öppna tavlan</LinkButton>
@@ -43,18 +42,21 @@ export default async function OpsHome() {
           </div>
         }
       />
-      {tasks.length === 0 && buckets.week === 0 ? (
-        <ActionCard href="/operations/pipeline" label="Allt i fas" value="0" tone="green" />
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {tasks.map((t) => (
-            <ActionCard key={t.kind} href={t.href} label={t.label} value={t.count} tone={t.severity} />
-          ))}
-          {buckets.week > 0 ? (
-            <ActionCard href="/operations/leads" label="Återbeställningar denna vecka" value={buckets.week} tone="green" />
-          ) : null}
-        </div>
-      )}
+      <section className="space-y-3">
+        <h2 className="text-[15px] font-semibold tracking-tight">Kräver åtgärd</h2>
+        {tasks.length === 0 && buckets.week === 0 ? (
+          <ActionCard href="/operations/pipeline" label="Allt i fas" value="0" tone="green" />
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {tasks.map((t) => (
+              <ActionCard key={t.kind} href={t.href} label={t.label} value={t.count} tone={t.severity} />
+            ))}
+            {buckets.week > 0 ? (
+              <ActionCard href="/operations/leads" label="Repeat leads är aktuella denna vecka" value={buckets.week} tone="green" />
+            ) : null}
+          </div>
+        )}
+      </section>
       <Panel title="Produktion denna vecka" padded={false}>
         {byDay.size === 0 ? (
           <div className="p-5">
@@ -73,16 +75,6 @@ export default async function OpsHome() {
           </DataTable>
         )}
       </Panel>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {PIPELINE_PHASES.map((p) => (
-          <KpiCard
-            key={p.id}
-            label={p.label}
-            value={orders.filter((o) => (p.statuses as readonly string[]).includes(o.currentStatus)).length}
-            href={`/operations/ordrar?phase=${p.id}`}
-          />
-        ))}
-      </div>
     </div>
   );
 }

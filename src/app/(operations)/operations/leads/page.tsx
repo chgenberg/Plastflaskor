@@ -26,16 +26,31 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
 
   return (
     <div className="space-y-8">
-      <PageHeader title="Återbeställningar" subtitle="Möjligheter en månad före förväntad order." />
+      <PageHeader title="Leads" subtitle="Aktiva repeat-möjligheter en månad före förväntad order." />
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        {BUCKETS.filter((b) => b.id !== "all").map((b) => {
+          const count = b.key ? buckets[b.key] : 0;
+          return (
+            <Link
+              key={b.id}
+              href={`/operations/leads?bucket=${b.id}`}
+              className="av-card p-5 hover:border-[var(--av-border-strong)]"
+            >
+              <p className="av-label">{b.id === "reminded" ? "Kund påmind – ej svar" : b.id === "week" ? "Aktuella denna vecka" : b.id === "month" ? "Nästa 30 dagar" : b.id === "converted" ? "Repeat skapad" : "Uppskjutna"}</p>
+              <p className="mt-2 text-[28px] font-semibold tabular-nums">{count}</p>
+            </Link>
+          );
+        })}
+      </div>
       <div className="flex flex-wrap gap-2">
         {BUCKETS.map((b) => {
           const count = b.key ? buckets[b.key] : leads.length;
           const active = bucket === b.id;
           return (
             <Link
-              key={b.id}
+              key={`filter-${b.id}`}
               href={b.id === "all" ? "/operations/leads" : `/operations/leads?bucket=${b.id}`}
-              className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm ${
+              className={`inline-flex items-center gap-2 rounded-[var(--av-radius-md)] px-3 py-1.5 text-sm ${
                 active ? "bg-[var(--av-accent-soft)] font-medium text-[var(--av-accent)]" : "bg-[var(--av-surface)] text-[var(--av-text-muted)] shadow-[var(--av-shadow-sm)]"
               }`}
             >
@@ -125,7 +140,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                     Skapa repeat
                   </LinkButton>
                   <LinkButton href={`/operations/ordrar/${lead.sourceOrder.orderNo}`} variant="secondary">
-                    Öppna order
+                    Öppna tidigare order
                   </LinkButton>
                   <form action={remindLeadAction}>
                     <input type="hidden" name="leadId" value={lead.id} />

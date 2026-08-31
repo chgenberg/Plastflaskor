@@ -47,6 +47,13 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
   }
   const addresses = [...addressMap.values()];
 
+  const qtyByYear = new Map<number, number>();
+  for (const o of customer.orders) {
+    const year = o.createdAt.getFullYear();
+    qtyByYear.set(year, (qtyByYear.get(year) ?? 0) + o.items.reduce((s, i) => s + i.qty, 0));
+  }
+  const yearlyVolume = [...qtyByYear.entries()].sort((a, b) => a[0] - b[0]);
+
   const artwork = [
     ...customer.orders.flatMap((o) =>
       o.documents
@@ -246,6 +253,26 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
               </DataRow>
             ))}
           </DataTable>
+        )}
+      </Panel>
+
+      <Panel title="Repeat-mönster">
+        {yearlyVolume.length === 0 ? (
+          <p className="text-sm text-[var(--av-text-muted)]">Ingen orderhistorik ännu.</p>
+        ) : (
+          <ul className="space-y-1 text-sm">
+            {yearlyVolume.map(([year, qty]) => (
+              <li key={year}>
+                {year} – {qty.toLocaleString("sv-SE")} muggar
+              </li>
+            ))}
+            <li className="pt-2 font-medium">
+              Nästa potentiella repeat:{" "}
+              {nextLead
+                ? nextLead.expectedAt.toLocaleDateString("sv-SE", { month: "long", year: "numeric" })
+                : "Ingen planerad"}
+            </li>
+          </ul>
         )}
       </Panel>
 

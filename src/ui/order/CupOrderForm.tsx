@@ -153,9 +153,13 @@ export function CupOrderForm({
         </label>
       </div>
       {prelim ? (
-        <p className="text-sm text-[var(--av-text-muted)]">
-          Preliminärt leveransdatum: {prelim} — inte slutgiltigt. AquaVisibility bekräftar i orderbekräftelsen.
-        </p>
+        <div className="av-card p-5">
+          <p className="av-label">Preliminärt leveransdatum</p>
+          <p className="mt-1 text-[28px] font-semibold tabular-nums tracking-tight">{prelim}</p>
+          <p className="mt-2 text-sm text-[var(--av-text-muted)]">
+            Detta är endast en uppskattning. Slutligt datum måste bekräftas av AquaVisibility i orderbekräftelsen.
+          </p>
+        </div>
       ) : null}
       <label className="block text-sm">
         <span className="text-[var(--av-text-muted)]">Antal</span>

@@ -75,6 +75,20 @@ export function BuyerOrderDetail({ order, role, repeatHref }: { order: Order; ro
     <div className="space-y-6">
       <PageHeader title={order.orderNo} subtitle={item?.variant.product.name} />
       <StatusChip status={order.currentStatus} label={BUYER_STATUS[order.currentStatus]} requestedDate={order.requestedDate} />
+      {order.currentStatus === "SUBMITTED" || order.currentStatus === "AQUA_REVIEW" ? (
+        <NextStep
+          title="Vi har tagit emot din order"
+          body="Vi går nu igenom din order, leveransdatum och artwork. En slutgiltig orderbekräftelse med korrektur kommer inom 24 timmar. Detta är inte den slutliga orderbekräftelsen."
+          tone="done"
+        />
+      ) : null}
+      {approved ? (
+        <Panel>
+          <p className="av-label">Beräknad leverans</p>
+          <p className="mt-1 text-[32px] font-semibold tabular-nums tracking-tight">{approved}</p>
+          <p className="mt-1 text-sm text-[var(--av-text-muted)]">Godkänd av AquaVisibility</p>
+        </Panel>
+      ) : null}
       {spec && !order.lockedAt ? <VisualSpecCard spec={spec} /> : null}
 
       {needsProof ? (
@@ -110,7 +124,9 @@ export function BuyerOrderDetail({ order, role, repeatHref }: { order: Order; ro
             repeatHorizonMonths={order.repeatHorizonMonths}
             locked
             showPrices={showPrice}
-            lockedCopy="Kontakta AquaVisibility."
+            lockedCopy="Ordern är godkänd och låst. Kontakta AquaVisibility för ändringar."
+            orderNo={order.orderNo}
+            invoiceRef={order.invoiceRef}
           />
           <a href={repeatHref} className="inline-block text-sm font-medium text-[var(--av-accent)]">
             Beställ igen

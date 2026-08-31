@@ -41,11 +41,20 @@ export function InvoiceTable({ rows, showCustomer }: { rows: InvoiceRow[]; showC
                 requestedDate={label === "Förfallen" ? "2000-01-01" : null}
               />
             </div>
-            <p className="mt-4 text-sm text-[var(--av-text-muted)]">{fmtDate(r.issuedAt ?? r.dueAt)}</p>
-            <p className="mt-1 text-sm tabular-nums">{r.amountIncVat.toLocaleString("sv-SE")} kr</p>
+            <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
+              <div>
+                <dt className="av-label">Fakturadatum</dt>
+                <dd className="mt-0.5">{fmtDate(r.issuedAt)}</dd>
+              </div>
+              <div>
+                <dt className="av-label">Förfallodatum</dt>
+                <dd className="mt-0.5">{fmtDate(r.dueAt)}</dd>
+              </div>
+            </dl>
+            <p className="mt-3 text-sm tabular-nums font-medium">{r.amountIncVat.toLocaleString("sv-SE")} kr</p>
             {r.pdfId ? (
               <div className="mt-4">
-                <FileLink href={`/api/documents/${r.pdfId}`}>PDF</FileLink>
+                <FileLink href={`/api/documents/${r.pdfId}`}>Ladda ner PDF</FileLink>
               </div>
             ) : null}
           </article>
