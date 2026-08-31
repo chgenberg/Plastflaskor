@@ -12,12 +12,9 @@ export default async function QuotePage({ searchParams }: { searchParams: Promis
       <PageIntro badge="Kontakt" title="Begär offert" />
       {error ? <p className="mt-3 text-sm text-[var(--av-status-blocked-fg)]">Kontrollera e-post, företag och antal och försök igen.</p> : null}
       <p className="mt-3 text-sm text-[var(--av-text-secondary)]">
-        Vill du testa hela köpet med dummyfaktura och Stripe-testkort?{" "}
-        <Link
-          href={`/kassa${product ? `?product=${product}` : ""}${design ? `${product ? "&" : "?"}design=${design}` : ""}`}
-          className="font-medium text-[var(--av-accent)]"
-        >
-          Gå till kassan
+        Offert är för nya förfrågningar. Har ni redan konto?{" "}
+        <Link href="/login" className="font-medium text-[var(--av-accent)]">
+          Logga in till kundportalen
         </Link>
         .
       </p>

@@ -215,17 +215,6 @@ export function Studio({
     });
   }
 
-  function next() {
-    start(async () => {
-      try {
-        const design = await persistDesign();
-        router.push(`/kassa?product=${product.id}&design=${design.id}&qty=${qty}`);
-      } catch (err) {
-        setGateError(err instanceof Error ? err.message : REQUIRED_PRINT_MESSAGE);
-      }
-    });
-  }
-
   function requestQuote() {
     start(async () => {
       try {
@@ -344,17 +333,19 @@ export function Studio({
             Återställ
           </button>
           {isBuyer ? (
-            <button type="button" onClick={addToOrder} className="h-9 rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] bg-white px-4 text-[13px] font-semibold">
+            <button type="button" onClick={addToOrder} className="h-9 rounded-[var(--av-radius-md)] bg-[var(--av-accent)] px-5 text-[13px] font-semibold text-white hover:bg-[var(--av-accent-hover)]">
               Lägg till i order
             </button>
           ) : (
-            <button type="button" onClick={requestQuote} className="h-9 rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] bg-white px-4 text-[13px] font-semibold">
-              Begär offert
-            </button>
+            <>
+              <button type="button" onClick={requestQuote} className="h-9 rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] bg-white px-4 text-[13px] font-semibold">
+                Begär offert
+              </button>
+              <Link href="/login" className="inline-flex h-9 items-center rounded-[var(--av-radius-md)] bg-[var(--av-accent)] px-5 text-[13px] font-semibold text-white hover:bg-[var(--av-accent-hover)]">
+                Logga in
+              </Link>
+            </>
           )}
-          <button type="button" onClick={next} className="h-9 rounded-[var(--av-radius-md)] bg-[var(--av-accent)] px-5 text-[13px] font-semibold text-white shadow-sm hover:bg-[var(--av-accent-hover)]">
-            Kassa
-          </button>
         </div>
       </header>
       {gateError ? (

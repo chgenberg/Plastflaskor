@@ -61,12 +61,14 @@ export default async function ProductPage({ params }: { params: Promise<{ catego
         <PillLink href={`/designa/${item.slug}`}>
           {item.categorySlug === "kyl" ? "Designa din kyl" : item.categorySlug === "pappersmuggar" ? "Designa din mugg" : "Designa din flaska"}
         </PillLink>
-        <PillLink href={`/kassa?product=${item.id}`} variant="ghost">
-          Beställ
-        </PillLink>
         <PillLink href={`/offert?product=${item.id}`} variant="ghost">
           Begär offert
         </PillLink>
+        {showResellerCta ? (
+          <PillLink href="/login" variant="ghost">
+            Logga in för priser
+          </PillLink>
+        ) : null}
       </div>
       {showResellerCta ? (
         <p className="mt-5 text-sm text-[var(--av-text-secondary)]">
