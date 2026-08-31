@@ -30,7 +30,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           </button>
         </form>
         <p className="mt-6 text-xs text-[var(--av-text-muted)]">
-          Demo: kund@demo.aqua · reseller.gold@demo.aqua · staff@demo.aqua · factory@demo.aqua · AquaDemo26!
+          Demo: kund@demo.aqua · reseller.gold@demo.aqua · staff@demo.aqua · factory@demo.aqua (leverantör) · AquaDemo26!
         </p>
       </div>
     </main>

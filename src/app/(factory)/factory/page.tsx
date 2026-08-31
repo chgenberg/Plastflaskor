@@ -5,7 +5,7 @@ import { FACTORY_JOB_LABELS } from "@/domain/enums";
 import { parseVisualSpec, visualSpecFromOptions } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
 import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
-import { Button, EmptyState, FileLink, LinkButton, PageHeader, StatusChip } from "@/ui/shell/primitives";
+import { ActionCard, Button, EmptyState, FileLink, KpiCard, LinkButton, PageHeader, StatusChip } from "@/ui/shell/primitives";
 
 export default async function FactoryHome() {
   const user = await requireRole(["FACTORY", "AQUA_STAFF", "AQUA_ADMIN"]);
@@ -17,17 +17,42 @@ export default async function FactoryHome() {
   if (scoped && !user.factoryId) {
     return (
       <div className="space-y-5">
-        <PageHeader title="Produktion idag" subtitle="Muggjobb för tryckeriet." />
-        <EmptyState title="Ingen tryckeri kopplat" body="Logga in som tryckeri för att se dagens muggjobb." />
+        <PageHeader title="Översikt" subtitle="Leverantörsportal — demo. Inga priser eller fakturor." />
+        <EmptyState title="Ingen tryckeri kopplat" body="Logga in som leverantör för att se beställningar." />
       </div>
     );
   }
 
+  const accept = today.filter((j) => j.order.currentStatus === "CONFIRMED" && !j.order.factoryDeadlineAccepted).length;
+  const inProd = today.filter((j) => j.order.currentStatus === "IN_PRODUCTION").length;
+  const ready = today.filter((j) => j.order.currentStatus === "READY_TO_SHIP").length;
+  const shipped = jobs.filter((j) => j.order.currentStatus === "SHIPPED").length;
+
   return (
     <div className="space-y-5">
-      <PageHeader title="Produktion idag" subtitle={`${today.length} muggjobb`} />
+      <PageHeader
+        title="Översikt"
+        subtitle="Demo för leverantör — beställningar och produktion. Inga priser eller fakturor."
+      />
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <KpiCard label="Att acceptera" value={accept} />
+        <KpiCard label="I produktion" value={inProd} />
+        <KpiCard label="Redo att skicka" value={ready} />
+        <KpiCard label="Skickade" value={shipped} href="/factory/skickat" />
+      </div>
+      {accept > 0 || ready > 0 ? (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {accept > 0 ? (
+            <ActionCard href="/factory" label="Deadline att acceptera" value={accept} tone="yellow" />
+          ) : null}
+          {ready > 0 ? (
+            <ActionCard href="/factory" label="Fraktsedel / markera skickad" value={ready} tone="grey" />
+          ) : null}
+        </div>
+      ) : null}
+      <h2 className="pt-2 text-[15px] font-semibold tracking-tight">Beställningar</h2>
       {today.length === 0 ? (
-        <EmptyState title="Inga muggjobb idag" body="När Aqua skickat en bekräftad muggorder syns tryckjobben här." />
+        <EmptyState title="Inga beställningar just nu" body="När Aqua skickat en bekräftad muggorder syns jobben här." />
       ) : (
         <div className="grid gap-3 xl:grid-cols-2">
           {today.map((j) => {

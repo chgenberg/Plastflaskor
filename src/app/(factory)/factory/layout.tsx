@@ -7,12 +7,12 @@ export default async function FactoryLayout({ children }: { children: React.Reac
   const user = await requireRole(["FACTORY", "AQUA_STAFF", "AQUA_ADMIN"]);
   return (
     <AppShell
-      title="Fabriken"
+      title="Leverantör"
       email={user.email}
       role={user.role}
       dense
       nav={[
-        { href: "/factory", label: "Idag" },
+        { href: "/factory", label: "Översikt" },
         { href: "/factory/skickat", label: "Skickat" },
         { href: "/factory/dokument", label: "Dokument" },
       ]}

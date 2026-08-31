@@ -10,7 +10,7 @@ const ROLE_LABEL: Record<string, string> = {
   RESELLER: "Återförsäljare",
   AQUA_STAFF: "Drift",
   AQUA_ADMIN: "Admin",
-  FACTORY: "Tryckeri",
+  FACTORY: "Leverantör",
 };
 
 export function AppShell({

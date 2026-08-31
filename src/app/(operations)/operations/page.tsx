@@ -37,6 +37,7 @@ export default async function OpsHome() {
         action={
           <div className="flex flex-wrap gap-2">
             <LinkButton href="/operations/pipeline">Öppna tavlan</LinkButton>
+            <LinkButton href="/operations/visning" variant="secondary">Visning</LinkButton>
             <LinkButton href="/operations/ledning" variant="secondary">Ledning</LinkButton>
             <LinkButton href="/operations/notiser" variant="secondary">Notiser</LinkButton>
           </div>
