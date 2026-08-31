@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { placeBuyerOrderAction } from "@/actions";
 import { addLeadTimeDays } from "@/domain/orderBrief";
-import { Button } from "@/ui/shell/primitives";
+import { Button, controlClass } from "@/ui/shell/primitives";
 
 type Variant = {
   id: string;
@@ -98,7 +98,7 @@ export function CupOrderForm({
       {showCustomerSelect && customers?.length ? (
         <label className="block text-sm">
           <span className="text-[var(--av-text-muted)]">Kund</span>
-          <select name="customerId" className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2" required>
+          <select name="customerId" className={`${controlClass} mt-1`} required>
             {customers.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
@@ -112,7 +112,7 @@ export function CupOrderForm({
         <label className="block text-sm">
           <span className="text-[var(--av-text-muted)]">Storlek</span>
           <select
-            className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2"
+            className={`${controlClass} mt-1`}
             value={volumeMl ?? ""}
             onChange={(e) => applySize(Number(e.target.value))}
           >
@@ -126,7 +126,7 @@ export function CupOrderForm({
         <label className="block text-sm">
           <span className="text-[var(--av-text-muted)]">Vägg</span>
           <select
-            className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2"
+            className={`${controlClass} mt-1`}
             value={resolvedWall}
             onChange={(e) => applyWall(e.target.value as "enkel" | "dubbel")}
           >
@@ -140,7 +140,7 @@ export function CupOrderForm({
         <label className="block text-sm">
           <span className="text-[var(--av-text-muted)]">ECO</span>
           <select
-            className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2"
+            className={`${controlClass} mt-1`}
             value={resolvedEco ? "ja" : "nej"}
             onChange={(e) => applyEco(e.target.value === "ja")}
           >
@@ -169,7 +169,7 @@ export function CupOrderForm({
           min={selected?.moq ?? 500}
           value={qty}
           onChange={(e) => setQty(Number(e.target.value) || selected?.moq || 500)}
-          className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2"
+          className={`${controlClass} mt-1`}
           required
         />
       </label>
@@ -186,14 +186,14 @@ export function CupOrderForm({
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block text-sm">
           <span className="text-[var(--av-text-muted)]">Ytfinish</span>
-          <select name="finish" className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2">
+          <select name="finish" className={`${controlClass} mt-1`}>
             <option value="matte">Matt</option>
             <option value="glossy">Glans</option>
           </select>
         </label>
         <label className="block text-sm">
           <span className="text-[var(--av-text-muted)]">Lock</span>
-          <select name="lid" className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2">
+          <select name="lid" className={`${controlClass} mt-1`}>
             <option value="none">Utan lock</option>
             <option value="white">Vitt lock</option>
             <option value="black">Svart lock</option>
@@ -203,7 +203,7 @@ export function CupOrderForm({
       {addresses.length ? (
         <label className="block text-sm">
           <span className="text-[var(--av-text-muted)]">Leveransadress</span>
-          <select name="addressId" className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2">
+          <select name="addressId" className={`${controlClass} mt-1`}>
             {addresses.map((a) => (
               <option key={a.id} value={a.id}>
                 {a.line1}, {a.city}
@@ -213,15 +213,27 @@ export function CupOrderForm({
         </label>
       ) : (
         <div className="grid gap-3 sm:grid-cols-3">
-          <input name="line1" placeholder="Adress" className="rounded-xl border border-[var(--av-border-strong)] px-3 py-2 text-sm" />
-          <input name="postalCode" placeholder="Postnr" className="rounded-xl border border-[var(--av-border-strong)] px-3 py-2 text-sm" />
-          <input name="city" placeholder="Ort" className="rounded-xl border border-[var(--av-border-strong)] px-3 py-2 text-sm" />
+          <label className="block text-sm">
+            <span className="text-[var(--av-text-muted)]">Adress</span>
+            <input name="line1" placeholder="Gatuadress" className={`${controlClass} mt-1`} />
+          </label>
+          <label className="block text-sm">
+            <span className="text-[var(--av-text-muted)]">Postnr</span>
+            <input name="postalCode" placeholder="123 45" className={`${controlClass} mt-1`} />
+          </label>
+          <label className="block text-sm">
+            <span className="text-[var(--av-text-muted)]">Ort</span>
+            <input name="city" placeholder="Stad" className={`${controlClass} mt-1`} />
+          </label>
         </div>
       )}
-      <input name="invoiceRef" placeholder="Fakturareferens" className="w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2 text-sm" />
+      <label className="block text-sm">
+        <span className="text-[var(--av-text-muted)]">Fakturareferens</span>
+        <input name="invoiceRef" placeholder="Er referens" className={`${controlClass} mt-1`} />
+      </label>
       <label className="block text-sm">
         <span className="text-[var(--av-text-muted)]">Önskat leveransdatum</span>
-        <input name="requestedDate" type="date" className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2" />
+        <input name="requestedDate" type="date" className={`${controlClass} mt-1`} />
         <p className="mt-1 text-[12px] text-[var(--av-text-muted)]">
           Preliminärt — inte slutgiltigt. AquaVisibility bekräftar datum i orderbekräftelsen.
         </p>
@@ -231,11 +243,14 @@ export function CupOrderForm({
         <textarea
           name="deliveryRequirement"
           placeholder="T.ex. eventdatum som inte får missas"
-          className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2 text-sm"
+          className={`${controlClass} mt-1 h-auto py-2`}
           rows={2}
         />
       </label>
-      <textarea name="notes" placeholder="Kommentar" className="w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2 text-sm" rows={2} />
+      <label className="block text-sm">
+        <span className="text-[var(--av-text-muted)]">Kommentar</span>
+        <textarea name="notes" placeholder="Övriga instruktioner" className={`${controlClass} mt-1 h-auto py-2`} rows={2} />
+      </label>
       <label className="block text-sm">
         <span className="text-[var(--av-text-muted)]">Tryckfil (PNG, JPG, SVG, PDF, AI)</span>
         <input type="file" name="artwork" accept=".png,.jpg,.jpeg,.svg,.pdf,.ai" className="mt-1 block w-full text-sm" />

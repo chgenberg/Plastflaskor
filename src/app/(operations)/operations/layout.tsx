@@ -11,10 +11,10 @@ export default async function OpsLayout({ children }: { children: React.ReactNod
       email={user.email}
       role={user.role}
       nav={[
-        { href: "/operations", label: "Översikt" },
+        { href: "/operations", label: "Dashboard" },
         { href: "/operations/ordrar", label: "Ordrar" },
-        { href: "/operations/pipeline", label: "Tavla" },
-        { href: "/operations/leads", label: "Återbeställningar" },
+        { href: "/operations/pipeline", label: "Pipeline" },
+        { href: "/operations/leads", label: "Leads" },
         { href: "/operations/produktion", label: "Produktion" },
         { href: "/operations/frakt", label: "Frakt" },
         { href: "/operations/ekonomi", label: "Fakturering" },

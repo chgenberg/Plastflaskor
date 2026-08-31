@@ -17,7 +17,7 @@ const SURFACES = [
     href: "/operations",
     title: "Drift",
     account: "staff@demo.aqua",
-    body: "Action-kort, tavla, granska, OB, frakt, faktura. Inte leverantörens yta.",
+    body: "Action-kort, pipeline, granska, OB, frakt, faktura. Inte leverantörens yta.",
   },
   {
     href: "/factory",

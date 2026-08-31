@@ -2,7 +2,7 @@ import { repeatOrderAction } from "@/actions";
 import type { VisualSpec } from "@/domain/visualSpec";
 import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
 import { RepeatFields } from "@/ui/partner/RepeatFields";
-import { Button } from "@/ui/shell/primitives";
+import { Button, controlClass } from "@/ui/shell/primitives";
 
 export function RepeatOrderForm({
   sourceOrderId,
@@ -33,7 +33,7 @@ export function RepeatOrderForm({
               type="number"
               defaultValue={Math.max(defaultQty, moq)}
               min={moq}
-              className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2"
+              className={`${controlClass} mt-1`}
               required
             />
           </label>
@@ -43,7 +43,7 @@ export function RepeatOrderForm({
           <textarea
             name="notes"
             placeholder="Önskemål / kommentar"
-            className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2 text-sm"
+            className={`${controlClass} mt-1 h-auto py-2`}
             rows={3}
           />
         </label>

@@ -35,7 +35,7 @@ export default async function OpsHome() {
         subtitle={`Kräver åtgärd · ${cups.toLocaleString("sv-SE")} muggar denna vecka`}
         action={
           <div className="flex flex-wrap gap-2">
-            <LinkButton href="/operations/pipeline">Öppna tavlan</LinkButton>
+            <LinkButton href="/operations/pipeline">Öppna pipeline</LinkButton>
             <LinkButton href="/operations/visning" variant="secondary">Visning</LinkButton>
             <LinkButton href="/operations/ledning" variant="secondary">Ledning</LinkButton>
             <LinkButton href="/operations/notiser" variant="secondary">Notiser</LinkButton>

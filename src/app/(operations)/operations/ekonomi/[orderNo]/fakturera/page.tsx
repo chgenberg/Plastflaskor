@@ -172,18 +172,17 @@ export default async function InvoicePage({
             <FileLink href={`/api/documents/${invoiceDoc.id}`}>{invoiceDoc.title}</FileLink>
           </p>
         ) : null}
-        {!issued ? (
-          <FortnoxInvoiceForm orderNo={order.orderNo} />
-        ) : user?.role === "AQUA_ADMIN" && order.invoice ? (
+        <FortnoxInvoiceForm orderNo={order.orderNo} created={issued || Boolean(ok)} />
+        {issued && user?.role === "AQUA_ADMIN" && order.invoice ? (
           <form action={markInvoicePaid} className="mt-6">
             <input type="hidden" name="invoiceNo" value={order.invoice.invoiceNo} />
             <Button type="submit" className="w-full">
               Markera betald
             </Button>
           </form>
-        ) : (
+        ) : issued ? (
           <p className="mt-6 text-sm text-[var(--av-text-muted)]">Faktura utfärdad. Väntar på betalning.</p>
-        )}
+        ) : null}
       </Panel>
     </div>
   );

@@ -94,10 +94,14 @@ export default async function JobPage({ params }: { params: Promise<{ jobId: str
               <form action={factoryAction} className="space-y-2">
                 <input type="hidden" name="jobId" value={job.id} />
                 <input type="hidden" name="action" value="FLAG_ISSUE" />
+                <label className="sr-only" htmlFor={`issue-${job.id}`}>
+                  Föreslaget datum eller anledning
+                </label>
                 <input
+                  id={`issue-${job.id}`}
                   name="issueNote"
                   placeholder="Föreslaget datum / anledning"
-                  className="h-12 w-full rounded-xl border border-[var(--av-border-strong)] px-3 text-sm"
+                  className="h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-3 text-sm"
                 />
                 <Button type="submit" variant="secondary" size="lg" className="w-full">
                   Flagga problem
@@ -112,7 +116,15 @@ export default async function JobPage({ params }: { params: Promise<{ jobId: str
             <form action={factoryAction} className="space-y-2">
               <input type="hidden" name="jobId" value={job.id} />
               <input type="hidden" name="action" value="DONE" />
-              <input name="readyDate" type="date" className="h-12 w-full rounded-xl border border-[var(--av-border-strong)] px-3 text-sm" />
+              <label className="sr-only" htmlFor={`ready-${job.id}`}>
+                Estimerat klart-datum
+              </label>
+              <input
+                id={`ready-${job.id}`}
+                name="readyDate"
+                type="date"
+                className="h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-3 text-sm"
+              />
               <Button type="submit" size="lg" className="w-full">
                 Produktion klar + estimerat datum
               </Button>

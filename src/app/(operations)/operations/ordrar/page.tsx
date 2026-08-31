@@ -82,7 +82,7 @@ export default async function OpsOrders({
           Offerter
         </Link>
         <Link href="/operations/pipeline" className="text-[var(--av-text-muted)]">
-          Tavla
+          Pipeline
         </Link>
       </div>
       <OrderFilterForm
