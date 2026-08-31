@@ -39,6 +39,7 @@ const ITEMS: Parent[] = [
       { href: "/om", label: "Om Aqua Visibility" },
       { href: "/miljo", label: "Miljö" },
       { href: "/nyheter", label: "Nyheter" },
+      { href: "/inspiration", label: "Referenser" },
     ],
   },
   {

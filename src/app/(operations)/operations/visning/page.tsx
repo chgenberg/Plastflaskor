@@ -11,7 +11,7 @@ const SURFACES = [
     href: "/partner",
     title: "ÅF-portal",
     account: "reseller.gold@demo.aqua",
-    body: "Prislista Guld, beställ åt kund, tryckfiler, repeat. Inga Standard-priser.",
+    body: "Prislista Key Account, beställ åt kund, tryckfiler, repeat. Inga Standard-priser.",
   },
   {
     href: "/operations",

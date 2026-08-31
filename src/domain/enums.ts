@@ -31,8 +31,8 @@ export const ORDER_STEP_LABELS: Record<OrderStatusCode, string> = {
 };
 
 export const BUYER_STATUS: Record<string, string> = {
-  SUBMITTED: "Mottagen",
-  AQUA_REVIEW: "Mottagen",
+  SUBMITTED: "Mottagen — väntar på Aqua",
+  AQUA_REVIEW: "Mottagen — väntar på Aqua",
   ARTWORK_AQUA_REVIEW: "Korrektur",
   ARTWORK_CUSTOMER_APPROVAL: "Korrektur",
   CONFIRMED: "Bekräftad",

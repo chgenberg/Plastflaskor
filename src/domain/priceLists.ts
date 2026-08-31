@@ -1,8 +1,8 @@
 export function priceListDisplayName(name?: string | null) {
   const map: Record<string, string> = {
     Standard: "Standard",
-    Silver: "Silver",
-    Gold: "Guld",
+    Silver: "Partner",
+    Gold: "Key Account",
     "Special Agreement": "Specialavtal",
   };
   if (!name) return "–";

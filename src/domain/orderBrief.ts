@@ -58,7 +58,7 @@ export function buyerTimeline(status: string): BuyerTimelineStep[] {
     { id: "received", label: "Order mottagen", done: true, current: false },
     { id: "artwork", label: "Korrektur", done: confirmed, current: inArtwork },
     { id: "confirmed", label: "Order bekräftad", done: confirmed, current: false },
-    { id: "print", label: "Trycks", done: printing, current: status === "IN_PRODUCTION" },
+    { id: "print", label: "Produktion", done: printing, current: status === "IN_PRODUCTION" },
     { id: "pack", label: "Förbereds för leverans", done: packing, current: status === "READY_TO_SHIP" },
     { id: "shipped", label: "Skickad", done: shipped, current: status === "SHIPPED" },
     { id: "delivered", label: "Levererad", done: delivered, current: delivered && status === "DELIVERED" },

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireRole } from "@/server/rbac";
 import { listOrdersForCustomer } from "@/server/services/order.service";
 import { BUYER_STATUS } from "@/domain/enums";
@@ -6,12 +7,33 @@ import { imageForProduct } from "@/domain/productImages";
 import { BuyerOrderCard } from "@/ui/order/BuyerOrderCard";
 import { EmptyState, LinkButton, PageHeader } from "@/ui/shell/primitives";
 
-export default async function KontoOrders() {
+const DONE = new Set(["DELIVERED", "INVOICED", "PAID"]);
+
+export default async function KontoOrders({ searchParams }: { searchParams: Promise<{ view?: string }> }) {
+  const { view: raw } = await searchParams;
+  const view = raw === "delivered" || raw === "active" ? raw : "all";
   const user = await requireRole(["CUSTOMER", "AQUA_STAFF", "AQUA_ADMIN"]);
-  const orders = user.customerId ? await listOrdersForCustomer(user.customerId) : [];
+  const all = user.customerId ? await listOrdersForCustomer(user.customerId) : [];
+  const orders =
+    view === "active" ? all.filter((o) => !DONE.has(o.currentStatus)) : view === "delivered" ? all.filter((o) => DONE.has(o.currentStatus)) : all;
   return (
     <div className="space-y-8">
       <PageHeader title="Ordrar" action={<LinkButton href="/konto/ordrar/ny">Ny order</LinkButton>} />
+      <div className="flex flex-wrap gap-2 text-sm">
+        {[
+          { id: "all", label: "Alla", href: "/konto/ordrar" },
+          { id: "active", label: "Aktiva", href: "/konto/ordrar?view=active" },
+          { id: "delivered", label: "Levererade / tidigare", href: "/konto/ordrar?view=delivered" },
+        ].map((tab) => (
+          <Link
+            key={tab.id}
+            href={tab.href}
+            className={`rounded-[var(--av-radius-md)] px-3 py-1.5 ${view === tab.id ? "bg-[var(--av-accent-soft)] font-medium text-[var(--av-accent)]" : "text-[var(--av-text-muted)]"}`}
+          >
+            {tab.label}
+          </Link>
+        ))}
+      </div>
       {orders.length === 0 ? (
         <EmptyState title="Inga ordrar" body="När ni skickar en order syns den här." />
       ) : (

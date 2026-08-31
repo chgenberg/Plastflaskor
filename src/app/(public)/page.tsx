@@ -187,6 +187,26 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section className="mx-auto max-w-6xl px-4 pb-10">
+        <div className="grid gap-4 md:grid-cols-3">
+          <Link href="/login" className="av-card p-6">
+            <p className="av-label">Kundportal</p>
+            <h2 className="mt-2 text-lg font-semibold tracking-tight">Logga in för priser och order</h2>
+            <p className="mt-2 text-sm text-[var(--av-text-muted)]">Order, korrektur och fakturor ligger bakom login.</p>
+          </Link>
+          <Link href="/offert" className="av-card p-6">
+            <p className="av-label">Kontakt</p>
+            <h2 className="mt-2 text-lg font-semibold tracking-tight">Begär offert</h2>
+            <p className="mt-2 text-sm text-[var(--av-text-muted)]">+46 (0)8 400 204 80 · info@aquavisibility.se</p>
+          </Link>
+          <Link href="/inspiration" className="av-card p-6">
+            <p className="av-label">Inspiration</p>
+            <h2 className="mt-2 text-lg font-semibold tracking-tight">Referenser</h2>
+            <p className="mt-2 text-sm text-[var(--av-text-muted)]">Se hur produkterna används — sedan vidare till studion.</p>
+          </Link>
+        </div>
+      </section>
+
       <section className="mx-auto max-w-3xl px-4 pb-20">
         <Surface className="text-center">
           <h2 className="av-serif text-3xl tracking-[-0.01em]">Häng med i matchen!</h2>

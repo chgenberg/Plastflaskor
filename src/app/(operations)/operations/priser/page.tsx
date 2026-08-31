@@ -23,7 +23,7 @@ export default async function PriceListsAdmin() {
 
   return (
     <div className="space-y-8">
-      <PageHeader title="Prislistor" subtitle="Standard, Silver, Guld och Specialavtal. Ordern låser snapshot vid OB." />
+      <PageHeader title="Prislistor" subtitle="Standard, Partner, Key Account och Specialavtal. Ordern låser snapshot vid OB." />
       {lists.length === 0 ? (
         <EmptyState title="Inga prislistor" body="När listor seedas syns kod, ÅF, kunder och pappersmugg-rader här." />
       ) : (
