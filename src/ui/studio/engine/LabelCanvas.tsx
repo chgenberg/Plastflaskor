@@ -153,7 +153,7 @@ export function LabelCanvas({
     <div className="relative flex h-full flex-col">
       <div
         ref={frame}
-        className="relative mx-auto my-auto aspect-[16/9] w-full max-w-[560px] touch-none overflow-hidden rounded-xl bg-[#e5e7eb] shadow-[0_10px_40px_rgba(20,30,40,.08)]"
+        className="relative mx-auto my-auto aspect-[16/9] w-full max-w-[560px] touch-none overflow-hidden rounded-[var(--av-radius-lg)] bg-[var(--av-gray-100)] shadow-[var(--av-shadow-sm)]"
         style={{ transform: `scale(${zoom})` }}
       >
         <div className="absolute inset-0">
@@ -161,16 +161,16 @@ export function LabelCanvas({
         </div>
       </div>
 
-      <p className="mt-3 text-center text-[12px] text-[#9ca3af]">Dra för att flytta. Hörnen skalar. Piltangenter flyttar, [ ] ändrar storlek.</p>
+      <p className="mt-3 text-center text-[12px] text-[var(--av-text-muted)]">Dra för att flytta. Hörnen skalar. Piltangenter flyttar, [ ] ändrar storlek.</p>
       <div className="mt-auto flex items-center justify-between px-1 pt-3">
-        <button type="button" onClick={onDelete} className="flex h-9 w-9 items-center justify-center rounded-full text-[#6b7280] hover:bg-black/[0.05]" aria-label="Ta bort lager">
+        <button type="button" onClick={onDelete} className="flex h-9 w-9 items-center justify-center rounded-[var(--av-radius-md)] text-[var(--av-text-muted)] hover:bg-[var(--av-bg)]" aria-label="Ta bort lager">
           <TrashIcon />
         </button>
         <div className="flex items-center gap-1">
-          <button type="button" onClick={() => onZoom(Math.max(0.7, zoom - 0.1))} className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-black/[0.05]" aria-label="Zooma ut">
+          <button type="button" onClick={() => onZoom(Math.max(0.7, zoom - 0.1))} className="flex h-9 w-9 items-center justify-center rounded-[var(--av-radius-md)] hover:bg-[var(--av-bg)]" aria-label="Zooma ut">
             −
           </button>
-          <button type="button" onClick={() => onZoom(Math.min(1.4, zoom + 0.1))} className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-black/[0.05]" aria-label="Zooma in">
+          <button type="button" onClick={() => onZoom(Math.min(1.4, zoom + 0.1))} className="flex h-9 w-9 items-center justify-center rounded-[var(--av-radius-md)] hover:bg-[var(--av-bg)]" aria-label="Zooma in">
             +
           </button>
         </div>

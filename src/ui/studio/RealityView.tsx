@@ -49,7 +49,7 @@ export function RealityView({
   return (
     <div className="relative flex h-full flex-col">
       {showBar ? (
-        <div className="mx-4 mt-2 rounded-2xl bg-[var(--av-accent-soft)] px-4 py-3">
+        <div className="mx-4 mt-2 rounded-[var(--av-radius-lg)] bg-[var(--av-accent-soft)] px-4 py-3">
           <div className="flex items-center justify-between text-[13px] font-semibold text-[var(--av-accent)]">
             <span>Skapar bilden i verkligheten…</span>
             <span>{pct}%</span>
@@ -67,10 +67,10 @@ export function RealityView({
           <img
             src={imageUrl}
             alt="Produkten i verkligheten"
-            className={`max-h-full w-full rounded-2xl object-contain shadow-[0_16px_50px_rgba(15,23,42,.12)] ${loading ? "opacity-40" : ""}`}
+            className={`max-h-full w-full rounded-[var(--av-radius-lg)] object-contain shadow-[var(--av-shadow-md)] ${loading ? "opacity-40" : ""}`}
           />
         ) : (
-          <div className="flex aspect-[4/5] w-full flex-col items-center justify-center rounded-2xl bg-[var(--av-bg)] px-6 text-center">
+          <div className="flex aspect-[4/5] w-full flex-col items-center justify-center rounded-[var(--av-radius-lg)] bg-[var(--av-bg)] px-6 text-center">
             <p className="text-[15px] font-semibold text-[var(--av-text)]">Se produkten i verkligheten</p>
             <p className="mt-2 text-[13px] leading-relaxed text-[var(--av-text-muted)]">
               Först tryckytan med din logotyp. Sedan Generera — vi startar inte förrän du klickar.
@@ -80,14 +80,14 @@ export function RealityView({
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2 px-4 pb-4">
-        <button type="button" onClick={onBack} className="h-9 rounded-full px-3 text-[13px] text-[var(--av-text-muted)] hover:bg-black/[0.04]">
+        <button type="button" onClick={onBack} className="h-9 rounded-[var(--av-radius-md)] px-3 text-[13px] text-[var(--av-text-muted)] hover:bg-[var(--av-bg)]">
           ← Tillbaka till tryckytan
         </button>
         <button
           type="button"
           onClick={onGenerate}
           disabled={loading}
-          className="h-10 rounded-full bg-[var(--av-accent)] px-5 text-[13px] font-semibold text-white disabled:opacity-60"
+          className="h-10 rounded-[var(--av-radius-md)] bg-[var(--av-accent)] px-5 text-[13px] font-semibold text-white disabled:opacity-60"
         >
           {loading ? "Skapar…" : imageUrl ? (stale ? "Uppdatera bilden" : "Generera igen") : "Generera"}
         </button>

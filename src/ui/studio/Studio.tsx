@@ -306,20 +306,20 @@ export function Studio({
             <span className={`h-1.5 w-1.5 rounded-full ${saved ? "bg-emerald-500" : "bg-amber-400"}`} />
             Autosparar
           </span>
-          <button type="button" onClick={undo} className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-black/[0.05]" aria-label="Ångra">
+          <button type="button" onClick={undo} className="flex h-8 w-8 items-center justify-center rounded-[var(--av-radius-md)] hover:bg-[var(--av-bg)]" aria-label="Ångra">
             ↩
           </button>
-          <button type="button" onClick={redo} className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-black/[0.05]" aria-label="Gör om">
+          <button type="button" onClick={redo} className="flex h-8 w-8 items-center justify-center rounded-[var(--av-radius-md)] hover:bg-[var(--av-bg)]" aria-label="Gör om">
             ↪
           </button>
         </div>
         <div className="flex items-center justify-end gap-3">
           <div className="relative" ref={pickerRef}>
-            <button type="button" onClick={() => setPicker((v) => !v)} className="h-9 rounded-full border border-black/10 bg-white px-3 text-[12px] font-medium">
+            <button type="button" onClick={() => setPicker((v) => !v)} className="h-9 rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] bg-white px-3 text-[12px] font-medium">
               {skuLabel(product)}
             </button>
             {picker ? (
-              <div className="absolute right-0 top-11 z-50 max-h-72 w-72 overflow-auto rounded-2xl bg-white p-2 shadow-[0_12px_40px_rgba(0,0,0,.18)]">
+              <div className="av-card absolute right-0 top-11 z-50 max-h-72 w-72 overflow-auto p-2">
                 {products.map((p) => (
                   <button
                     key={p.id}
@@ -330,7 +330,7 @@ export function Studio({
                       setPlacedReqs({});
                       setPicker(false);
                     }}
-                    className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-black/[0.04]"
+                    className="block w-full rounded-[var(--av-radius-md)] px-3 py-2 text-left text-sm hover:bg-[var(--av-bg)]"
                   >
                     <span className="font-medium">{skuLabel(p)}</span>
                     <span className="mt-0.5 block text-[11px] text-[var(--av-text-muted)]">{p.name}</span>
@@ -340,19 +340,19 @@ export function Studio({
             ) : null}
           </div>
           <p className="hidden text-[12px] text-[var(--av-text-muted)] sm:block">{qty} st</p>
-          <button type="button" onClick={resetDesign} className="hidden h-9 rounded-full border border-black/10 px-3 text-[12px] font-medium sm:inline-flex sm:items-center">
+          <button type="button" onClick={resetDesign} className="hidden h-9 rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-3 text-[12px] font-medium sm:inline-flex sm:items-center">
             Återställ
           </button>
           {isBuyer ? (
-            <button type="button" onClick={addToOrder} className="h-9 rounded-full border border-black/10 bg-white px-4 text-[13px] font-semibold">
+            <button type="button" onClick={addToOrder} className="h-9 rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] bg-white px-4 text-[13px] font-semibold">
               Lägg till i order
             </button>
           ) : (
-            <button type="button" onClick={requestQuote} className="h-9 rounded-full border border-black/10 bg-white px-4 text-[13px] font-semibold">
+            <button type="button" onClick={requestQuote} className="h-9 rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] bg-white px-4 text-[13px] font-semibold">
               Begär offert
             </button>
           )}
-          <button type="button" onClick={next} className="h-9 rounded-full bg-[var(--av-accent)] px-5 text-[13px] font-semibold text-white shadow-sm hover:bg-[var(--av-accent-hover)]">
+          <button type="button" onClick={next} className="h-9 rounded-[var(--av-radius-md)] bg-[var(--av-accent)] px-5 text-[13px] font-semibold text-white shadow-sm hover:bg-[var(--av-accent-hover)]">
             Kassa
           </button>
         </div>
@@ -375,7 +375,7 @@ export function Studio({
                 else setView("wrap");
               }}
               className={`flex w-[68px] flex-col items-center gap-1 rounded-2xl py-3 text-[11px] font-medium ${
-                tool === t.id ? "bg-[var(--av-accent-soft)] text-[var(--av-accent)]" : "text-[var(--av-text-muted)] hover:bg-black/[0.04]"
+                tool === t.id ? "bg-[var(--av-accent-soft)] text-[var(--av-accent)]" : "text-[var(--av-text-muted)] hover:bg-[var(--av-bg)]"
               }`}
             >
               <ToolIcon id={t.id} />
@@ -389,11 +389,11 @@ export function Studio({
             <ol className="flex gap-1 overflow-x-auto px-4 pt-3 text-[11px] font-medium">
               {STEPS.map((s, i) => (
                 <li key={s.id} className="flex items-center gap-1">
-                  {i > 0 ? <span className="text-[#d4d4d8]">→</span> : null}
+                  {i > 0 ? <span className="text-[var(--av-gray-200)]">→</span> : null}
                   <button
                     type="button"
                     onClick={() => goStep(i)}
-                    className={`rounded-full px-2.5 py-1 ${step === i ? "bg-[var(--av-accent-soft)] text-[var(--av-accent)]" : "text-[var(--av-text-muted)] hover:bg-black/[0.04]"}`}
+                    className={`rounded-[var(--av-radius-md)] px-2.5 py-1 ${step === i ? "bg-[var(--av-accent-soft)] text-[var(--av-accent)]" : "text-[var(--av-text-muted)] hover:bg-[var(--av-bg)]"}`}
                   >
                     {s.label}
                   </button>
@@ -519,7 +519,7 @@ export function Studio({
               if (t.id === "preview") openRealityPane();
               else setView("wrap");
             }}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium ${tool === t.id ? "bg-[var(--av-accent-soft)] text-[var(--av-accent)]" : "text-[var(--av-text-muted)]"}`}
+            className={`rounded-[var(--av-radius-md)] px-3 py-1.5 text-xs font-medium ${tool === t.id ? "bg-[var(--av-accent-soft)] text-[var(--av-accent)]" : "text-[var(--av-text-muted)]"}`}
           >
             {t.label}
           </button>
@@ -590,7 +590,7 @@ function Inspector({
               <button
                 type="button"
                 onClick={() => onSelect(l.id)}
-                className={`w-full rounded-xl px-3 py-2 text-left ${selected.id === l.id ? "bg-[var(--av-accent-soft)] text-[var(--av-accent)]" : "hover:bg-black/[0.04]"}`}
+                className={`w-full rounded-[var(--av-radius-md)] px-3 py-2 text-left ${selected.id === l.id ? "bg-[var(--av-accent-soft)] text-[var(--av-accent)]" : "hover:bg-[var(--av-bg)]"}`}
               >
                 {l.name}
               </button>
@@ -608,7 +608,7 @@ function Inspector({
               onSelect("text");
               onLayerChange("text", { text: e.target.value });
             }}
-            className="mt-2 h-10 w-full rounded-xl border border-black/10 px-3"
+            className="mt-2 h-10 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-3"
             placeholder="Skriv på tryckytan"
           />
         </label>
@@ -623,7 +623,7 @@ function Inspector({
               onSelect("qr");
               onLayerChange("qr", { text: e.target.value });
             }}
-            className="mt-2 h-10 w-full rounded-xl border border-black/10 px-3"
+            className="mt-2 h-10 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-3"
             placeholder="https://"
           />
         </label>
@@ -632,7 +632,7 @@ function Inspector({
       {tool === "upload" ? (
         <div className="space-y-2">
           <p className="av-label">Ladda upp tryckfil</p>
-          <label className="flex h-36 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-black/15 px-4 text-center text-[13px] text-[var(--av-text-muted)]">
+          <label className="flex h-36 cursor-pointer flex-col items-center justify-center rounded-[var(--av-radius-lg)] border border-dashed border-[var(--av-border-strong)] px-4 text-center text-[13px] text-[var(--av-text-muted)]">
             <input
               type="file"
               accept=".png,.jpg,.jpeg,.svg,.webp,.pdf,.ai"
@@ -671,12 +671,12 @@ function Inspector({
           <span className="av-label">Textfärg</span>
           <input
             type="color"
-            value={layers.find((l) => l.type === "text")?.color ?? "#1d1d1f"}
+            value={layers.find((l) => l.type === "text")?.color ?? "#0f172a"}
             onChange={(e) => {
               onSelect("text");
               onLayerChange("text", { color: e.target.value });
             }}
-            className="mt-2 h-10 w-full rounded-xl border border-black/10"
+            className="mt-2 h-10 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)]"
           />
         </label>
       ) : null}
@@ -697,7 +697,7 @@ function Inspector({
             <select
               value={lid}
               onChange={(e) => onLid(e.target.value as "none" | "white" | "black")}
-              className="h-10 w-full rounded-xl border border-black/10 px-3"
+              className="h-10 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-3"
             >
               <option value="none">Utan lock</option>
               <option value="white">Vitt lock</option>
@@ -706,13 +706,13 @@ function Inspector({
           </Field>
           <div>
             <p className="av-label">Ytfinish</p>
-            <div className="mt-2 grid grid-cols-2 gap-1 rounded-full bg-[var(--av-bg)] p-1">
+            <div className="mt-2 grid grid-cols-2 gap-1 rounded-[var(--av-radius-md)] bg-[var(--av-bg)] p-1">
               {(["matte", "gloss"] as const).map((f) => (
                 <button
                   key={f}
                   type="button"
                   onClick={() => onFinish(f)}
-                  className={`rounded-full py-1.5 text-xs font-medium ${finish === f ? "bg-white shadow-sm" : "text-[var(--av-text-muted)]"}`}
+                  className={`rounded-[var(--av-radius-sm)] py-1.5 text-xs font-medium ${finish === f ? "bg-white shadow-sm" : "text-[var(--av-text-muted)]"}`}
                 >
                   {f === "matte" ? "Matt" : "Blank"}
                 </button>
@@ -748,7 +748,7 @@ function Inspector({
                   key={n}
                   type="button"
                   onClick={() => onQty(n)}
-                  className={`rounded-full px-3 py-1.5 text-xs ${qty === n ? "bg-[var(--av-accent)] text-white" : "bg-black/[0.04]"}`}
+                  className={`rounded-[var(--av-radius-md)] px-3 py-1.5 text-xs ${qty === n ? "bg-[var(--av-accent)] text-white" : "bg-[var(--av-bg)]"}`}
                 >
                   {n} st
                 </button>
@@ -802,7 +802,7 @@ function Num({ label, value, onChange, step = 1 }: { label: string; value: numbe
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="mt-1 h-9 w-full rounded-lg border border-black/10 px-2 text-xs"
+        className="mt-1 h-9 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-2 text-xs"
       />
     </label>
   );
@@ -810,9 +810,9 @@ function Num({ label, value, onChange, step = 1 }: { label: string; value: numbe
 
 function AiBtn({ children, onClick }: { children: ReactNode; onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick} className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-[13px] hover:bg-black/[0.04]">
+    <button type="button" onClick={onClick} className="flex w-full items-center justify-between rounded-[var(--av-radius-md)] px-3 py-2 text-left text-[13px] hover:bg-[var(--av-bg)]">
       {children}
-      <span className="text-[#9ca3af]">✦</span>
+      <span className="text-[var(--av-text-muted)]">✦</span>
     </button>
   );
 }
@@ -832,25 +832,25 @@ function PaneToggle({
 }) {
   return (
     <div className="flex justify-center pt-4">
-      <div className="inline-flex rounded-full bg-[var(--av-bg)] p-1 text-[12px] font-medium">
+      <div className="inline-flex rounded-[var(--av-radius-md)] bg-[var(--av-bg)] p-1 text-[12px] font-medium">
         <button
           type="button"
           onClick={onWrap}
-          className={`rounded-full px-4 py-1.5 ${active === "wrap" ? "bg-white text-[var(--av-text)] shadow-sm" : "text-[var(--av-text-muted)]"}`}
+          className={`rounded-[var(--av-radius-sm)] px-4 py-1.5 ${active === "wrap" ? "bg-white text-[var(--av-text)] shadow-sm" : "text-[var(--av-text-muted)]"}`}
         >
           Tryckyta
         </button>
         <button
           type="button"
           onClick={onAngles}
-          className={`rounded-full px-4 py-1.5 ${active === "vinklar" ? "bg-white text-[var(--av-text)] shadow-sm" : "text-[var(--av-text-muted)]"}`}
+          className={`rounded-[var(--av-radius-sm)] px-4 py-1.5 ${active === "vinklar" ? "bg-white text-[var(--av-text)] shadow-sm" : "text-[var(--av-text-muted)]"}`}
         >
           3D / vinklar
         </button>
         <button
           type="button"
           onClick={onReality}
-          className={`rounded-full px-4 py-1.5 ${active === "verklighet" ? "bg-white text-[var(--av-text)] shadow-sm" : "text-[var(--av-text-muted)]"}`}
+          className={`rounded-[var(--av-radius-sm)] px-4 py-1.5 ${active === "verklighet" ? "bg-white text-[var(--av-text)] shadow-sm" : "text-[var(--av-text-muted)]"}`}
         >
           {loading ? "Skapar…" : "Se i verkligheten"}
         </button>

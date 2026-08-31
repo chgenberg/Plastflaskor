@@ -88,7 +88,7 @@ export function LabelLayers({
               </div>
             ) : null}
             {layer.type === "logo" && !layer.src && interactive ? (
-              <div className="rounded-md border border-dashed border-[#1d1d1f]/25 bg-white/70 px-5 py-3 text-[11px] text-[#9ca3af]">
+              <div className="rounded-md border border-dashed border-[var(--av-border-strong)] bg-white/70 px-5 py-3 text-[11px] text-[var(--av-text-muted)]">
                 Logotyp
               </div>
             ) : null}
@@ -110,7 +110,7 @@ export function LabelLayers({
               />
             ) : null}
             {layer.type === "qr" && !layer.text && interactive ? (
-              <div className="rounded-md border border-dashed border-[#1d1d1f]/25 bg-white/70 px-3 py-2 text-[11px] text-[#9ca3af]">
+              <div className="rounded-md border border-dashed border-[var(--av-border-strong)] bg-white/70 px-3 py-2 text-[11px] text-[var(--av-text-muted)]">
                 QR
               </div>
             ) : null}

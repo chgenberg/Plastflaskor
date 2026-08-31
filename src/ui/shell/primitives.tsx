@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { statusTone } from "@/domain/enums";
+import { eventLabel, statusTone } from "@/domain/enums";
 
 export function StatusChip({
   status,
@@ -22,7 +22,7 @@ export function StatusChip({
           : "bg-[var(--av-status-idle-bg)] text-[var(--av-status-idle-fg)]";
   return (
     <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[12px] font-medium ${cls}`}>
-      {label ?? status}
+      {label ?? eventLabel(status)}
     </span>
   );
 }
