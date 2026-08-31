@@ -18,7 +18,7 @@ export default async function PartnerLayout({ children }: { children: React.Reac
         { href: "/designa", label: "Designa" },
         { href: "/partner/fakturor", label: "Fakturor" },
         { href: "/partner/dokument", label: "Dokument" },
-        { href: "/partner/artwork", label: "Tryckfiler" },
+        { href: "/partner/artwork", label: "Artwork" },
         { href: "/partner/konto", label: "Konto" },
       ]}
     >

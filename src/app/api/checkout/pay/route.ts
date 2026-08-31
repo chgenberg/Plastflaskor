@@ -43,7 +43,7 @@ export async function POST(req: Request) {
     }
     return Response.json({
       ok: true,
-      redirect: `/kassa/bekraftelse?order=${result.orderNo}&t=${result.token}`,
+      redirect: "/kassa",
       orderNo: result.orderNo,
     });
   } catch (err) {

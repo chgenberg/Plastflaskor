@@ -37,6 +37,8 @@ type Order = {
   shipments: { trackingNo: string | null; carrier: string; status: string }[];
   designs: { id: string; projectName: string; files: { id: string; fileName: string }[] }[];
   artworkApprovals?: { kind: string }[];
+  customer?: { name: string };
+  shippingAddress?: { line1: string; postalCode: string; city: string } | null;
 };
 
 export function BuyerOrderDetail({ order, role, repeatHref }: { order: Order; role: string; repeatHref: string }) {
@@ -127,6 +129,12 @@ export function BuyerOrderDetail({ order, role, repeatHref }: { order: Order; ro
             lockedCopy="Ordern är godkänd och låst. Kontakta AquaVisibility för ändringar."
             orderNo={order.orderNo}
             invoiceRef={order.invoiceRef}
+            customer={order.customer?.name}
+            address={
+              order.shippingAddress
+                ? `${order.shippingAddress.line1}, ${order.shippingAddress.postalCode} ${order.shippingAddress.city}`
+                : undefined
+            }
           />
           <a href={repeatHref} className="inline-block text-sm font-medium text-[var(--av-accent)]">
             Beställ igen

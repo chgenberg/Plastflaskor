@@ -1,6 +1,9 @@
 import { requireRole } from "@/server/rbac";
 import { prisma } from "@/server/db";
 import { shipmentTrackingSteps } from "@/domain/orderBrief";
+import { specFromOrderItem } from "@/domain/visualSpec";
+import { imageForProduct } from "@/domain/productImages";
+import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
 import { EmptyState, PageHeader, Panel, StatusChip } from "@/ui/shell/primitives";
 
 export default async function ShippedPage() {
@@ -18,7 +21,27 @@ export default async function ShippedPage() {
       ...(user.factoryId ? { order: { factoryId: user.factoryId } } : {}),
       OR: [{ status: { in: ["PICKED_UP", "IN_TRANSIT", "DELIVERED"] } }, { shippedAt: { not: null } }],
     },
-    include: { order: { select: { orderNo: true } } },
+    include: {
+      order: {
+        select: {
+          orderNo: true,
+          visualSpecJson: true,
+          items: {
+            select: {
+              qty: true,
+              visualSpecJson: true,
+              variant: {
+                select: {
+                  volumeMl: true,
+                  optionsJson: true,
+                  product: { select: { name: true, slug: true } },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
     orderBy: { shippedAt: "desc" },
   });
   return (
@@ -31,8 +54,19 @@ export default async function ShippedPage() {
           {shipments.map((s) => {
             const steps = shipmentTrackingSteps(s.status);
             const current = steps.find((st) => st.current);
+            const item = s.order.items[0];
+            const spec = specFromOrderItem({
+              visualSpecJson: s.order.visualSpecJson,
+              item,
+              imageSrc: item ? imageForProduct(item.variant.product.slug) : null,
+            });
             return (
               <Panel key={s.id}>
+                {spec ? (
+                  <div className="mb-5">
+                    <VisualSpecCard spec={spec} compact />
+                  </div>
+                ) : null}
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="av-label">Order</p>

@@ -10,7 +10,7 @@ export default async function ArtworkPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Tryckfiler"
+        title="Artwork"
         subtitle={user.role === "RESELLER" ? "Era mallar och tidigare designer." : "Alla designer i systemet."}
         action={<LinkButton href="/designa">Ny design</LinkButton>}
       />

@@ -11,11 +11,19 @@ const DONE = new Set(["DELIVERED", "INVOICED", "PAID"]);
 
 export default async function KontoOrders({ searchParams }: { searchParams: Promise<{ view?: string }> }) {
   const { view: raw } = await searchParams;
-  const view = raw === "delivered" || raw === "active" ? raw : "all";
+  const view = raw === "delivered" || raw === "active" || raw === "proof" || raw === "shipped" ? raw : "all";
   const user = await requireRole(["CUSTOMER", "AQUA_STAFF", "AQUA_ADMIN"]);
   const all = user.customerId ? await listOrdersForCustomer(user.customerId) : [];
   const orders =
-    view === "active" ? all.filter((o) => !DONE.has(o.currentStatus)) : view === "delivered" ? all.filter((o) => DONE.has(o.currentStatus)) : all;
+    view === "active"
+      ? all.filter((o) => !DONE.has(o.currentStatus))
+      : view === "delivered"
+        ? all.filter((o) => DONE.has(o.currentStatus))
+        : view === "proof"
+          ? all.filter((o) => o.currentStatus === "ARTWORK_CUSTOMER_APPROVAL")
+          : view === "shipped"
+            ? all.filter((o) => o.currentStatus === "SHIPPED")
+            : all;
   return (
     <div className="space-y-8">
       <PageHeader title="Ordrar" action={<LinkButton href="/konto/ordrar/ny">Ny order</LinkButton>} />
@@ -23,6 +31,8 @@ export default async function KontoOrders({ searchParams }: { searchParams: Prom
         {[
           { id: "all", label: "Alla", href: "/konto/ordrar" },
           { id: "active", label: "Aktiva", href: "/konto/ordrar?view=active" },
+          { id: "proof", label: "Korrektur", href: "/konto/ordrar?view=proof" },
+          { id: "shipped", label: "På väg", href: "/konto/ordrar?view=shipped" },
           { id: "delivered", label: "Levererade / tidigare", href: "/konto/ordrar?view=delivered" },
         ].map((tab) => (
           <Link

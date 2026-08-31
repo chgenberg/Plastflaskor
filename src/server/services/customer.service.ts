@@ -88,8 +88,9 @@ export async function getCustomerMaster(id: string) {
   return prisma.customer.findUnique({
     where: { id },
     include: {
-      reseller: { include: { company: { include: { addresses: true } }, priceList: true } },
+      reseller: { include: { company: { include: { addresses: true } }, priceList: true, users: { select: { id: true, name: true, email: true, role: true } } } },
       company: { include: { addresses: true } },
+      users: { select: { id: true, name: true, email: true, role: true } },
       priceList: true,
       addresses: true,
       invoices: {

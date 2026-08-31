@@ -42,9 +42,9 @@ export default async function PartnerHome() {
         tone={proof > 0 ? "next" : "done"}
       />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard label="Aktiva ordrar" value={active} href="/partner/ordrar" />
-        <KpiCard label="Väntar på ditt godkännande" value={proof} href="/partner/ordrar" />
-        <KpiCard label="På väg" value={shipped} href="/partner/ordrar" />
+        <KpiCard label="Aktiva ordrar" value={active} href="/partner/ordrar?view=active" />
+        <KpiCard label="Väntar på ditt godkännande" value={proof} href="/partner/ordrar?view=proof" />
+        <KpiCard label="På väg" value={shipped} href="/partner/ordrar?view=shipped" />
         <KpiCard label="Fakturor" value={invoices} href="/partner/fakturor" />
       </div>
       {orders.length === 0 ? (

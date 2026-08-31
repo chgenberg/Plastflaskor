@@ -46,6 +46,16 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
     addressMap.set(`${a.type}|${a.line1}|${a.postalCode}|${a.city}`, a);
   }
   const addresses = [...addressMap.values()];
+  const billing = addresses.find((a) => a.type === "BILLING");
+  const contactSeen = new Set<string>();
+  const contacts = [
+    ...customer.users.map((u) => ({ id: u.id, name: u.name, email: u.email, role: "Kund" })),
+    ...(customer.reseller?.users ?? []).map((u) => ({ id: u.id, name: u.name, email: u.email, role: "ÅF" })),
+  ].filter((c) => {
+    if (contactSeen.has(c.email)) return false;
+    contactSeen.add(c.email);
+    return true;
+  });
 
   const qtyByYear = new Map<number, number>();
   for (const o of customer.orders) {
@@ -89,6 +99,36 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
       />
 
       <div className="grid gap-4 lg:grid-cols-2">
+        <Panel title="Fakturauppgifter">
+          <dl className="grid gap-4 text-sm sm:grid-cols-2">
+            <div>
+              <dt className="av-label">Faktura-e-post</dt>
+              <dd className="mt-1">{customer.email ?? customer.company?.email ?? customer.reseller?.company.email ?? "–"}</dd>
+            </div>
+            <div>
+              <dt className="av-label">Fakturaadress</dt>
+              <dd className="mt-1">
+                {billing ? `${billing.line1}, ${billing.postalCode} ${billing.city}` : "Samma som leverans / enligt avtal"}
+              </dd>
+            </div>
+          </dl>
+        </Panel>
+        <Panel title="Kontaktpersoner">
+          {contacts.length === 0 ? (
+            <p className="text-sm text-[var(--av-text-muted)]">Inga inloggade kontaktpersoner kopplade.</p>
+          ) : (
+            <ul className="space-y-3 text-sm">
+              {contacts.map((c) => (
+                <li key={c.id}>
+                  <p className="font-medium">{c.name}</p>
+                  <p className="text-[var(--av-text-muted)]">
+                    {c.role} · {c.email}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Panel>
         <Panel title="Kunduppgifter">
           <dl className="grid gap-4 text-sm sm:grid-cols-2">
             <div>

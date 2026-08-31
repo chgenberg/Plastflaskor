@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireRole } from "@/server/rbac";
 import { listOrdersForReseller } from "@/server/services/order.service";
 import { Button, EmptyState, PageHeader } from "@/ui/shell/primitives";
@@ -6,12 +7,15 @@ import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
 import { BuyerOrderCard } from "@/ui/order/BuyerOrderCard";
 
+const DONE = new Set(["DELIVERED", "INVOICED", "PAID"]);
+
 export default async function PartnerOrders({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; product?: string; from?: string; to?: string; status?: string; delivered?: string; artwork?: string }>;
+  searchParams: Promise<{ q?: string; product?: string; from?: string; to?: string; status?: string; delivered?: string; artwork?: string; view?: string }>;
 }) {
-  const { q, product, from, to, status, delivered, artwork } = await searchParams;
+  const { q, product, from, to, status, delivered, artwork, view: raw } = await searchParams;
+  const view = raw === "delivered" || raw === "active" || raw === "proof" || raw === "shipped" ? raw : "all";
   const user = await requireRole(["RESELLER", "AQUA_STAFF", "AQUA_ADMIN"]);
   const orders = user.resellerId ? await listOrdersForReseller(user.resellerId) : [];
   const products = [...new Set(orders.map((o) => o.items[0]?.variant.product.name).filter(Boolean))] as string[];
@@ -21,7 +25,12 @@ export default async function PartnerOrders({
     if (q && !hay.includes(q.toLowerCase())) return false;
     if (product && o.items[0]?.variant.product.name !== product) return false;
     if (status && o.currentStatus !== status) return false;
-    if (delivered === "1" && !["DELIVERED", "INVOICED", "PAID"].includes(o.currentStatus)) return false;
+    if (delivered === "1" || view === "delivered") {
+      if (!DONE.has(o.currentStatus)) return false;
+    }
+    if (view === "active" && DONE.has(o.currentStatus)) return false;
+    if (view === "proof" && o.currentStatus !== "ARTWORK_CUSTOMER_APPROVAL") return false;
+    if (view === "shipped" && o.currentStatus !== "SHIPPED") return false;
     if (artwork === "1" && !o.items.some((i) => i.designId) && o.designs.length === 0) return false;
     if (from && o.createdAt < new Date(from)) return false;
     if (to && o.createdAt > new Date(`${to}T23:59:59`)) return false;
@@ -31,7 +40,25 @@ export default async function PartnerOrders({
   return (
     <div className="space-y-8">
       <PageHeader title="Ordrar" subtitle="Filtrera på produkt, datum, status, leverans och artwork." />
+      <div className="flex flex-wrap gap-2 text-sm">
+        {[
+          { id: "all", label: "Alla", href: "/partner/ordrar" },
+          { id: "active", label: "Aktiva", href: "/partner/ordrar?view=active" },
+          { id: "proof", label: "Korrektur", href: "/partner/ordrar?view=proof" },
+          { id: "shipped", label: "På väg", href: "/partner/ordrar?view=shipped" },
+          { id: "delivered", label: "Levererade / tidigare", href: "/partner/ordrar?view=delivered" },
+        ].map((tab) => (
+          <Link
+            key={tab.id}
+            href={tab.href}
+            className={`rounded-[var(--av-radius-md)] px-3 py-1.5 ${view === tab.id ? "bg-[var(--av-accent-soft)] font-medium text-[var(--av-accent)]" : "text-[var(--av-text-muted)]"}`}
+          >
+            {tab.label}
+          </Link>
+        ))}
+      </div>
       <form className="grid gap-3 av-card p-5 sm:grid-cols-2 lg:grid-cols-3">
+        {view !== "all" ? <input type="hidden" name="view" value={view} /> : null}
         <input name="q" defaultValue={q} placeholder="Sök kund, ordernummer" className="h-11 rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-4 text-sm" />
         <select name="product" defaultValue={product ?? ""} className="h-11 rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-4 text-sm">
           <option value="">Alla produkter</option>
