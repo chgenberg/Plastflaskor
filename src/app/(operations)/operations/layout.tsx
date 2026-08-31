@@ -16,6 +16,7 @@ export default async function OpsLayout({ children }: { children: React.ReactNod
         { href: "/operations/pipeline", label: "Pipeline" },
         { href: "/operations/leads", label: "Leads" },
         { href: "/operations/produktion", label: "Produktion" },
+        { href: "/operations/ordrar?phase=artwork", label: "Tryckfiler" },
         { href: "/operations/frakt", label: "Frakt" },
         { href: "/operations/ekonomi", label: "Fakturering" },
         { href: "/operations/kunder", label: "Kunder" },

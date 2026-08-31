@@ -103,6 +103,8 @@ export async function listAllOrders(filters?: OrderListFilters) {
         { reseller: { company: { orgNr: { contains: q } } } },
         { reseller: { company: { email: { contains: q } } } },
         { reseller: { company: { phone: { contains: q } } } },
+        { customer: { users: { some: { OR: [{ name: { contains: q } }, { email: { contains: q } }] } } } },
+        { reseller: { users: { some: { OR: [{ name: { contains: q } }, { email: { contains: q } }] } } } },
         { invoice: { invoiceNo: { contains: q } } },
         { shipments: { some: { trackingNo: { contains: q } } } },
         { items: { some: { variant: { product: { name: { contains: q } } } } } },

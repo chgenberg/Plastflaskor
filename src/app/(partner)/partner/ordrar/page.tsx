@@ -25,7 +25,7 @@ export default async function PartnerOrders({
     if (q && !hay.includes(q.toLowerCase())) return false;
     if (product && o.items[0]?.variant.product.name !== product) return false;
     if (status && o.currentStatus !== status) return false;
-    if (delivered === "1" || view === "delivered") {
+    if (view === "delivered" || (view === "all" && delivered === "1")) {
       if (!DONE.has(o.currentStatus)) return false;
     }
     if (view === "active" && DONE.has(o.currentStatus)) return false;
