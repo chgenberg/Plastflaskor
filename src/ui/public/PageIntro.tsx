@@ -1,6 +1,6 @@
 import Image from "next/image";
-import Link from "next/link";
 import type { ReactNode } from "react";
+import { LinkButton } from "@/ui/shell/primitives";
 
 export function Badge({ children }: { children: ReactNode }) {
   return (
@@ -41,14 +41,10 @@ export function PillLink({
   children: ReactNode;
   variant?: "ink" | "ghost";
 }) {
-  const cls =
-    variant === "ink"
-      ? "bg-[var(--av-accent)] text-white hover:bg-[var(--av-accent-hover)]"
-      : "border border-[var(--av-border-strong)] bg-[var(--av-surface)] text-[var(--av-text)] hover:bg-[var(--av-bg)]";
   return (
-    <Link href={href} className={`inline-flex h-12 items-center justify-center rounded-[var(--av-radius-md)] px-6 text-sm font-semibold transition ${cls}`}>
+    <LinkButton href={href} size="lg" variant={variant === "ink" ? "primary" : "secondary"}>
       {children}
-    </Link>
+    </LinkButton>
   );
 }
 

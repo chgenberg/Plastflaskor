@@ -6,7 +6,7 @@ import { formatShipAddress, labelSpecForVolume } from "@/domain/bottleCatalog";
 import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
 import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
-import { Button, FileLink, PageHeader, Panel, StatusChip } from "@/ui/shell/primitives";
+import { Button, FileLink, PageHeader, Panel, StatusChip, controlClass } from "@/ui/shell/primitives";
 import { FACTORY_JOB_LABELS } from "@/domain/enums";
 
 export default async function LabelJobPage({ params }: { params: Promise<{ jobId: string }> }) {
@@ -97,7 +97,7 @@ export default async function LabelJobPage({ params }: { params: Promise<{ jobId
                 <input
                   name="issueNote"
                   placeholder="Föreslaget dispatchdatum / anledning"
-                  className="h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-3 text-sm"
+                  className={controlClass}
                 />
                 <Button type="submit" variant="secondary" size="lg" className="w-full">
                   Flagga problem
@@ -113,19 +113,19 @@ export default async function LabelJobPage({ params }: { params: Promise<{ jobId
                 name="shippedDate"
                 type="date"
                 required
-                className="h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-3 text-sm"
+                className={controlClass}
               />
               <input
                 name="carrier"
                 placeholder="Transportör"
                 required
-                className="h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-3 text-sm"
+                className={controlClass}
               />
               <input
                 name="trackingNo"
                 placeholder="Frakt- / trackingnummer"
                 required
-                className="h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-3 text-sm"
+                className={controlClass}
               />
               <Button type="submit" size="lg" className="w-full">
                 Bekräfta utskick till bottler

@@ -1,9 +1,8 @@
-import Link from "next/link";
 import { prisma } from "@/server/db";
 import { listCustomers } from "@/server/services/customer.service";
 import { createCustomerAction } from "@/actions/opsMasters";
 import { priceListDisplayName } from "@/domain/priceLists";
-import { Button, EmptyState, PageHeader, Panel, controlClass } from "@/ui/shell/primitives";
+import { Button, DashList, DashRow, EmptyState, PageHeader, Panel, controlClass } from "@/ui/shell/primitives";
 
 const FIELD = controlClass;
 
@@ -86,20 +85,20 @@ export default async function CustomersPage({
           body={term ? `Inget matchade “${term}”.` : "När kunder skapas syns de här."}
         />
       ) : (
-        <div className="grid gap-3 md:grid-cols-2">
+        <DashList>
           {customers.map((c) => (
-            <Link key={c.id} href={`/operations/kunder/${c.id}`} className="av-card block p-5 transition hover:border-[var(--av-border-strong)]">
-              <p className="text-[16px] font-semibold tracking-tight">{c.name}</p>
-              <p className="mt-1 text-[13px] text-[var(--av-text-muted)]">
-                {priceListDisplayName(c.priceList?.name)}
-              </p>
-              <p className="mt-3 av-mono text-[13px] text-[var(--av-text-secondary)]">{c.orgNr ?? "Inget org.nr"}</p>
-              <p className="mt-3 text-[13px] text-[var(--av-text-muted)]">
-                {c.orders.length} ordrar · nästa lead {c.leads[0]?.expectedAt.toLocaleDateString("sv-SE") ?? "–"}
-              </p>
-            </Link>
+            <DashRow
+              key={c.id}
+              primary={c.name}
+              primaryHref={`/operations/kunder/${c.id}`}
+              columns={[
+                priceListDisplayName(c.priceList?.name),
+                c.orgNr ?? "Inget org.nr",
+                `${c.orders.length} ordrar · nästa lead ${c.leads[0]?.expectedAt.toLocaleDateString("sv-SE") ?? "–"}`,
+              ]}
+            />
           ))}
-        </div>
+        </DashList>
       )}
     </div>
   );

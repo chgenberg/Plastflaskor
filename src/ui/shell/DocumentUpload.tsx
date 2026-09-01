@@ -1,3 +1,5 @@
+import { Button, controlClass } from "@/ui/shell/primitives";
+
 export function DocumentUpload({
   orderId,
   returnTo,
@@ -13,11 +15,11 @@ export function DocumentUpload({
       <input type="hidden" name="returnTo" value={returnTo} />
       <label className="block text-sm">
         Titel
-        <input name="title" required placeholder="Korrektur, spec…" className="mt-1 h-10 w-full rounded-xl border border-[var(--av-border-strong)] px-3" />
+        <input name="title" required placeholder="Korrektur, spec…" className={`${controlClass} mt-1`} />
       </label>
       <label className="block text-sm">
         Typ
-        <select name="kind" className="mt-1 h-10 w-full rounded-xl border border-[var(--av-border-strong)] px-3">
+        <select name="kind" className={`${controlClass} mt-1`}>
           <option value="ARTWORK">Artwork</option>
           <option value="PROOF">Korrektur</option>
           <option value="PRODUCTION">Produktion</option>
@@ -31,9 +33,7 @@ export function DocumentUpload({
         Fil
         <input required type="file" name="file" className="mt-1 block w-full text-sm" />
       </label>
-      <button type="submit" className="inline-flex h-10 items-center rounded-[var(--av-radius-md)] bg-[var(--av-accent)] px-4 text-sm font-semibold text-white hover:bg-[var(--av-accent-hover)]">
-        Ladda upp
-      </button>
+      <Button type="submit">Ladda upp</Button>
     </form>
   );
 }

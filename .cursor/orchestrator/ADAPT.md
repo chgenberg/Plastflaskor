@@ -10,9 +10,9 @@ Ord som aldrig får synas utåt: AI, assistenten, chatbot
 
 ## 2. Domäner
 
-public, auth, customer, operations, labels, bottler, artwork, order, email, money
+public, auth, order, operations, labels, bottler, customer, artwork, freight, money, email
 
-Kanter: login → yta → order → artwork → etikett → bottler → faktura.
+Kanter: Order → Etiketter (accept ETD → POD) / Bottler (accept → POD → FRAKT) / Kund (Korr → POA → OB) → Frakt → POD → Faktura → Fortnox-mock.
 
 Never-knapp: Fakturera / markera betald / slutlig OB → `irreversible`.
 

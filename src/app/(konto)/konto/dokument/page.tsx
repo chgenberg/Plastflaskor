@@ -1,7 +1,7 @@
 import { DOCUMENT_KIND_LABELS } from "@/domain/enums";
 import { requireRole } from "@/server/rbac";
 import { listOrdersForCustomer } from "@/server/services/order.service";
-import { EmptyState, FileLink, PageHeader } from "@/ui/shell/primitives";
+import { DashList, DashRow, EmptyState, LinkButton, PageHeader } from "@/ui/shell/primitives";
 
 export default async function KontoDocs() {
   const user = await requireRole(["CUSTOMER", "AQUA_STAFF", "AQUA_ADMIN"]);
@@ -15,28 +15,25 @@ export default async function KontoDocs() {
       ) : docs.length === 0 ? (
         <EmptyState title="Inga dokument" body="När en order får korrektur eller fraktsedel syns den här." />
       ) : (
-        <div className="space-y-4">
+        <DashList>
           {docs.map((d) => (
-            <article key={d.id} className="av-card p-5">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <span className="inline-flex rounded-full bg-[var(--av-accent-soft)] px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--av-accent)]">
-                    {DOCUMENT_KIND_LABELS[d.kind] ?? d.kind}
-                  </span>
-                  <p className="mt-2">
-                    <FileLink href={`/api/documents/${d.id}`}>{d.title}</FileLink>
-                    <span className="ml-2 text-sm text-[var(--av-text-muted)]">v{d.version}</span>
-                  </p>
-                </div>
-                <span className="font-mono text-sm text-[var(--av-text-muted)]">{d.orderNo}</span>
-              </div>
-              <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
-                <FileLink href={`/api/documents/${d.id}?inline=1`}>Förhandsvisa</FileLink>
-                <FileLink href={`/api/documents/${d.id}`}>Ladda ner</FileLink>
-              </div>
-            </article>
+            <DashRow
+              key={d.id}
+              primary={d.title}
+              columns={[DOCUMENT_KIND_LABELS[d.kind] ?? d.kind, d.orderNo, `v${d.version}`]}
+              actions={
+                <>
+                  <LinkButton href={`/api/documents/${d.id}?inline=1`} variant="secondary" size="sm">
+                    Visa
+                  </LinkButton>
+                  <LinkButton href={`/api/documents/${d.id}`} size="sm">
+                    Ladda ner
+                  </LinkButton>
+                </>
+              }
+            />
           ))}
-        </div>
+        </DashList>
       )}
     </div>
   );

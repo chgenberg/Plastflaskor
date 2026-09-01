@@ -1,13 +1,11 @@
 "use client";
 
+import { Button } from "@/ui/shell/primitives";
+
 export function PrintButton() {
   return (
-    <button
-      type="button"
-      onClick={() => window.print()}
-      className="mt-6 inline-flex h-12 items-center justify-center rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-5 text-[15px] font-semibold"
-    >
+    <Button type="button" variant="secondary" size="lg" className="mt-6" onClick={() => window.print()}>
       Skriv ut
-    </button>
+    </Button>
   );
 }

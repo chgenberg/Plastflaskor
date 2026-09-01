@@ -4,6 +4,7 @@ import { PAGE_IMAGES } from "@/domain/pageImages";
 import { imageForProduct } from "@/domain/productImages";
 import { listProducts } from "@/server/services/catalog.service";
 import { Badge, PillLink, Surface } from "@/ui/public/PageIntro";
+import { Button, controlClass } from "@/ui/shell/primitives";
 
 const IMG = {
   energi: "/Images/1a.png",
@@ -221,11 +222,11 @@ export default async function HomePage() {
             Signa upp dig på vårt nyhetsbrev så missar du aldrig en spännande nyhet och kan vara först ut med alla
             spännande produkter
           </p>
-          <form className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:flex-row">
-            <input className="h-12 flex-1 rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] bg-[var(--av-bg)] px-4" placeholder="E-post" />
-            <button className="h-12 rounded-[var(--av-radius-md)] bg-[var(--av-accent)] px-6 text-sm font-semibold text-white" type="button">
+          <form className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:flex-row sm:items-center">
+            <input className={`${controlClass} flex-1`} placeholder="E-post" />
+            <Button type="button" size="lg">
               Anmäl
-            </button>
+            </Button>
           </form>
         </Surface>
       </section>

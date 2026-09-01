@@ -11,19 +11,51 @@ export default async function OpsLayout({ children }: { children: React.ReactNod
       email={user.email}
       role={user.role}
       nav={[
-        { href: "/operations", label: "Dashboard" },
-        { href: "/operations/agenten", label: "Agenten" },
-        { href: "/operations/ordrar", label: "Ordrar" },
-        { href: "/operations/pipeline", label: "Pipeline" },
-        { href: "/operations/leads", label: "Leads" },
-        { href: "/operations/produktion", label: "Produktion" },
-        { href: "/operations/ordrar?phase=labels", label: "Etiketter" },
-        { href: "/operations/frakt", label: "Frakt" },
-        { href: "/operations/ekonomi", label: "Fakturering" },
-        { href: "/operations/kunder", label: "Kunder" },
-        { href: "/operations/produkter", label: "Produkter" },
-        { href: "/operations/priser", label: "Prislistor" },
-        { href: "/operations/installningar", label: "Inställningar" },
+        {
+          id: "oversikt",
+          label: "Översikt",
+          children: [
+            { href: "/operations", label: "Dashboard" },
+            { href: "/operations/agenten", label: "Agenten" },
+          ],
+        },
+        {
+          id: "ordrar",
+          label: "Ordrar",
+          children: [
+            { href: "/operations/ordrar", label: "Alla ordrar" },
+            { href: "/operations/pipeline", label: "Pipeline" },
+            { href: "/operations/leads", label: "Leads" },
+          ],
+        },
+        {
+          id: "produktion",
+          label: "Produktion",
+          children: [
+            { href: "/operations/produktion", label: "Produktion" },
+            { href: "/operations/ordrar?phase=labels", label: "Etiketter" },
+            { href: "/operations/frakt", label: "Frakt" },
+          ],
+        },
+        {
+          id: "ekonomi",
+          label: "Ekonomi",
+          children: [{ href: "/operations/ekonomi", label: "Fakturering" }],
+        },
+        {
+          id: "register",
+          label: "Register",
+          children: [
+            { href: "/operations/kunder", label: "Kunder" },
+            { href: "/operations/produkter", label: "Produkter" },
+            { href: "/operations/priser", label: "Prislistor" },
+          ],
+        },
+        {
+          id: "system",
+          label: "System",
+          children: [{ href: "/operations/installningar", label: "Inställningar" }],
+        },
       ]}
     >
       {children}

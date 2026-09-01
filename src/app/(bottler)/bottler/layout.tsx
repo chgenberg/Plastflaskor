@@ -12,9 +12,19 @@ export default async function BottlerLayout({ children }: { children: React.Reac
       role={user.role}
       dense
       nav={[
-        { href: "/bottler", label: "Översikt" },
-        { href: "/bottler/skickat", label: "Skickat" },
-        { href: "/bottler/dokument", label: "Dokument" },
+        {
+          id: "jobb",
+          label: "Jobb",
+          children: [
+            { href: "/bottler", label: "Översikt" },
+            { href: "/bottler/skickat", label: "Skickat" },
+          ],
+        },
+        {
+          id: "underlag",
+          label: "Underlag",
+          children: [{ href: "/bottler/dokument", label: "Dokument" }],
+        },
       ]}
     >
       {children}

@@ -1,10 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import { PIPELINE_PHASES, ORDER_STEP_LABELS, type OrderStatusCode } from "@/domain/enums";
 import { isOverdue } from "@/domain/orderBrief";
-import { specFromOrderItem } from "@/domain/visualSpec";
-import { imageForProduct } from "@/domain/productImages";
-import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
 import { StatusChip } from "@/ui/shell/primitives";
 
 type KanbanOrder = {
@@ -22,15 +18,6 @@ type KanbanOrder = {
     variant: { volumeMl: number | null; optionsJson: string; product: { name: string; slug: string } };
   }[];
 };
-
-function specFor(order: KanbanOrder) {
-  const item = order.items[0];
-  return specFromOrderItem({
-    visualSpecJson: order.visualSpecJson,
-    item,
-    imageSrc: item ? imageForProduct(item.variant.product.slug) : null,
-  });
-}
 
 export function KanbanBoard({ orders }: { orders: KanbanOrder[] }) {
   return (
@@ -52,40 +39,25 @@ export function KanbanBoard({ orders }: { orders: KanbanOrder[] }) {
                   const item = o.items[0];
                   const late = isOverdue(o.currentStatus, o.requestedDate);
                   const flagged = Boolean(o.factoryIssueNote) && !o.factoryDeadlineAccepted;
-                  const spec = specFor(o);
-                  const buyer = o.customer.name;
                   return (
                     <Link
                       key={o.id}
                       href={`/operations/ordrar/${o.orderNo}`}
-                      className="rounded-[var(--av-radius-md)] border border-[var(--av-border)] bg-[var(--av-bg)] p-3 hover:border-[var(--av-accent)]/30 hover:bg-[var(--av-accent-soft)]"
+                      className="rounded-[var(--av-radius-md)] border border-[var(--av-border)] bg-[var(--av-surface)] px-3 py-2 hover:border-[var(--av-accent)]/30"
                     >
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="av-mono text-[13px] font-medium text-[var(--av-accent)]">{o.orderNo}</p>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-[13px] font-semibold tracking-tight">{o.orderNo}</p>
                         {late || flagged ? (
-                          <span className="rounded-full bg-[var(--av-status-blocked-bg)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--av-status-blocked-fg)]">
+                          <span className="text-[11px] font-medium text-[var(--av-status-blocked-fg)]">
                             {late ? "Försenad" : "Flagga"}
                           </span>
-                        ) : null}
+                        ) : (
+                          <StatusChip status={o.currentStatus} label={ORDER_STEP_LABELS[o.currentStatus as OrderStatusCode]} requestedDate={o.requestedDate} />
+                        )}
                       </div>
-                      <div className="mt-2 flex items-start gap-2">
-                        {spec?.imageSrc ? (
-                          <span className="relative h-10 w-8 shrink-0 overflow-hidden rounded-lg bg-[var(--av-surface)]">
-                            <Image src={spec.imageSrc} alt="" fill className="object-contain p-0.5" sizes="32px" />
-                          </span>
-                        ) : null}
-                        <div className="min-w-0">
-                          <p className="text-[13px] font-medium">{buyer}</p>
-                          <p className="mt-0.5 text-[12px] text-[var(--av-text-muted)]">
-                            {item?.variant.product.name ?? "–"} · {item?.qty.toLocaleString("sv-SE") ?? "–"} st
-                          </p>
-                        </div>
-                      </div>
-                      <p className="mt-1 text-[12px] font-medium text-[var(--av-text)]">Leverans {o.requestedDate ?? "saknas"}</p>
-                      {spec ? <div className="mt-1"><VisualSpecCard spec={spec} dense /></div> : null}
-                      <div className="mt-2">
-                        <StatusChip status={o.currentStatus} label={ORDER_STEP_LABELS[o.currentStatus as OrderStatusCode]} requestedDate={o.requestedDate} />
-                      </div>
+                      <p className="mt-0.5 truncate text-[12px] text-[var(--av-text-secondary)]">
+                        {o.customer.name} · {item?.variant.product.name ?? "–"} · {item?.qty.toLocaleString("sv-SE") ?? "–"} st
+                      </p>
                     </Link>
                   );
                 })}

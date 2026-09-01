@@ -1,15 +1,10 @@
 import { ORDER_STEP_LABELS, type OrderStatusCode } from "@/domain/enums";
-import { specFromOrderItem } from "@/domain/visualSpec";
-import { imageForProduct } from "@/domain/productImages";
 import { getSessionUser } from "@/server/rbac";
 import { listAllOrders, orderValue } from "@/server/services/order.service";
 import { getFortnoxConnection } from "@/server/integrations/status";
 import { markInvoicePaid } from "@/actions";
-import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
-import { Button, EmptyState, KpiCard, LinkButton, PageHeader, SectionTitle, StatusChip } from "@/ui/shell/primitives";
+import { Button, DashList, DashRow, EmptyState, KpiCard, LinkButton, PageHeader, SectionTitle, StatusChip } from "@/ui/shell/primitives";
 import { FortnoxBadge } from "@/ui/shell/FortnoxBadge";
-
-const CARD = "av-card p-5";
 
 export default async function FinancePage() {
   const user = await getSessionUser();
@@ -34,101 +29,86 @@ export default async function FinancePage() {
       {ready.length === 0 ? (
         <EmptyState title="Inget att fakturera" body="När en order är levererad eller redo för faktura syns den här." />
       ) : (
-        <section className="space-y-4">
+        <section className="space-y-3">
           <SectionTitle>Redo att faktureras</SectionTitle>
+          <DashList>
           {ready.map((o) => {
             const value = orderValue(o);
             const item = o.items[0];
-            const spec = specFromOrderItem({
-              visualSpecJson: o.visualSpecJson,
-              item,
-              imageSrc: item ? imageForProduct(item.variant.product.slug) : null,
-            });
             return (
-              <article key={o.id} className={CARD}>
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="font-mono text-sm font-medium">{o.orderNo}</p>
-                    <p className="mt-0.5 text-sm text-[var(--av-text-muted)]">{o.customer.name}</p>
-                  </div>
+              <DashRow
+                key={o.id}
+                primary={o.orderNo}
+                primaryHref={`/operations/ordrar/${o.orderNo}`}
+                columns={[
+                  o.customer.name,
+                  item ? `${item.variant.product.name} · ${item.qty.toLocaleString("sv-SE")} st` : "–",
+                  `${value.toLocaleString("sv-SE")} kr`,
+                ]}
+                status={
                   <StatusChip
                     status={o.currentStatus}
                     label={ORDER_STEP_LABELS[o.currentStatus as OrderStatusCode]}
                     requestedDate={o.requestedDate}
                   />
-                </div>
-                {spec ? (
-                  <div className="mt-4">
-                    <VisualSpecCard spec={spec} compact />
-                  </div>
-                ) : (
-                  <p className="mt-4 text-sm text-[var(--av-text-muted)]">
-                    {item?.qty} × {item?.variant.product.name}
-                  </p>
-                )}
-                <p className="mt-4 text-sm tabular-nums text-[var(--av-text-muted)]">{value.toLocaleString("sv-SE")} kr</p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <LinkButton href={`/operations/ordrar/${o.orderNo}`} variant="secondary">
-                    Öppna
-                  </LinkButton>
-                  <LinkButton href={`/operations/ekonomi/${o.orderNo}/fakturera`}>Fakturera</LinkButton>
-                </div>
-              </article>
+                }
+                actions={
+                  <>
+                    <LinkButton href={`/operations/ordrar/${o.orderNo}`} variant="secondary" size="sm">
+                      Öppna
+                    </LinkButton>
+                    <LinkButton href={`/operations/ekonomi/${o.orderNo}/fakturera`} size="sm">
+                      Fakturera
+                    </LinkButton>
+                  </>
+                }
+              />
             );
           })}
+          </DashList>
         </section>
       )}
       {waiting.length === 0 ? null : (
-        <section className="space-y-4">
+        <section className="space-y-3">
           <SectionTitle>Väntar betalning</SectionTitle>
+          <DashList>
           {waiting.map((o) => {
             const value = orderValue(o);
             const item = o.items[0];
-            const spec = specFromOrderItem({
-              visualSpecJson: o.visualSpecJson,
-              item,
-              imageSrc: item ? imageForProduct(item.variant.product.slug) : null,
-            });
             return (
-              <article key={o.id} className={CARD}>
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="font-mono text-sm font-medium">{o.invoice?.invoiceNo ?? o.orderNo}</p>
-                    <p className="mt-0.5 text-sm text-[var(--av-text-muted)]">{o.customer.name}</p>
-                    <p className="mt-0.5 font-mono text-sm text-[var(--av-text-muted)]">{o.orderNo}</p>
-                  </div>
+              <DashRow
+                key={o.id}
+                primary={o.invoice?.invoiceNo ?? o.orderNo}
+                primaryHref={`/operations/ordrar/${o.orderNo}`}
+                columns={[
+                  o.customer.name,
+                  o.orderNo,
+                  item ? `${item.variant.product.name} · ${item.qty.toLocaleString("sv-SE")} st` : "–",
+                  `${value.toLocaleString("sv-SE")} kr`,
+                ]}
+                status={
                   <StatusChip
                     status={o.currentStatus}
                     label={ORDER_STEP_LABELS[o.currentStatus as OrderStatusCode]}
                     requestedDate={o.requestedDate}
                   />
-                </div>
-                {spec ? (
-                  <div className="mt-4">
-                    <VisualSpecCard spec={spec} dense />
-                  </div>
-                ) : null}
-                <p className="mt-4 text-sm tabular-nums text-[var(--av-text-muted)]">{value.toLocaleString("sv-SE")} kr</p>
-                {o.invoice ? (
-                  <div className="mt-2">
-                    <FortnoxBadge label={fortnox.label} invoiceNo={o.invoice.invoiceNo} fortnoxId={o.invoice.fortnoxId} />
-                  </div>
-                ) : null}
-                <div className="mt-4">
-                  {isAdmin && o.invoice ? (
+                }
+                actions={
+                  isAdmin && o.invoice ? (
                     <form action={markInvoicePaid}>
                       <input type="hidden" name="invoiceNo" value={o.invoice.invoiceNo} />
-                      <Button type="submit" variant="secondary">
+                      <Button type="submit" size="sm">
                         Markera betald
                       </Button>
                     </form>
                   ) : (
-                    <span className="text-sm text-[var(--av-text-muted)]">Väntar</span>
-                  )}
-                </div>
-              </article>
+                    <span className="text-[13px] text-[var(--av-text-muted)]">Väntar</span>
+                  )
+                }
+              />
             );
           })}
+          </DashList>
         </section>
       )}
     </div>

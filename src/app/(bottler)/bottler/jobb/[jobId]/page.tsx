@@ -7,7 +7,7 @@ import { formatShipAddress } from "@/domain/bottleCatalog";
 import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
 import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
-import { Button, FileLink, LinkButton, PageHeader, Panel, StatusChip } from "@/ui/shell/primitives";
+import { Button, FileLink, LinkButton, PageHeader, Panel, StatusChip, controlClass } from "@/ui/shell/primitives";
 
 export default async function BottlerJobPage({ params }: { params: Promise<{ jobId: string }> }) {
   const { jobId } = await params;
@@ -76,7 +76,7 @@ export default async function BottlerJobPage({ params }: { params: Promise<{ job
                 type="date"
                 defaultValue={job.order.factoryReadyEstimate ?? ""}
                 required
-                className="h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-3 text-sm"
+                className={controlClass}
               />
               <Button type="submit" size="lg" className="w-full">
                 Ange estimerat klart-datum
@@ -99,7 +99,7 @@ export default async function BottlerJobPage({ params }: { params: Promise<{ job
               <input
                 name="readyDate"
                 type="date"
-                className="h-12 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] px-3 text-sm"
+                className={controlClass}
               />
               <Button type="submit" size="lg" className="w-full">
                 Produktion klar

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { controlClass } from "@/ui/shell/primitives";
 
 const QTYS = [270, 500, 1000, 2500, 5000];
 
@@ -31,7 +32,7 @@ export function RepeatFields({
           name="qty"
           value={qty}
           onChange={(e) => setQty(Number(e.target.value))}
-          className="mt-1 h-11 w-full rounded-xl border border-[var(--av-border-strong)] px-3"
+          className={`${controlClass} mt-1`}
         >
           {tiers.map((n) => (
             <option key={n} value={n}>

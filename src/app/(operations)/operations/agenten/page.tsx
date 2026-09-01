@@ -17,7 +17,7 @@ export default async function AgentenPage() {
       <AgentRefresh />
       <PageHeader
         title="Agenten"
-        subtitle="Samma kö som dashboarden. Hon fakturerar inte och skickar inte slutlig OB."
+        subtitle="Order → Etiketter (ETD/POD) · Bottler (accept/POD/FRAKT) · Kund (Korr/POA/OB) → Frakt → Faktura. Fortnox är mock. Hon fakturerar inte."
       />
       <div className="av-card p-5">
         <p className="av-label">Senaste puls</p>

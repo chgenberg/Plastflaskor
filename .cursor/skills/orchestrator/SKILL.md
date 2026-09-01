@@ -29,14 +29,15 @@ Användarvänd text säger **agenten**, aldrig AI.
 |---|---|---|
 | Publik sajt, priser utåt | `public` | `src/app/(public)/page.tsx` |
 | Login, session, roll | `auth` | `src/server/auth.ts`, `src/middleware.ts` |
-| Kundportal, korrektur, tracking | `customer` | `src/ui/order/BuyerOrderDetail.tsx` |
+| Kundportal, Korr, POA, tracking | `customer` | `src/ui/order/BuyerOrderDetail.tsx` |
 | Master Dashboard, undantag | `operations` | `src/domain/exceptions.ts` |
-| Etikettproducent | `labels` | `src/ui/supplier/SupplierDesk.tsx` |
-| Bottler, fraktsedel | `bottler` | `src/app/(bottler)/bottler/page.tsx` |
-| Artwork, korrektur | `artwork` | `src/server/services/artwork.service.ts` |
+| Etiketter, accept ETD, POD | `labels` | `src/ui/supplier/SupplierDesk.tsx` |
+| Bottler, accept, POD | `bottler` | `src/app/(bottler)/bottler/page.tsx` |
+| Korr / POA | `artwork` | `src/server/services/artwork.service.ts` |
 | Order, OB, lås, snapshot | `order` | `src/server/services/order.service.ts` |
+| FRAKT, POD till kund | `freight` | `src/app/(operations)/operations/frakt/page.tsx` |
 | Mejl, paus | `email` | `src/server/services/notify.ts` |
-| Pris, faktura, Fortnox | `money` | `src/app/(operations)/operations/ekonomi/page.tsx` |
+| Faktura, Fortnox-mock | `money` | `src/app/(operations)/operations/ekonomi/page.tsx` |
 | Agenten, tavla, puls | `operations` | `src/lib/orchestrator/*` |
 
 ## Heartbeat

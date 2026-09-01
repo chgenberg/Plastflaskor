@@ -12,8 +12,16 @@ export default async function LabelsLayout({ children }: { children: React.React
       role={user.role}
       dense
       nav={[
-        { href: "/labels", label: "Översikt" },
-        { href: "/labels/dokument", label: "Dokument" },
+        {
+          id: "jobb",
+          label: "Jobb",
+          children: [{ href: "/labels", label: "Översikt" }],
+        },
+        {
+          id: "underlag",
+          label: "Underlag",
+          children: [{ href: "/labels/dokument", label: "Dokument" }],
+        },
       ]}
     >
       {children}

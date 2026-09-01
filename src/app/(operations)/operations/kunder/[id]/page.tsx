@@ -6,9 +6,9 @@ import { orderValue } from "@/server/services/order.service";
 import { updateCustomerAction } from "@/actions/opsMasters";
 import { LEAD_STATUS_LABELS, ORDER_STEP_LABELS } from "@/domain/enums";
 import { priceListDisplayName } from "@/domain/priceLists";
-import { Button, DataRow, DataTable, EmptyState, FileLink, LinkButton, PageHeader, Panel, StatusChip } from "@/ui/shell/primitives";
+import { Button, DataRow, DataTable, EmptyState, FileLink, LinkButton, PageHeader, Panel, StatusChip, controlClass } from "@/ui/shell/primitives";
 
-const FIELD = "h-11 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] bg-[var(--av-surface)] px-4 text-sm text-[var(--av-text)]";
+const FIELD = controlClass;
 
 const ADDRESS_TYPE_LABELS: Record<string, string> = {
   BILLING: "Faktura",

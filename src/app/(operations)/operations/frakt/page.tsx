@@ -1,9 +1,6 @@
 import { ORDER_STEP_LABELS, type OrderStatusCode } from "@/domain/enums";
-import { specFromOrderItem } from "@/domain/visualSpec";
-import { imageForProduct } from "@/domain/productImages";
 import { listAllOrders } from "@/server/services/order.service";
-import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
-import { EmptyState, LinkButton, PageHeader, StatusChip } from "@/ui/shell/primitives";
+import { DashList, DashRow, EmptyState, LinkButton, PageHeader, StatusChip } from "@/ui/shell/primitives";
 
 export default async function ShippingPage() {
   const orders = await listAllOrders({ phaseStatuses: ["READY_TO_SHIP", "SHIPPED"] });
@@ -13,14 +10,9 @@ export default async function ShippingPage() {
       {orders.length === 0 ? (
         <EmptyState title="Inget att skicka" body="När produktion är klar syns ordrarna här." />
       ) : (
-        <div className="grid gap-3 lg:grid-cols-2">
+        <DashList>
           {orders.map((o) => {
             const item = o.items[0];
-            const spec = specFromOrderItem({
-              visualSpecJson: o.visualSpecJson,
-              item,
-              imageSrc: item ? imageForProduct(item.variant.product.slug) : null,
-            });
             const goods = o.shipments.find((s) => s.type === "GOODS_TO_CUSTOMER");
             const cta =
               o.currentStatus === "READY_TO_SHIP" && !goods
@@ -29,36 +21,31 @@ export default async function ShippingPage() {
                   ? { href: `/operations/ordrar/${o.orderNo}`, label: "Markera levererad" }
                   : { href: `/operations/ordrar/${o.orderNo}`, label: "Öppna" };
             return (
-              <article key={o.id} className="av-card p-5">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="av-mono text-[13px] font-medium text-[var(--av-accent)]">{o.orderNo}</p>
-                    <p className="mt-0.5 text-[14px] font-medium">{o.customer.name}</p>
-                  </div>
+              <DashRow
+                key={o.id}
+                primary={o.orderNo}
+                primaryHref={`/operations/ordrar/${o.orderNo}`}
+                columns={[
+                  o.customer.name,
+                  item ? `${item.variant.product.name} · ${item.qty.toLocaleString("sv-SE")} st` : "–",
+                  goods?.trackingNo ? `Spårning ${goods.trackingNo}` : "Spårning saknas",
+                ]}
+                status={
                   <StatusChip
                     status={o.currentStatus}
                     label={ORDER_STEP_LABELS[o.currentStatus as OrderStatusCode]}
                     requestedDate={o.requestedDate}
                   />
-                </div>
-                {spec ? (
-                  <div className="mt-4">
-                    <VisualSpecCard spec={spec} compact />
-                  </div>
-                ) : null}
-                <p className="mt-4 text-[13px] text-[var(--av-text-muted)]">
-                  Spårning {goods?.trackingNo ?? "saknas"}
-                </p>
-                {o.currentStatus === "READY_TO_SHIP" && goods ? (
-                  <p className="mt-1 text-[13px] text-[var(--av-text-muted)]">Fraktsedel klar · bottler markerar skickad</p>
-                ) : null}
-                <div className="mt-4">
-                  <LinkButton href={cta.href}>{cta.label}</LinkButton>
-                </div>
-              </article>
+                }
+                actions={
+                  <LinkButton href={cta.href} variant={cta.label === "Öppna" ? "secondary" : "primary"} size="sm">
+                    {cta.label}
+                  </LinkButton>
+                }
+              />
             );
           })}
-        </div>
+        </DashList>
       )}
     </div>
   );

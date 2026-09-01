@@ -15,7 +15,7 @@ export function AgentBoard({ groups }: { groups: CardGroup[] }) {
   return (
     <div className="space-y-6">
       <section className="space-y-3">
-        <h2 className="text-[15px] font-semibold tracking-tight">Behöver ett beslut</h2>
+        <h2 className="text-[15px] font-semibold tracking-tight">OB / Faktura — stannar</h2>
         {locked.length === 0 ? (
           <p className="text-sm text-[var(--av-text-muted)]">Inget som kräver ja just nu.</p>
         ) : (
@@ -32,7 +32,7 @@ export function AgentBoard({ groups }: { groups: CardGroup[] }) {
         )}
       </section>
       <section className="space-y-3">
-        <h2 className="text-[15px] font-semibold tracking-tight">På gång</h2>
+        <h2 className="text-[15px] font-semibold tracking-tight">ETD · POD · Korr · POA</h2>
         {rest.length === 0 ? (
           <p className="text-sm text-[var(--av-text-muted)]">Inga öppna kort.</p>
         ) : (

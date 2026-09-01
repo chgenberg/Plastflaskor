@@ -3,6 +3,7 @@ import { getSessionUser, homeForRole } from "@/server/rbac";
 import { safeInternalPath } from "@/domain/safePath";
 import { redirect } from "next/navigation";
 import Image from "next/image";
+import { Button, controlClass } from "@/ui/shell/primitives";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string }> }) {
   const { next, error } = await searchParams;
@@ -23,15 +24,15 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <input type="hidden" name="next" value={safeInternalPath(next, "")} />
           <label className="block text-sm font-medium">
             E-post
-            <input required name="email" type="email" autoComplete="username" className="mt-1.5 h-11 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] bg-[var(--av-bg)] px-3 text-sm outline-none focus:border-[var(--av-accent)]/40" />
+            <input required name="email" type="email" autoComplete="username" className={`${controlClass} mt-1.5`} />
           </label>
           <label className="block text-sm font-medium">
             Lösenord
-            <input required name="password" type="password" autoComplete="current-password" className="mt-1.5 h-11 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] bg-[var(--av-bg)] px-3 text-sm outline-none focus:border-[var(--av-accent)]/40" />
+            <input required name="password" type="password" autoComplete="current-password" className={`${controlClass} mt-1.5`} />
           </label>
-          <button type="submit" className="h-11 w-full rounded-[var(--av-radius-md)] bg-[var(--av-accent)] text-sm font-semibold text-white hover:bg-[var(--av-accent-hover)]">
+          <Button type="submit" size="lg" className="w-full">
             Logga in
-          </button>
+          </Button>
         </form>
       </div>
       <div className="mt-8 space-y-3 text-center text-[12px] leading-relaxed text-[var(--av-text-muted)]">

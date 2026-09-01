@@ -3,7 +3,7 @@ import { listWaterProducts } from "@/server/services/catalog.service";
 import { togglePrintRequirementAction } from "@/actions";
 import { updateProductAction } from "@/actions/catalogMasters";
 import { LABEL_REQUIREMENTS } from "@/domain/bottleCatalog";
-import { Button, PageHeader, Panel } from "@/ui/shell/primitives";
+import { Button, PageHeader, Panel, controlClass } from "@/ui/shell/primitives";
 import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
 import { visualSpecFromOptions } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
@@ -40,13 +40,13 @@ export default async function ProductsAdmin() {
                 <div>
                   <VisualSpecCard spec={spec} compact />
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <span className="rounded-full bg-[var(--av-accent-soft)] px-3 py-1 text-[12px] font-medium text-[var(--av-accent)]">
+                    <span className="rounded-[var(--av-radius-md)] bg-[var(--av-accent-soft)] px-3 py-1 text-[12px] font-medium text-[var(--av-accent)]">
                       Minsta order {p.moq.toLocaleString("sv-SE")}
                     </span>
-                    <span className="rounded-full bg-[var(--av-bg)] px-3 py-1 text-[12px] font-medium text-[var(--av-text)]">
+                    <span className="rounded-[var(--av-radius-md)] bg-[var(--av-bg)] px-3 py-1 text-[12px] font-medium text-[var(--av-text)]">
                       {p.leadTimeText}
                     </span>
-                    <span className="rounded-full bg-[var(--av-bg)] px-3 py-1 text-[12px] font-medium text-[var(--av-text)]">
+                    <span className="rounded-[var(--av-radius-md)] bg-[var(--av-bg)] px-3 py-1 text-[12px] font-medium text-[var(--av-text)]">
                       {p.printFormat && p.printFormat !== "Wrap" ? p.printFormat : "Etikett wrap"}
                     </span>
                   </div>
@@ -61,7 +61,7 @@ export default async function ProductsAdmin() {
                         min={1}
                         required
                         defaultValue={p.moq}
-                        className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2"
+                        className={`${controlClass} mt-1`}
                       />
                     </label>
                     <label className="text-sm">
@@ -72,7 +72,7 @@ export default async function ProductsAdmin() {
                         min={1}
                         required
                         defaultValue={p.leadTimeDays}
-                        className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2"
+                        className={`${controlClass} mt-1`}
                       />
                     </label>
                     <label className="text-sm">
@@ -82,7 +82,7 @@ export default async function ProductsAdmin() {
                         type="text"
                         required
                         defaultValue={p.leadTimeText}
-                        className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2"
+                        className={`${controlClass} mt-1`}
                       />
                     </label>
                     <label className="text-sm">
@@ -91,7 +91,7 @@ export default async function ProductsAdmin() {
                         name="printFormat"
                         type="text"
                         defaultValue={p.printFormat ?? "Wrap"}
-                        className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2"
+                        className={`${controlClass} mt-1`}
                       />
                     </label>
                     <label className="text-sm sm:col-span-2">
@@ -100,7 +100,7 @@ export default async function ProductsAdmin() {
                         name="oneLiner"
                         type="text"
                         defaultValue={p.oneLiner}
-                        className="mt-1 w-full rounded-xl border border-[var(--av-border-strong)] px-3 py-2"
+                        className={`${controlClass} mt-1`}
                       />
                     </label>
                     <div className="sm:col-span-2 lg:col-span-3">

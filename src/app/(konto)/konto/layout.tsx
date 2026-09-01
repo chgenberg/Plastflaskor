@@ -11,13 +11,35 @@ export default async function KontoLayout({ children }: { children: React.ReactN
       email={user.email}
       role={user.role}
       nav={[
-        { href: "/konto", label: "Översikt" },
-        { href: "/konto/ordrar", label: "Ordrar" },
-        { href: "/konto/ordrar/ny", label: "Ny order" },
-        { href: "/designa", label: "Design Studio" },
-        { href: "/konto/artwork", label: "Artwork" },
-        { href: "/konto/fakturor", label: "Fakturor" },
-        { href: "/konto/dokument", label: "Dokument" },
+        {
+          id: "oversikt",
+          label: "Översikt",
+          children: [{ href: "/konto", label: "Hem" }],
+        },
+        {
+          id: "ordrar",
+          label: "Ordrar",
+          children: [
+            { href: "/konto/ordrar", label: "Alla ordrar" },
+            { href: "/konto/ordrar/ny", label: "Ny order" },
+          ],
+        },
+        {
+          id: "design",
+          label: "Design",
+          children: [
+            { href: "/designa", label: "Design Studio" },
+            { href: "/konto/artwork", label: "Artwork" },
+          ],
+        },
+        {
+          id: "ekonomi",
+          label: "Ekonomi",
+          children: [
+            { href: "/konto/fakturor", label: "Fakturor" },
+            { href: "/konto/dokument", label: "Dokument" },
+          ],
+        },
       ]}
     >
       {children}

@@ -1,6 +1,6 @@
 import { requireSupplier, scopedFactoryId } from "@/server/supplierAccess";
 import { prisma } from "@/server/db";
-import { EmptyState, FileLink, PageHeader, Panel } from "@/ui/shell/primitives";
+import { DashList, DashRow, EmptyState, LinkButton, PageHeader } from "@/ui/shell/primitives";
 
 export default async function BottlerDocs() {
   const user = await requireSupplier("bottler");
@@ -26,16 +26,21 @@ export default async function BottlerDocs() {
       {docs.length === 0 ? (
         <EmptyState title="Inga dokument" body="När jobb får artwork eller fraktsedel syns de här." />
       ) : (
-        <Panel padded={false}>
-          <ul className="divide-y divide-black/5">
-            {docs.map((d) => (
-              <li key={d.id} className="flex justify-between gap-4 px-5 py-3 text-sm">
-                <FileLink href={`/api/documents/${d.id}`}>{d.title}</FileLink>
-                <span className="font-mono text-[var(--av-text-muted)]">{d.order?.orderNo}</span>
-              </li>
-            ))}
-          </ul>
-        </Panel>
+        <DashList>
+          {docs.map((d) => (
+            <DashRow
+              key={d.id}
+              primary={d.title}
+              primaryHref={`/api/documents/${d.id}`}
+              columns={[d.order?.orderNo ?? "–"]}
+              actions={
+                <LinkButton href={`/api/documents/${d.id}`} variant="secondary" size="sm">
+                  Öppna
+                </LinkButton>
+              }
+            />
+          ))}
+        </DashList>
       )}
     </div>
   );

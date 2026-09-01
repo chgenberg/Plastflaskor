@@ -40,7 +40,7 @@ export default async function KontoHome() {
       {orders.length === 0 ? (
         <EmptyState title="Inga ordrar ännu" body="Skapa en ny order eller beställ igen från en tidigare order." />
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="flex flex-col gap-1.5">
           {orders.slice(0, 6).map((o) => {
             const item = o.items[0];
             const spec = specFromOrderItem({

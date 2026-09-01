@@ -38,10 +38,10 @@ export function KpiCard({ label, value, href }: { label: string; value: number |
 }
 
 const ACTION_TONE = {
-  green: "border-[var(--av-status-done-fg)]/15 bg-[var(--av-status-done-bg)] text-[var(--av-status-done-fg)]",
-  yellow: "border-[var(--av-status-next-fg)]/15 bg-[var(--av-status-next-bg)] text-[var(--av-status-next-fg)]",
-  red: "border-[var(--av-status-blocked-fg)]/15 bg-[var(--av-status-blocked-bg)] text-[var(--av-status-blocked-fg)]",
-  grey: "border-[var(--av-border)] bg-[var(--av-surface)] text-[var(--av-text)]",
+  green: "bg-[var(--av-status-done-bg)] text-[var(--av-status-done-fg)]",
+  yellow: "bg-[var(--av-status-next-bg)] text-[var(--av-status-next-fg)]",
+  red: "bg-[var(--av-status-blocked-bg)] text-[var(--av-status-blocked-fg)]",
+  grey: "text-[var(--av-text)]",
 } as const;
 
 export function ActionCard({
@@ -56,10 +56,7 @@ export function ActionCard({
   tone: keyof typeof ACTION_TONE;
 }) {
   return (
-    <Link
-      href={href}
-      className={`block rounded-[var(--av-radius-lg)] border p-5 shadow-[var(--av-shadow-sm)] transition hover:brightness-[0.98] ${ACTION_TONE[tone]}`}
-    >
+    <Link href={href} className={`av-card block p-5 transition hover:border-[var(--av-border-strong)] ${ACTION_TONE[tone]}`}>
       <p className="text-[12px] font-medium opacity-80">{label}</p>
       <p className="mt-2 text-[28px] font-semibold tabular-nums tracking-tight">{value}</p>
       <p className="mt-3 text-[13px] font-medium">Öppna →</p>
@@ -144,6 +141,62 @@ export function ActionRow({ href, label, value }: { href: string; label: string;
       <span className="text-[14px]">{label}</span>
       <span className="tabular-nums text-[14px] font-medium text-[var(--av-accent)]">{value}</span>
     </Link>
+  );
+}
+
+export function DashList({ children }: { children: ReactNode }) {
+  return <div className="flex flex-col gap-1.5">{children}</div>;
+}
+
+function isFileHref(href: string) {
+  return href.startsWith("/api/") || href.startsWith("http://") || href.startsWith("https://");
+}
+
+function TextLink({ href, children }: { href: string; children: ReactNode }) {
+  const cls = "text-[14px] font-semibold tracking-tight text-[var(--av-text)] hover:text-[var(--av-accent)]";
+  return isFileHref(href) ? (
+    <a href={href} className={cls}>
+      {children}
+    </a>
+  ) : (
+    <Link href={href} className={cls}>
+      {children}
+    </Link>
+  );
+}
+
+export function DashRow({
+  primary,
+  primaryHref,
+  columns = [],
+  status,
+  actions,
+}: {
+  primary: ReactNode;
+  primaryHref?: string;
+  columns?: ReactNode[];
+  status?: ReactNode;
+  actions?: ReactNode;
+}) {
+  return (
+    <div className="av-row flex-wrap sm:flex-nowrap">
+      <div className="min-w-[7rem] shrink-0">
+        {primaryHref ? (
+          <TextLink href={primaryHref}>{primary}</TextLink>
+        ) : (
+          <p className="text-[14px] font-semibold tracking-tight text-[var(--av-text)]">{primary}</p>
+        )}
+      </div>
+      {columns.map((col, i) => (
+        <p key={i} className="min-w-0 flex-1 truncate text-[13px] text-[var(--av-text-secondary)]">
+          {col}
+        </p>
+      ))}
+      <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-2">
+        {status}
+        {actions}
+      </div>
+    </div>
   );
 }
 
@@ -238,13 +291,24 @@ export function FileLink({ href, children }: { href: string; children: ReactNode
   );
 }
 
-const btnBase = "inline-flex items-center justify-center rounded-[var(--av-radius-md)] font-semibold transition disabled:opacity-40";
-const btnH = { md: "h-10 px-4 text-[13px]", lg: "min-h-12 h-12 px-5 text-[15px]" } as const;
-const btnVariant = {
-  primary: "bg-[var(--av-accent)] text-white hover:bg-[var(--av-accent-hover)]",
-  secondary: "border border-[var(--av-border-strong)] bg-[var(--av-surface)] text-[var(--av-text)] hover:bg-[var(--av-bg)]",
-  ghost: "text-[var(--av-text-muted)] hover:text-[var(--av-text)]",
+const btnBase = "inline-flex items-center justify-center font-semibold transition disabled:opacity-40";
+const btnH = {
+  sm: "h-8 px-3.5 text-[13px] font-medium",
+  md: "h-10 px-4 text-[13px]",
+  lg: "min-h-12 h-12 px-5 text-[15px]",
 } as const;
+const btnVariant = {
+  primary: "rounded-[var(--av-radius-md)] bg-[var(--av-accent)] text-white hover:bg-[var(--av-accent-hover)]",
+  secondary: "rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] bg-[var(--av-surface)] text-[var(--av-text)] hover:bg-[var(--av-bg)]",
+  ghost: "rounded-[var(--av-radius-md)] text-[var(--av-text-muted)] hover:text-[var(--av-text)]",
+} as const;
+
+type BtnVariant = keyof typeof btnVariant;
+type BtnSize = keyof typeof btnH;
+
+function btnClass(variant: BtnVariant, size: BtnSize, className: string) {
+  return `${btnBase} ${btnH[size]} ${btnVariant[variant]} ${className}`;
+}
 
 export function LinkButton({
   href,
@@ -252,15 +316,25 @@ export function LinkButton({
   variant = "primary",
   size = "md",
   className = "",
+  onClick,
 }: {
   href: string;
   children: ReactNode;
-  variant?: "primary" | "secondary";
-  size?: "md" | "lg";
+  variant?: "primary" | "secondary" | "ghost";
+  size?: BtnSize;
   className?: string;
+  onClick?: () => void;
 }) {
+  const cls = btnClass(variant, size, className);
+  if (isFileHref(href)) {
+    return (
+      <a href={href} className={cls} onClick={onClick}>
+        {children}
+      </a>
+    );
+  }
   return (
-    <Link href={href} className={`${btnBase} ${btnH[size]} ${btnVariant[variant]} ${className}`}>
+    <Link href={href} className={cls} onClick={onClick}>
       {children}
     </Link>
   );
@@ -272,10 +346,33 @@ export function Button({
   size = "md",
   className = "",
   ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" | "ghost"; size?: "md" | "lg" }) {
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: BtnVariant; size?: BtnSize }) {
   return (
-    <button className={`${btnBase} ${btnH[size]} ${btnVariant[variant]} ${className}`} {...props}>
+    <button className={btnClass(variant, size, className)} {...props}>
       {children}
     </button>
+  );
+}
+
+export function FilterChip({
+  href,
+  active,
+  children,
+}: {
+  href: string;
+  active?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`${btnBase} ${btnH.sm} rounded-[var(--av-radius-md)] ${
+        active
+          ? "bg-[var(--av-accent-soft)] text-[var(--av-accent)]"
+          : "text-[var(--av-text-muted)] hover:bg-[var(--av-bg)] hover:text-[var(--av-text)]"
+      }`}
+    >
+      {children}
+    </Link>
   );
 }

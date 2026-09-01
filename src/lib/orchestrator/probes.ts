@@ -8,7 +8,7 @@ import type { Gate } from "@/lib/orchestrator/approvals";
 export const PULSE_KINDS = Object.keys(EXCEPTION_SEVERITY) as ExceptionKind[];
 
 const DOMAIN_FOR_KIND: Record<string, DomainId> = {
-  review: "operations",
+  review: "order",
   artwork_aqua: "artwork",
   artwork_customer: "customer",
   overdue_proof: "customer",
@@ -18,12 +18,12 @@ const DOMAIN_FOR_KIND: Record<string, DomainId> = {
   labels_not_received: "bottler",
   mark_shipped: "bottler",
   invoice: "money",
-  ready_date: "operations",
-  ready_vs_requirement: "operations",
-  deadline_tomorrow: "operations",
-  waybill: "operations",
-  delivery: "operations",
-  overdue: "operations",
+  ready_date: "bottler",
+  ready_vs_requirement: "bottler",
+  deadline_tomorrow: "labels",
+  waybill: "freight",
+  delivery: "freight",
+  overdue: "order",
   lead: "order",
 };
 
@@ -43,11 +43,13 @@ export function seedFromException(item: Exception): Seed {
     playbook:
       item.kind === "invoice"
         ? "invoice"
-        : item.kind.startsWith("artwork")
+        : item.kind.startsWith("artwork") || item.kind === "overdue_proof"
           ? "artwork"
           : item.kind === "review"
             ? "new-order"
-            : "produce",
+            : item.kind === "waybill" || item.kind === "delivery"
+              ? "invoice"
+              : "produce",
   };
 }
 

@@ -1,10 +1,6 @@
-import Link from "next/link";
 import { FACTORY_JOB_LABELS, ORDER_STEP_LABELS, type OrderStatusCode } from "@/domain/enums";
-import { specFromOrderItem } from "@/domain/visualSpec";
-import { imageForProduct } from "@/domain/productImages";
 import { prisma } from "@/server/db";
-import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
-import { EmptyState, PageHeader, StatusChip } from "@/ui/shell/primitives";
+import { DashList, DashRow, EmptyState, FilterChip, PageHeader, StatusChip } from "@/ui/shell/primitives";
 
 const GROUPS = [
   { id: "date", label: "Datum" },
@@ -61,64 +57,45 @@ export default async function ProductionBoard({ searchParams }: { searchParams: 
   return (
     <div className="space-y-8">
       <PageHeader title="Produktion" subtitle="Gruppera flaskjobb efter datum, produkt, storlek eller stilla/kolsyrat." />
-      <form className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2">
         {GROUPS.map((g) => (
-          <Link
-            key={g.id}
-            href={`/operations/produktion?group=${g.id}`}
-            className={`rounded-full px-3 py-1.5 text-sm ${group === g.id ? "bg-[var(--av-accent-soft)] font-medium text-[var(--av-accent)]" : "text-[var(--av-text-muted)]"}`}
-          >
+          <FilterChip key={g.id} href={`/operations/produktion?group=${g.id}`} active={group === g.id}>
             {g.label}
-          </Link>
+          </FilterChip>
         ))}
-      </form>
+      </div>
       {jobs.length === 0 ? (
         <EmptyState title="Inga jobb" body="När produktion planeras syns den här." />
       ) : (
         [...grouped.entries()].map(([key, rows]) => (
           <div key={key} className="space-y-3">
             <p className="text-[15px] font-semibold tracking-tight">{key}</p>
-            <div className="grid gap-3">
+            <DashList>
               {rows.map((j) => {
                 const item = j.order.items[0];
-                const spec = specFromOrderItem({
-                  visualSpecJson: j.order.visualSpecJson,
-                  item,
-                  imageSrc: item ? imageForProduct(item.variant.product.slug) : null,
-                });
                 return (
-                  <Link
+                  <DashRow
                     key={j.id}
-                    href={`/operations/ordrar/${j.order.orderNo}`}
-                    className="block av-card p-5"
-                  >
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <p className="font-mono text-[var(--av-accent)]">{j.order.orderNo}</p>
-                        <p className="mt-1 font-medium">{j.order.customer.name}</p>
-                        <p className="mt-0.5 text-sm text-[var(--av-text-muted)]">
-                          {spec?.productName ?? item?.variant.product.name ?? "–"}
-                          {item ? ` · ${item.qty.toLocaleString("sv-SE")} st` : ""}
-                        </p>
-                        {spec ? (
-                          <div className="mt-2">
-                            <VisualSpecCard spec={spec} compact />
-                          </div>
-                        ) : null}
-                      </div>
-                      <div className="flex flex-wrap gap-2">
+                    primary={j.order.orderNo}
+                    primaryHref={`/operations/ordrar/${j.order.orderNo}`}
+                    columns={[
+                      j.order.customer.name,
+                      item ? `${item.variant.product.name} · ${item.qty.toLocaleString("sv-SE")} st` : "–",
+                    ]}
+                    status={
+                      <>
                         <StatusChip status={j.status} label={FACTORY_JOB_LABELS[j.status] ?? j.status} />
                         <StatusChip
                           status={j.order.currentStatus}
                           label={ORDER_STEP_LABELS[j.order.currentStatus as OrderStatusCode]}
                           requestedDate={j.order.requestedDate}
                         />
-                      </div>
-                    </div>
-                  </Link>
+                      </>
+                    }
+                  />
                 );
               })}
-            </div>
+            </DashList>
           </div>
         ))
       )}

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { logoutAction } from "@/actions";
+import { Button, LinkButton } from "@/ui/shell/primitives";
 
 type Child = { href: string; label: string };
 type Parent = { label: string; href: string; children: Child[] };
@@ -90,24 +91,18 @@ export function PublicNav({ email }: { email?: string | null }) {
         <div className="ml-auto hidden items-center gap-2 md:flex">
           {email ? (
             <form action={logoutAction}>
-              <button type="submit" className="inline-flex h-9 items-center rounded-[var(--av-radius-md)] px-3 text-[13px] font-medium text-[var(--av-text-secondary)] hover:bg-[var(--av-bg)]">
+              <Button type="submit" variant="ghost" size="sm">
                 Logga ut
-              </button>
+              </Button>
             </form>
           ) : (
-            <Link
-              href="/login"
-              className="inline-flex h-9 items-center rounded-[var(--av-radius-md)] px-3 text-[13px] font-medium text-[var(--av-text-secondary)] hover:bg-[var(--av-bg)] hover:text-[var(--av-text)]"
-            >
+            <LinkButton href="/login" variant="ghost" size="sm">
               Logga in
-            </Link>
+            </LinkButton>
           )}
-          <Link
-            href="/login"
-            className="inline-flex h-9 items-center rounded-[var(--av-radius-md)] bg-[var(--av-accent)] px-4 text-[13px] font-semibold text-white hover:bg-[var(--av-accent-hover)]"
-          >
+          <LinkButton href="/login">
             Kundportal
-          </Link>
+          </LinkButton>
         </div>
 
         <button
@@ -130,12 +125,12 @@ export function PublicNav({ email }: { email?: string | null }) {
             {ITEMS.map((item) => (
               <MobileGroup key={item.label} item={item} onNavigate={() => setMobileOpen(false)} />
             ))}
-            <Link href="/login" onClick={() => setMobileOpen(false)} className="mt-3 rounded-[var(--av-radius-md)] px-3 py-2.5 text-sm font-medium">
+            <LinkButton href="/login" variant="ghost" className="mt-3 w-full" onClick={() => setMobileOpen(false)}>
               Logga in
-            </Link>
-            <Link href="/login" onClick={() => setMobileOpen(false)} className="rounded-[var(--av-radius-md)] bg-[var(--av-accent)] px-4 py-3 text-center text-sm font-semibold text-white">
+            </LinkButton>
+            <LinkButton href="/login" size="lg" className="w-full" onClick={() => setMobileOpen(false)}>
               Kundportal
-            </Link>
+            </LinkButton>
           </div>
         </div>
       ) : null}

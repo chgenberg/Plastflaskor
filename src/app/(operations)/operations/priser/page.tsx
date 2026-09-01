@@ -1,7 +1,7 @@
 import { updatePriceItemAction } from "@/actions/catalogMasters";
 import { priceListDisplayName } from "@/domain/priceLists";
 import { prisma } from "@/server/db";
-import { Button, DataRow, DataTable, EmptyState, PageHeader } from "@/ui/shell/primitives";
+import { Button, DataRow, DataTable, EmptyState, PageHeader, controlClass } from "@/ui/shell/primitives";
 
 export default async function PriceListsAdmin() {
   const lists = await prisma.priceList.findMany({
@@ -80,7 +80,7 @@ export default async function PriceListsAdmin() {
                             min={1}
                             required
                             defaultValue={row.minQty}
-                            className="ml-auto w-24 rounded-xl border border-[var(--av-border-strong)] px-3 py-2 text-right tabular-nums"
+                            className={`${controlClass} ml-auto w-24 text-right tabular-nums`}
                           />
                         </td>
                         <td className="px-5 py-2.5 text-right">
@@ -92,7 +92,7 @@ export default async function PriceListsAdmin() {
                             step="0.01"
                             required
                             defaultValue={row.unitPriceExVat.toFixed(2)}
-                            className="ml-auto w-28 rounded-xl border border-[var(--av-border-strong)] px-3 py-2 text-right tabular-nums text-[var(--av-accent)]"
+                            className={`${controlClass} ml-auto w-28 text-right tabular-nums text-[var(--av-accent)]`}
                           />
                         </td>
                         <td className="px-5 py-2.5">

@@ -1,11 +1,10 @@
-import Link from "next/link";
 import { requireRole } from "@/server/rbac";
 import { listOrdersForCustomer } from "@/server/services/order.service";
 import { BUYER_STATUS } from "@/domain/enums";
 import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
 import { BuyerOrderCard } from "@/ui/order/BuyerOrderCard";
-import { EmptyState, LinkButton, PageHeader } from "@/ui/shell/primitives";
+import { EmptyState, FilterChip, LinkButton, PageHeader } from "@/ui/shell/primitives";
 
 const DONE = new Set(["DELIVERED", "INVOICED", "PAID"]);
 
@@ -27,7 +26,7 @@ export default async function KontoOrders({ searchParams }: { searchParams: Prom
   return (
     <div className="space-y-8">
       <PageHeader title="Ordrar" action={<LinkButton href="/konto/ordrar/ny">Ny order</LinkButton>} />
-      <div className="flex flex-wrap gap-2 text-sm">
+      <div className="flex flex-wrap gap-2">
         {[
           { id: "all", label: "Alla", href: "/konto/ordrar" },
           { id: "active", label: "Aktiva", href: "/konto/ordrar?view=active" },
@@ -35,19 +34,15 @@ export default async function KontoOrders({ searchParams }: { searchParams: Prom
           { id: "shipped", label: "På väg", href: "/konto/ordrar?view=shipped" },
           { id: "delivered", label: "Levererade / tidigare", href: "/konto/ordrar?view=delivered" },
         ].map((tab) => (
-          <Link
-            key={tab.id}
-            href={tab.href}
-            className={`rounded-[var(--av-radius-md)] px-3 py-1.5 ${view === tab.id ? "bg-[var(--av-accent-soft)] font-medium text-[var(--av-accent)]" : "text-[var(--av-text-muted)]"}`}
-          >
+          <FilterChip key={tab.id} href={tab.href} active={view === tab.id}>
             {tab.label}
-          </Link>
+          </FilterChip>
         ))}
       </div>
       {orders.length === 0 ? (
         <EmptyState title="Inga ordrar" body="När ni skickar en order syns den här." />
       ) : (
-        <div className="space-y-4">
+        <div className="flex flex-col gap-1.5">
           {orders.map((o) => {
             const item = o.items[0];
             const spec = specFromOrderItem({
