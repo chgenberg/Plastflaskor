@@ -11,7 +11,7 @@ import { imageForProduct } from "@/domain/productImages";
 export default async function ProductsAdmin() {
   const products = await listWaterProducts();
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <PageHeader title="Produkter" subtitle="Profilvatten: modell, storlek, ledtid och regulatoriska etikettkrav." />
       <div className="grid gap-5">
         {products.map((p) => {

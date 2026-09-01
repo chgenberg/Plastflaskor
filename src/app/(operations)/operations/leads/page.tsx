@@ -1,9 +1,8 @@
-import Link from "next/link";
 import { activateDueLeads, leadMatchesBucket, listLeads, type LeadBucket } from "@/server/services/lead.service";
 import { orderValue } from "@/server/services/order.service";
 import { remindLeadAction, updateLeadAction } from "@/actions";
 import { LEAD_STATUS_LABELS } from "@/domain/enums";
-import { Button, DashList, DashRow, EmptyState, FilterChip, LinkButton, PageHeader, StatusChip } from "@/ui/shell/primitives";
+import { Button, DashTable, EmptyState, FilterChip, LinkButton, PageHeader, StatusChip, TableActions } from "@/ui/shell/primitives";
 
 const BUCKETS: { id: LeadBucket | "all"; label: string; key: keyof Awaited<ReturnType<typeof listLeads>>["buckets"] | null }[] = [
   { id: "all", label: "Alla", key: null },
@@ -22,24 +21,9 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
   const visible = bucket === "all" ? leads : leads.filter((l) => leadMatchesBucket(l, bucket));
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <PageHeader title="Leads" subtitle="Aktiva repeat-möjligheter en månad före förväntad order." />
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        {BUCKETS.filter((b) => b.id !== "all").map((b) => {
-          const count = b.key ? buckets[b.key] : 0;
-          return (
-            <Link
-              key={b.id}
-              href={`/operations/leads?bucket=${b.id}`}
-              className="av-card p-5 hover:border-[var(--av-border-strong)]"
-            >
-              <p className="av-label">{b.id === "reminded" ? "Kund påmind – ej svar" : b.id === "week" ? "Aktuella denna vecka" : b.id === "month" ? "Nästa 30 dagar" : b.id === "converted" ? "Repeat skapad" : "Uppskjutna"}</p>
-              <p className="mt-2 text-[28px] font-semibold tabular-nums">{count}</p>
-            </Link>
-          );
-        })}
-      </div>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5">
         {BUCKETS.map((b) => {
           const count = b.key ? buckets[b.key] : leads.length;
           return (
@@ -57,24 +41,35 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
       {visible.length === 0 ? (
         <EmptyState title="Inga leads" body={bucket === "all" ? "När förväntad återbeställning sätts på en order syns de här." : "Inget i den här bunten just nu."} />
       ) : (
-        <DashList>
+        <DashTable
+          count={`${visible.length} lead${visible.length === 1 ? "" : "s"}`}
+          columns={[
+            { label: "Kund" },
+            { label: "Förväntad" },
+            { label: "Order" },
+            { label: "Innehåll" },
+            { label: "Värde", align: "right" },
+            { label: "Status" },
+            { label: "Åtgärd", sr: true },
+          ]}
+        >
           {visible.map((lead) => {
             const item = lead.sourceOrder.items[0];
             const value = orderValue(lead.sourceOrder);
             return (
-              <DashRow
-                key={lead.id}
-                primary={lead.customer.name}
-                primaryHref={`/operations/ordrar/${lead.sourceOrder.orderNo}`}
-                columns={[
-                  lead.expectedAt.toLocaleDateString("sv-SE", { month: "short", year: "numeric" }),
-                  lead.sourceOrder.orderNo,
-                  item ? `${item.variant.product.name} · ${item.qty.toLocaleString("sv-SE")} st` : "–",
-                  `${value.toLocaleString("sv-SE")} kr`,
-                ]}
-                status={<StatusChip status={lead.status} label={LEAD_STATUS_LABELS[lead.status] ?? lead.status} />}
-                actions={
-                  <>
+              <tr key={lead.id}>
+                <td className="font-medium">{lead.customer.name}</td>
+                <td className="whitespace-nowrap text-[var(--av-text-secondary)]">
+                  {lead.expectedAt.toLocaleDateString("sv-SE", { month: "short", year: "numeric" })}
+                </td>
+                <td>{lead.sourceOrder.orderNo}</td>
+                <td>{item ? `${item.variant.product.name} · ${item.qty.toLocaleString("sv-SE")} st` : "–"}</td>
+                <td className="av-num font-semibold">{value.toLocaleString("sv-SE")} kr</td>
+                <td>
+                  <StatusChip status={lead.status} label={LEAD_STATUS_LABELS[lead.status] ?? lead.status} />
+                </td>
+                <td className="av-actions">
+                  <TableActions>
                     <LinkButton href={`/operations/ordrar/${lead.sourceOrder.orderNo}`} variant="secondary" size="sm">
                       Öppna
                     </LinkButton>
@@ -94,12 +89,12 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                         Skjut upp
                       </Button>
                     </form>
-                  </>
-                }
-              />
+                  </TableActions>
+                </td>
+              </tr>
             );
           })}
-        </DashList>
+        </DashTable>
       )}
     </div>
   );

@@ -13,7 +13,7 @@ export function AgentBoard({ groups }: { groups: CardGroup[] }) {
   const rest = groups.filter((g) => g.gate === "none");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <section className="space-y-3">
         <h2 className="text-[15px] font-semibold tracking-tight">OB / Faktura — stannar</h2>
         {locked.length === 0 ? (

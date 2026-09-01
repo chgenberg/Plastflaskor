@@ -21,7 +21,7 @@ export function StatusChip({
           ? "bg-[var(--av-status-blocked-bg)] text-[var(--av-status-blocked-fg)]"
           : "bg-[var(--av-status-idle-bg)] text-[var(--av-status-idle-fg)]";
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[12px] font-medium ${cls}`}>
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${cls}`}>
       {label ?? eventLabel(status)}
     </span>
   );
@@ -29,9 +29,9 @@ export function StatusChip({
 
 export function KpiCard({ label, value, href }: { label: string; value: number | string; href?: string }) {
   const inner = (
-    <div className="av-card p-5 transition hover:border-[var(--av-border-strong)]">
+    <div className="av-card px-4 py-3 transition hover:border-[var(--av-border-strong)]">
       <p className="av-label">{label}</p>
-      <p className="mt-2 text-[28px] font-semibold tabular-nums tracking-tight text-[var(--av-text)]">{value}</p>
+      <p className="mt-1 text-[22px] font-semibold tabular-nums tracking-tight text-[var(--av-text)]">{value}</p>
     </div>
   );
   return href ? <Link href={href}>{inner}</Link> : inner;
@@ -56,10 +56,9 @@ export function ActionCard({
   tone: keyof typeof ACTION_TONE;
 }) {
   return (
-    <Link href={href} className={`av-card block p-5 transition hover:border-[var(--av-border-strong)] ${ACTION_TONE[tone]}`}>
+    <Link href={href} className={`av-card block px-4 py-3 transition hover:border-[var(--av-border-strong)] ${ACTION_TONE[tone]}`}>
       <p className="text-[12px] font-medium opacity-80">{label}</p>
-      <p className="mt-2 text-[28px] font-semibold tabular-nums tracking-tight">{value}</p>
-      <p className="mt-3 text-[13px] font-medium">Öppna →</p>
+      <p className="mt-1 text-[22px] font-semibold tabular-nums tracking-tight">{value}</p>
     </Link>
   );
 }
@@ -84,13 +83,13 @@ export function NextStep({
         ? "border-[var(--av-status-blocked-fg)]/15 bg-[var(--av-status-blocked-bg)]"
         : "border-[var(--av-status-next-fg)]/15 bg-[var(--av-status-next-bg)]";
   return (
-    <section className={`rounded-[var(--av-radius-lg)] border p-5 shadow-[var(--av-shadow-sm)] ${wrap}`}>
+    <section className={`rounded-[var(--av-radius-lg)] border px-4 py-3.5 shadow-[var(--av-shadow-sm)] ${wrap}`}>
       <p className="av-label">Vad behöver du göra nu?</p>
-      <h2 className="mt-2 text-[20px] font-semibold tracking-tight text-[var(--av-text)]">{title}</h2>
-      <p className="mt-1 text-[14px] text-[var(--av-text-secondary)]">{body}</p>
+      <h2 className="mt-1 text-[17px] font-semibold tracking-tight text-[var(--av-text)]">{title}</h2>
+      <p className="mt-0.5 text-[13px] text-[var(--av-text-secondary)]">{body}</p>
       {href && cta ? (
-        <div className="mt-4">
-          <LinkButton href={href}>{cta}</LinkButton>
+        <div className="mt-3">
+          <LinkButton href={href} size="sm">{cta}</LinkButton>
         </div>
       ) : null}
     </section>
@@ -99,9 +98,9 @@ export function NextStep({
 
 export function EmptyState({ title, body }: { title: string; body: string }) {
   return (
-    <div className="rounded-[var(--av-radius-lg)] border border-dashed border-[var(--av-border-strong)] bg-[var(--av-surface)] px-8 py-14 text-center">
-      <h3 className="text-[17px] font-semibold tracking-tight">{title}</h3>
-      <p className="mt-2 text-[14px] text-[var(--av-text-muted)]">{body}</p>
+    <div className="rounded-[var(--av-radius-lg)] border border-dashed border-[var(--av-border-strong)] bg-[var(--av-surface)] px-6 py-8 text-center">
+      <h3 className="text-[15px] font-semibold tracking-tight">{title}</h3>
+      <p className="mt-1 text-[13px] text-[var(--av-text-muted)]">{body}</p>
     </div>
   );
 }
@@ -116,10 +115,10 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 className="text-[28px] font-semibold tracking-tight text-[var(--av-text)]">{title}</h1>
-        {subtitle ? <p className="mt-1 max-w-2xl text-[14px] text-[var(--av-text-muted)]">{subtitle}</p> : null}
+        <h1 className="text-[22px] font-semibold tracking-tight text-[var(--av-text)]">{title}</h1>
+        {subtitle ? <p className="mt-0.5 max-w-2xl text-[13px] text-[var(--av-text-muted)]">{subtitle}</p> : null}
       </div>
       {action}
     </div>
@@ -129,8 +128,8 @@ export function PageHeader({
 export function Panel({ title, children, padded = true }: { title?: ReactNode; children: ReactNode; padded?: boolean }) {
   return (
     <section className="av-card overflow-hidden">
-      {title ? <p className="border-b border-[var(--av-border)] px-5 py-3 text-[13px] font-medium text-[var(--av-text)]">{title}</p> : null}
-      <div className={padded ? "p-5" : ""}>{children}</div>
+      {title ? <p className="border-b border-[var(--av-border)] px-4 py-2 text-[13px] font-medium text-[var(--av-text)]">{title}</p> : null}
+      <div className={padded ? "p-4" : ""}>{children}</div>
     </section>
   );
 }
@@ -246,17 +245,19 @@ export function Timeline({
 export function DataTable({
   headers,
   children,
+  flush,
 }: {
   headers: { label: string; align?: "right" | "left" }[];
   children: ReactNode;
+  flush?: boolean;
 }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-[14px]">
+    <div className={flush === false ? "av-table-wrap" : "av-table-wrap av-table-wrap--flush"}>
+      <table className="av-table">
         <thead>
-          <tr className="text-left text-[12px] font-medium text-[var(--av-text-muted)]">
+          <tr>
             {headers.map((h) => (
-              <th key={h.label} className={`px-5 py-3 ${h.align === "right" ? "text-right" : ""}`}>
+              <th key={h.label} className={h.align === "right" ? "av-num" : undefined}>
                 {h.label}
               </th>
             ))}
@@ -268,16 +269,49 @@ export function DataTable({
   );
 }
 
-export function DataRow({ href, children, last }: { href?: string; children: ReactNode; last?: boolean }) {
+export function DataRow({ href, children }: { href?: string; children: ReactNode; last?: boolean }) {
+  return <tr className={href ? "group" : undefined}>{children}</tr>;
+}
+
+export function DashTable({
+  columns,
+  children,
+  count,
+}: {
+  columns: { label: string; align?: "right"; sr?: boolean }[];
+  children: ReactNode;
+  count?: string;
+}) {
   return (
-    <tr className={`${last ? "" : "border-b border-[var(--av-border)]"} ${href ? "group hover:bg-[var(--av-bg)]" : ""}`}>
-      {children}
-    </tr>
+    <div>
+      {count ? <p className="mb-2 text-[12px] tabular-nums text-[var(--av-text-muted)]">{count}</p> : null}
+      <div className="av-table-wrap">
+        <table className="av-table">
+          <thead>
+            <tr>
+              {columns.map((c) => (
+                <th key={c.label} className={c.align === "right" ? "av-num" : c.sr ? "av-actions" : undefined}>
+                  {c.sr ? <span className="sr-only">{c.label}</span> : c.label}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>{children}</tbody>
+        </table>
+      </div>
+    </div>
   );
+}
+
+export function TableActions({ children }: { children: ReactNode }) {
+  return <div className="inline-flex flex-wrap items-center justify-end gap-1.5">{children}</div>;
 }
 
 export const controlClass =
   "h-11 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] bg-[var(--av-surface)] px-3 text-[14px] outline-none focus:border-[var(--av-accent)]/40";
+
+export const controlCompact =
+  "h-9 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] bg-[var(--av-surface)] px-2.5 text-[13px] outline-none focus:border-[var(--av-accent)]/40";
 
 export function SectionTitle({ children }: { children: ReactNode }) {
   return <h2 className="text-[15px] font-semibold tracking-tight text-[var(--av-text)]">{children}</h2>;

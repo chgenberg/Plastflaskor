@@ -1,5 +1,5 @@
 import { ORDER_LIST_LANES } from "@/domain/enums";
-import { Button, FilterChip, controlClass } from "@/ui/shell/primitives";
+import { Button, FilterChip, controlCompact } from "@/ui/shell/primitives";
 
 type FilterValues = {
   q?: string;
@@ -38,7 +38,7 @@ export function OrderFilterForm({
 }) {
   const lane = values.lane ?? "";
   return (
-    <div className="av-card space-y-3 p-4">
+    <div className="av-card space-y-2.5 p-3">
       <form action={action} className="flex flex-col gap-2 sm:flex-row sm:items-center">
         {lane ? <input type="hidden" name="lane" value={lane} /> : null}
         {values.size ? <input type="hidden" name="size" value={values.size} /> : null}
@@ -49,9 +49,9 @@ export function OrderFilterForm({
           name="q"
           defaultValue={values.q}
           placeholder="Sök ordernr, kund, produkt, org.nr, tracking…"
-          className={controlClass}
+          className={controlCompact}
         />
-        <Button type="submit">Sök</Button>
+        <Button type="submit" size="sm">Sök</Button>
       </form>
       <div className="flex flex-wrap gap-1.5">
         <FilterChip href={hrefFor(values, undefined)} active={!lane && !values.phase} solid>
@@ -66,23 +66,23 @@ export function OrderFilterForm({
       <form action={action} className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
         {values.q ? <input type="hidden" name="q" value={values.q} /> : null}
         {lane ? <input type="hidden" name="lane" value={lane} /> : null}
-        <select name="size" defaultValue={values.size ?? ""} className={controlClass}>
+        <select name="size" defaultValue={values.size ?? ""} className={controlCompact}>
           <option value="">Alla storlekar</option>
           <option value="33">33 cl</option>
           <option value="50">50 cl</option>
         </select>
-        <select name="waterType" defaultValue={values.waterType ?? ""} className={controlClass}>
+        <select name="waterType" defaultValue={values.waterType ?? ""} className={controlCompact}>
           <option value="">Stilla och kolsyrat</option>
           <option value="stilla">Stilla</option>
           <option value="kolsyrat">Kolsyrat</option>
         </select>
-        <select name="late" defaultValue={values.late ?? ""} className={controlClass}>
+        <select name="late" defaultValue={values.late ?? ""} className={controlCompact}>
           <option value="">I tid och försenade</option>
           <option value="1">Försenade</option>
           <option value="0">I tid</option>
         </select>
         {factories.length > 1 ? (
-          <select name="factory" defaultValue={values.factory ?? ""} className={controlClass}>
+          <select name="factory" defaultValue={values.factory ?? ""} className={controlCompact}>
             <option value="">Alla bottlers</option>
             {factories.map((f) => (
               <option key={f.id} value={f.id}>
@@ -91,7 +91,7 @@ export function OrderFilterForm({
             ))}
           </select>
         ) : null}
-        <Button type="submit" variant="secondary">
+        <Button type="submit" variant="secondary" size="sm">
           Fler filter
         </Button>
       </form>

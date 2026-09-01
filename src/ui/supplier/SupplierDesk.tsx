@@ -1,6 +1,7 @@
+import Link from "next/link";
 import { factoryAction } from "@/actions";
 import { FACTORY_JOB_LABELS } from "@/domain/enums";
-import { ActionCard, Button, DashList, DashRow, EmptyState, LinkButton, PageHeader, StatusChip } from "@/ui/shell/primitives";
+import { ActionCard, Button, DashTable, EmptyState, LinkButton, PageHeader, StatusChip, TableActions } from "@/ui/shell/primitives";
 
 type Job = Awaited<ReturnType<typeof import("@/server/services/production.service").listJobsForFactory>>[number];
 
@@ -38,7 +39,7 @@ export function SupplierDesk({
 
   if (missingFactory) {
     return (
-      <div className="space-y-5">
+      <div className="space-y-4">
         <PageHeader title="Översikt" subtitle={`${title} — ingen pris- eller fakturainformation.`} />
         <EmptyState title="Ingen leverantör kopplad" body="Logga in som etikett eller bottler för att se jobb." />
       </div>
@@ -54,7 +55,7 @@ export function SupplierDesk({
   const ready = visible.filter((j) => j.order.currentStatus === "READY_TO_SHIP").length;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader
         title="Vad behöver du göra nu?"
         subtitle={`${title} — ingen pris- eller fakturainformation.`}
@@ -77,24 +78,34 @@ export function SupplierDesk({
           ) : null}
         </div>
       ) : null}
-      <h2 className="pt-2 text-[15px] font-semibold tracking-tight">Beställningar</h2>
+      <h2 className="text-[13px] font-semibold tracking-tight">Beställningar</h2>
       {visible.length === 0 ? (
         <EmptyState
           title="Inga beställningar just nu"
           body={kind === "label" ? "När Aqua skickat en orderbekräftelse syns etikettjobben här." : "När etiketterna är skickade syns flaskjobben här."}
         />
       ) : (
-        <DashList>
+        <DashTable
+          count={`${visible.length} jobb`}
+          columns={[
+            { label: "Order" },
+            { label: "Kund" },
+            { label: "Innehåll" },
+            { label: "Skickdatum" },
+            { label: "Status" },
+            { label: "Åtgärd", sr: true },
+          ]}
+        >
           {visible.map((j) => (
-            <SupplierJobCard key={j.id} job={j} kind={kind} basePath={basePath} />
+            <SupplierJobRow key={j.id} job={j} kind={kind} basePath={basePath} />
           ))}
-        </DashList>
+        </DashTable>
       )}
     </div>
   );
 }
 
-function SupplierJobCard({ job: j, kind, basePath }: { job: Job; kind: SupplierKind; basePath: string }) {
+function SupplierJobRow({ job: j, kind, basePath }: { job: Job; kind: SupplierKind; basePath: string }) {
   const item = j.order.items[0];
   const waybill = j.order.shipments.find((s) => s.type === "GOODS_TO_CUSTOMER");
   const canShip = kind === "bottler" && j.order.currentStatus === "READY_TO_SHIP" && Boolean(waybill);
@@ -108,17 +119,24 @@ function SupplierJobCard({ job: j, kind, basePath }: { job: Job; kind: SupplierK
   const jobHref = `${basePath}/jobb/${j.id}`;
   const product = item ? `${item.variant.product.name} · ${item.qty.toLocaleString("sv-SE")} st` : "–";
   const deadline = j.order.factoryDeadline
-    ? `Skickdatum ${j.order.factoryDeadline}${j.order.factoryDeadlineAccepted ? " · accepterad" : ""}`
-    : "Inget skickdatum";
+    ? `${j.order.factoryDeadline}${j.order.factoryDeadlineAccepted ? " · accepterad" : ""}`
+    : "–";
 
   return (
-    <DashRow
-      primary={j.order.orderNo}
-      primaryHref={jobHref}
-      columns={[j.order.customer.name, product, deadline]}
-      status={<StatusChip status={j.status} label={FACTORY_JOB_LABELS[j.status] ?? j.status} />}
-      actions={
-        <>
+    <tr>
+      <td>
+        <Link href={jobHref} className="font-semibold text-[var(--av-text)] hover:text-[var(--av-accent)]">
+          {j.order.orderNo}
+        </Link>
+      </td>
+      <td>{j.order.customer.name}</td>
+      <td>{product}</td>
+      <td className="whitespace-nowrap text-[var(--av-text-secondary)]">{deadline}</td>
+      <td>
+        <StatusChip status={j.status} label={FACTORY_JOB_LABELS[j.status] ?? j.status} />
+      </td>
+      <td className="av-actions">
+        <TableActions>
           <LinkButton href={jobHref} variant="secondary" size="sm">
             Öppna
           </LinkButton>
@@ -158,8 +176,8 @@ function SupplierJobCard({ job: j, kind, basePath }: { job: Job; kind: SupplierK
               </Button>
             </form>
           ) : null}
-        </>
-      }
-    />
+        </TableActions>
+      </td>
+    </tr>
   );
 }

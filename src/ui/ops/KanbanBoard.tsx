@@ -26,15 +26,15 @@ export function KanbanBoard({ orders }: { orders: KanbanOrder[] }) {
         {PIPELINE_PHASES.map((phase) => {
           const cards = orders.filter((o) => (phase.statuses as readonly string[]).includes(o.currentStatus));
           return (
-            <section key={phase.id} className="av-card flex w-[260px] shrink-0 flex-col">
-              <header className="flex items-center justify-between gap-2 border-b border-[var(--av-border)] px-4 py-3">
+            <section key={phase.id} className="av-card flex w-[240px] shrink-0 flex-col">
+              <header className="flex items-center justify-between gap-2 border-b border-[var(--av-border)] px-3 py-2">
                 <h2 className="text-[13px] font-medium text-[var(--av-text)]">{phase.label}</h2>
                 <span className="rounded-md bg-[var(--av-accent-soft)] px-2 py-0.5 text-[11px] font-semibold tabular-nums text-[var(--av-accent)]">
                   {cards.length}
                 </span>
               </header>
-              <div className="flex flex-col gap-2 p-2">
-                {cards.length === 0 ? <p className="px-2 py-6 text-center text-[12px] text-[var(--av-text-muted)]">Inga ordrar</p> : null}
+              <div className="flex max-h-[calc(100dvh-14rem)] flex-col gap-1 overflow-y-auto p-1.5">
+                {cards.length === 0 ? <p className="px-2 py-4 text-center text-[12px] text-[var(--av-text-muted)]">Inga ordrar</p> : null}
                 {cards.map((o) => {
                   const item = o.items[0];
                   const late = isOverdue(o.currentStatus, o.requestedDate);
@@ -43,7 +43,7 @@ export function KanbanBoard({ orders }: { orders: KanbanOrder[] }) {
                     <Link
                       key={o.id}
                       href={`/operations/ordrar/${o.orderNo}`}
-                      className="rounded-[var(--av-radius-md)] border border-[var(--av-border)] bg-[var(--av-surface)] px-3 py-2 hover:border-[var(--av-accent)]/30"
+                      className="rounded-[var(--av-radius-md)] border border-[var(--av-border)] bg-[var(--av-surface)] px-2.5 py-1.5 hover:border-[var(--av-accent)]/30"
                     >
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-[13px] font-semibold tracking-tight">{o.orderNo}</p>

@@ -19,7 +19,7 @@ export default async function KontoInvoices() {
       pdfId: o.documents.find((d) => d.kind === "FINANCE")?.id ?? null,
     }));
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <PageHeader title="Fakturor" />
       {rows.length === 0 ? (
         <EmptyState title="Inga fakturor" body="När en order faktureras syns den här." />

@@ -13,7 +13,7 @@ export default async function AgentenPage() {
   const groups = groupOpenCards(snap.open);
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-4">
       <AgentRefresh />
       <PageHeader
         title="Agenten"

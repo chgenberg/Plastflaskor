@@ -1,6 +1,7 @@
+import Link from "next/link";
 import { FACTORY_JOB_LABELS, ORDER_STEP_LABELS, type OrderStatusCode } from "@/domain/enums";
 import { prisma } from "@/server/db";
-import { DashList, DashRow, EmptyState, FilterChip, PageHeader, StatusChip } from "@/ui/shell/primitives";
+import { DashTable, EmptyState, FilterChip, PageHeader, StatusChip } from "@/ui/shell/primitives";
 
 const GROUPS = [
   { id: "date", label: "Datum" },
@@ -55,9 +56,9 @@ export default async function ProductionBoard({ searchParams }: { searchParams: 
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <PageHeader title="Produktion" subtitle="Gruppera flaskjobb efter datum, produkt, storlek eller stilla/kolsyrat." />
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5">
         {GROUPS.map((g) => (
           <FilterChip key={g.id} href={`/operations/produktion?group=${g.id}`} active={group === g.id}>
             {g.label}
@@ -68,34 +69,44 @@ export default async function ProductionBoard({ searchParams }: { searchParams: 
         <EmptyState title="Inga jobb" body="När produktion planeras syns den här." />
       ) : (
         [...grouped.entries()].map(([key, rows]) => (
-          <div key={key} className="space-y-3">
-            <p className="text-[15px] font-semibold tracking-tight">{key}</p>
-            <DashList>
+          <div key={key} className="space-y-2">
+            <p className="text-[13px] font-semibold tracking-tight">
+              {key} <span className="font-normal text-[var(--av-text-muted)]">· {rows.length}</span>
+            </p>
+            <DashTable
+              columns={[
+                { label: "Order" },
+                { label: "Kund" },
+                { label: "Innehåll" },
+                { label: "Jobb" },
+                { label: "Orderstatus" },
+              ]}
+            >
               {rows.map((j) => {
                 const item = j.order.items[0];
                 return (
-                  <DashRow
-                    key={j.id}
-                    primary={j.order.orderNo}
-                    primaryHref={`/operations/ordrar/${j.order.orderNo}`}
-                    columns={[
-                      j.order.customer.name,
-                      item ? `${item.variant.product.name} · ${item.qty.toLocaleString("sv-SE")} st` : "–",
-                    ]}
-                    status={
-                      <>
-                        <StatusChip status={j.status} label={FACTORY_JOB_LABELS[j.status] ?? j.status} />
-                        <StatusChip
-                          status={j.order.currentStatus}
-                          label={ORDER_STEP_LABELS[j.order.currentStatus as OrderStatusCode]}
-                          requestedDate={j.order.requestedDate}
-                        />
-                      </>
-                    }
-                  />
+                  <tr key={j.id}>
+                    <td>
+                      <Link href={`/operations/ordrar/${j.order.orderNo}`} className="font-semibold text-[var(--av-text)] hover:text-[var(--av-accent)]">
+                        {j.order.orderNo}
+                      </Link>
+                    </td>
+                    <td>{j.order.customer.name}</td>
+                    <td>{item ? `${item.variant.product.name} · ${item.qty.toLocaleString("sv-SE")} st` : "–"}</td>
+                    <td>
+                      <StatusChip status={j.status} label={FACTORY_JOB_LABELS[j.status] ?? j.status} />
+                    </td>
+                    <td>
+                      <StatusChip
+                        status={j.order.currentStatus}
+                        label={ORDER_STEP_LABELS[j.order.currentStatus as OrderStatusCode]}
+                        requestedDate={j.order.requestedDate}
+                      />
+                    </td>
+                  </tr>
                 );
               })}
-            </DashList>
+            </DashTable>
           </div>
         ))
       )}

@@ -1,13 +1,13 @@
 import { requireSupplier, scopedFactoryId } from "@/server/supplierAccess";
 import { prisma } from "@/server/db";
-import { DashList, DashRow, EmptyState, LinkButton, PageHeader } from "@/ui/shell/primitives";
+import { DashTable, EmptyState, LinkButton, PageHeader, TableActions } from "@/ui/shell/primitives";
 
 export default async function LabelsDocs() {
   const user = await requireSupplier("label");
   const factoryId = scopedFactoryId(user);
   if (user.role === "LABEL" && !user.factoryId) {
     return (
-      <div className="space-y-8">
+      <div className="space-y-4">
         <PageHeader title="Dokument" />
         <EmptyState title="Ingen etikettleverantör kopplad" body="Produktionsdokument visas här. Inga fakturor." />
       </div>
@@ -21,26 +21,33 @@ export default async function LabelsDocs() {
     include: { order: true },
   });
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <PageHeader title="Dokument" subtitle="Etikettfiler och produktion. Inga priser eller fakturor." />
       {docs.length === 0 ? (
         <EmptyState title="Inga dokument" body="När jobb får slutgiltig artwork syns de här." />
       ) : (
-        <DashList>
+        <DashTable
+          count={`${docs.length} dokument`}
+          columns={[
+            { label: "Dokument" },
+            { label: "Order" },
+            { label: "Åtgärd", sr: true },
+          ]}
+        >
           {docs.map((d) => (
-            <DashRow
-              key={d.id}
-              primary={d.title}
-              primaryHref={`/api/documents/${d.id}`}
-              columns={[d.order?.orderNo ?? "–"]}
-              actions={
-                <LinkButton href={`/api/documents/${d.id}`} variant="secondary" size="sm">
-                  Öppna
-                </LinkButton>
-              }
-            />
+            <tr key={d.id}>
+              <td className="font-medium">{d.title}</td>
+              <td>{d.order?.orderNo ?? "–"}</td>
+              <td className="av-actions">
+                <TableActions>
+                  <LinkButton href={`/api/documents/${d.id}`} variant="secondary" size="sm">
+                    Öppna
+                  </LinkButton>
+                </TableActions>
+              </td>
+            </tr>
           ))}
-        </DashList>
+        </DashTable>
       )}
     </div>
   );

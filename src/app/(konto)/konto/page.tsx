@@ -5,7 +5,7 @@ import { BUYER_STATUS } from "@/domain/enums";
 import { buyerNextAction } from "@/domain/orderBrief";
 import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
-import { BuyerOrderCard } from "@/ui/order/BuyerOrderCard";
+import { BuyerOrderTable } from "@/ui/order/BuyerOrderCard";
 import { EmptyState, KpiCard, LinkButton, NextStep, PageHeader } from "@/ui/shell/primitives";
 
 export default async function KontoHome() {
@@ -18,7 +18,7 @@ export default async function KontoHome() {
   const next = buyerNextAction(orders);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <PageHeader
         title={`Hej ${user.name?.split(" ")[0] ?? ""}`}
         subtitle="Status, godkännande och fakturor."
@@ -40,34 +40,29 @@ export default async function KontoHome() {
       {orders.length === 0 ? (
         <EmptyState title="Inga ordrar ännu" body="Skapa en ny order eller beställ igen från en tidigare order." />
       ) : (
-        <div className="flex flex-col gap-1.5">
-          {orders.slice(0, 6).map((o) => {
+        <BuyerOrderTable
+          rows={orders.slice(0, 6).map((o) => {
             const item = o.items[0];
-            const spec = specFromOrderItem({
-              visualSpecJson: o.visualSpecJson,
-              item,
-              imageSrc: item ? imageForProduct(item.variant.product.slug) : null,
-            });
-            const delivery = o.aquaApprovedDelivery
-              ? `Leverans ${o.aquaApprovedDelivery}`
-              : o.preliminaryDate
-                ? `Preliminärt ${o.preliminaryDate}`
-                : null;
-            return (
-              <BuyerOrderCard
-                key={o.id}
-                href={`/konto/ordrar/${o.orderNo}`}
-                orderNo={o.orderNo}
-                spec={spec}
-                status={o.currentStatus}
-                statusLabel={BUYER_STATUS[o.currentStatus]}
-                delivery={delivery}
-                actionHref={o.lockedAt ? `/konto/ordrar/${o.orderNo}/repeat` : null}
-                actionLabel={o.lockedAt ? "Beställ igen" : null}
-              />
-            );
+            return {
+              href: `/konto/ordrar/${o.orderNo}`,
+              orderNo: o.orderNo,
+              spec: specFromOrderItem({
+                visualSpecJson: o.visualSpecJson,
+                item,
+                imageSrc: item ? imageForProduct(item.variant.product.slug) : null,
+              }),
+              status: o.currentStatus,
+              statusLabel: BUYER_STATUS[o.currentStatus],
+              delivery: o.aquaApprovedDelivery
+                ? `Leverans ${o.aquaApprovedDelivery}`
+                : o.preliminaryDate
+                  ? `Preliminärt ${o.preliminaryDate}`
+                  : null,
+              actionHref: o.lockedAt ? `/konto/ordrar/${o.orderNo}/repeat` : null,
+              actionLabel: o.lockedAt ? "Beställ igen" : null,
+            };
           })}
-        </div>
+        />
       )}
       <p className="text-sm text-[var(--av-text-muted)]">
         Behöver ni en etikett? <Link href="/designa" className="font-medium text-[var(--av-accent)]">Öppna designern</Link>

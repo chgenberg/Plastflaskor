@@ -31,7 +31,7 @@ export default function OpsSettings() {
   const fortnox = getFortnoxConnection();
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <PageHeader
         title="Inställningar"
         subtitle="Mock-portar. UI:t ändras inte när live slås på."

@@ -67,8 +67,8 @@
   display: flex;
   align-items: center;
   gap: 1.25rem;
-  min-height: 48px;
-  padding: 0.45rem 1rem;
+  min-height: 40px;
+  padding: 0.35rem 0.85rem;
   background: var(--av-surface);
   border: 1px solid var(--av-border);
   border-radius: var(--av-radius-md);
@@ -82,36 +82,84 @@
   text-transform: uppercase;
 }
 
+.av-table-wrap {
+  max-height: min(72vh, calc(100dvh - 12.5rem));
+  overflow: auto;
+  background: var(--av-surface);
+  border: 1px solid var(--av-border);
+  border-radius: var(--av-radius-lg);
+}
+
+.av-table-wrap--flush {
+  max-height: min(56vh, calc(100dvh - 16rem));
+  border: 0;
+  border-radius: 0;
+}
+
 .av-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 13px;
 }
 
 .av-table th {
-  padding: 0.55rem 0.75rem;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 0.4rem 0.7rem;
   text-align: left;
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--av-text-muted);
-  border-bottom: 1px solid var(--av-border);
   white-space: nowrap;
+  background: var(--av-surface);
+  box-shadow: 0 1px 0 var(--av-border);
 }
 
 .av-table th.av-num,
 .av-table td.av-num {
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .av-table td {
-  padding: 0.5rem 0.75rem;
+  padding: 0.38rem 0.7rem;
   vertical-align: middle;
-  border-bottom: 1px solid var(--av-border);
+  background: var(--av-surface);
+  box-shadow: 0 1px 0 var(--av-border);
 }
 
-.av-table tbody tr:hover td {
+.av-table td.av-actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.av-table th:first-child,
+.av-table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--av-surface);
+  box-shadow: 1px 0 0 var(--av-border), 0 1px 0 var(--av-border);
+}
+
+.av-table th:first-child {
+  z-index: 3;
+}
+
+.av-table tbody tr:nth-child(even) td {
+  background: #faf9f6;
+}
+
+.av-table tbody tr:nth-child(even) td:first-child {
+  background: #faf9f6;
+}
+
+.av-table tbody tr:hover td,
+.av-table tbody tr:hover td:first-child {
   background: var(--av-bg);
 }
 

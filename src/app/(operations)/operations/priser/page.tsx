@@ -1,7 +1,7 @@
 import { updatePriceItemAction } from "@/actions/catalogMasters";
 import { priceListDisplayName } from "@/domain/priceLists";
 import { prisma } from "@/server/db";
-import { Button, DataRow, DataTable, EmptyState, PageHeader, controlClass } from "@/ui/shell/primitives";
+import { Button, DataRow, DataTable, EmptyState, PageHeader, controlCompact } from "@/ui/shell/primitives";
 
 export default async function PriceListsAdmin() {
   const lists = await prisma.priceList.findMany({
@@ -22,7 +22,7 @@ export default async function PriceListsAdmin() {
   });
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <PageHeader title="Prislistor" subtitle="Standard, Partner, Key Account och Specialavtal. Ordern låser snapshot vid OB." />
       {lists.length === 0 ? (
         <EmptyState title="Inga prislistor" body="När listor seedas syns kod, kunder och profilvatten-rader här." />
@@ -65,14 +65,14 @@ export default async function PriceListsAdmin() {
                     const formId = `price-${row.id}`;
                     return (
                       <DataRow key={row.id} last={i === list.items.length - 1}>
-                        <td className="px-5 py-2.5">
+                        <td>
                           <form id={formId} action={updatePriceItemAction}>
                             <input type="hidden" name="id" value={row.id} />
                           </form>
                           <p className="font-medium">{row.variant.product.name}</p>
-                          <p className="text-[12px] text-[var(--av-text-muted)]">{row.variant.name}</p>
+                          <p className="text-[11px] text-[var(--av-text-muted)]">{row.variant.name}</p>
                         </td>
-                        <td className="px-5 py-2.5 text-right">
+                        <td className="av-num">
                           <input
                             form={formId}
                             name="minQty"
@@ -80,10 +80,10 @@ export default async function PriceListsAdmin() {
                             min={1}
                             required
                             defaultValue={row.minQty}
-                            className={`${controlClass} ml-auto w-24 text-right tabular-nums`}
+                            className={`${controlCompact} ml-auto w-24 text-right tabular-nums`}
                           />
                         </td>
-                        <td className="px-5 py-2.5 text-right">
+                        <td className="av-num">
                           <input
                             form={formId}
                             name="unitPriceExVat"
@@ -92,11 +92,11 @@ export default async function PriceListsAdmin() {
                             step="0.01"
                             required
                             defaultValue={row.unitPriceExVat.toFixed(2)}
-                            className={`${controlClass} ml-auto w-28 text-right tabular-nums text-[var(--av-accent)]`}
+                            className={`${controlCompact} ml-auto w-28 text-right tabular-nums text-[var(--av-accent)]`}
                           />
                         </td>
-                        <td className="px-5 py-2.5">
-                          <Button form={formId} type="submit" variant="secondary">
+                        <td className="av-actions">
+                          <Button form={formId} type="submit" variant="secondary" size="sm">
                             Spara
                           </Button>
                         </td>

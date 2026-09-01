@@ -1,8 +1,9 @@
+import Link from "next/link";
 import { prisma } from "@/server/db";
 import { listCustomers } from "@/server/services/customer.service";
 import { createCustomerAction } from "@/actions/opsMasters";
 import { priceListDisplayName } from "@/domain/priceLists";
-import { Button, DashList, DashRow, EmptyState, PageHeader, Panel, controlClass } from "@/ui/shell/primitives";
+import { Button, DashTable, EmptyState, PageHeader, Panel, controlClass, controlCompact } from "@/ui/shell/primitives";
 
 const FIELD = controlClass;
 
@@ -19,18 +20,52 @@ export default async function CustomersPage({
   ]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <PageHeader title="Kunder" subtitle="Företag, prislista, ordrar och repeat." />
 
-      <form action="/operations/kunder" method="get" className="av-card grid gap-3 p-5 sm:grid-cols-[1fr_auto]">
+      <form action="/operations/kunder" method="get" className="av-card grid gap-2 p-3 sm:grid-cols-[1fr_auto]">
         <input
           name="q"
           defaultValue={term}
           placeholder="Sök namn, org.nr, e-post"
-          className={FIELD}
+          className={controlCompact}
         />
-        <Button type="submit">Sök</Button>
+        <Button type="submit" size="sm">Sök</Button>
       </form>
+
+      {customers.length === 0 ? (
+        <EmptyState
+          title={term ? "Inga träffar" : "Inga kunder"}
+          body={term ? `Inget matchade “${term}”.` : "När kunder skapas syns de här."}
+        />
+      ) : (
+        <DashTable
+          count={`${customers.length} kund${customers.length === 1 ? "" : "er"}`}
+          columns={[
+            { label: "Företag" },
+            { label: "Prislista" },
+            { label: "Org.nr" },
+            { label: "Ordrar" },
+            { label: "Nästa lead" },
+          ]}
+        >
+          {customers.map((c) => (
+            <tr key={c.id}>
+              <td>
+                <Link href={`/operations/kunder/${c.id}`} className="font-semibold text-[var(--av-text)] hover:text-[var(--av-accent)]">
+                  {c.name}
+                </Link>
+              </td>
+              <td>{priceListDisplayName(c.priceList?.name)}</td>
+              <td className="tabular-nums text-[var(--av-text-secondary)]">{c.orgNr ?? "–"}</td>
+              <td className="tabular-nums">{c.orders.length}</td>
+              <td className="whitespace-nowrap text-[var(--av-text-secondary)]">
+                {c.leads[0]?.expectedAt.toLocaleDateString("sv-SE") ?? "–"}
+              </td>
+            </tr>
+          ))}
+        </DashTable>
+      )}
 
       <Panel title="Ny kund">
         <form action={createCustomerAction} className="grid gap-3 sm:grid-cols-2">
@@ -78,28 +113,6 @@ export default async function CustomersPage({
           </div>
         </form>
       </Panel>
-
-      {customers.length === 0 ? (
-        <EmptyState
-          title={term ? "Inga träffar" : "Inga kunder"}
-          body={term ? `Inget matchade “${term}”.` : "När kunder skapas syns de här."}
-        />
-      ) : (
-        <DashList>
-          {customers.map((c) => (
-            <DashRow
-              key={c.id}
-              primary={c.name}
-              primaryHref={`/operations/kunder/${c.id}`}
-              columns={[
-                priceListDisplayName(c.priceList?.name),
-                c.orgNr ?? "Inget org.nr",
-                `${c.orders.length} ordrar · nästa lead ${c.leads[0]?.expectedAt.toLocaleDateString("sv-SE") ?? "–"}`,
-              ]}
-            />
-          ))}
-        </DashList>
-      )}
     </div>
   );
 }

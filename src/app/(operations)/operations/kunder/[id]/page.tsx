@@ -91,7 +91,7 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <PageHeader
         title={customer.name}
         subtitle={`Kund · ${priceListName}`}
@@ -238,16 +238,16 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
               const item = o.items[0];
               return (
                 <DataRow key={o.id} href={`/operations/ordrar/${o.orderNo}`}>
-                  <td className="px-5 py-3">
+                  <td>
                     <Link href={`/operations/ordrar/${o.orderNo}`} className="font-mono text-[var(--av-accent)]">
                       {o.orderNo}
                     </Link>
                   </td>
-                  <td className="px-5 py-3">{o.createdAt.toLocaleDateString("sv-SE")}</td>
-                  <td className="px-5 py-3">{item?.variant.product.name ?? "–"}</td>
-                  <td className="px-5 py-3 text-right tabular-nums">{item?.qty ?? "–"}</td>
-                  <td className="px-5 py-3 text-right tabular-nums">{orderValue(o).toLocaleString("sv-SE")} kr</td>
-                  <td className="px-5 py-3">
+                  <td>{o.createdAt.toLocaleDateString("sv-SE")}</td>
+                  <td>{item?.variant.product.name ?? "–"}</td>
+                  <td className="av-num">{item?.qty ?? "–"}</td>
+                  <td className="av-num">{orderValue(o).toLocaleString("sv-SE")} kr</td>
+                  <td>
                     <StatusChip status={o.currentStatus} label={ORDER_STEP_LABELS[o.currentStatus]} />
                   </td>
                 </DataRow>
@@ -274,16 +274,16 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
           >
             {customer.invoices.map((inv) => (
               <DataRow key={inv.id} href={`/operations/ekonomi/${inv.order.orderNo}/fakturera`}>
-                <td className="px-5 py-3 font-mono">
+                <td className="font-mono">
                   <Link href={`/operations/ekonomi/${inv.order.orderNo}/fakturera`} className="text-[var(--av-accent)]">
                     {inv.invoiceNo}
                   </Link>
                   {inv.fortnoxId ? <p className="text-[12px] text-[var(--av-text-muted)]">{inv.fortnoxId}</p> : null}
                 </td>
-                <td className="px-5 py-3 font-mono">{inv.order.orderNo}</td>
-                <td className="px-5 py-3">{inv.issuedAt?.toLocaleDateString("sv-SE") ?? "–"}</td>
-                <td className="px-5 py-3 text-right tabular-nums">{inv.amountExVat.toLocaleString("sv-SE")} kr</td>
-                <td className="px-5 py-3">
+                <td className="font-mono">{inv.order.orderNo}</td>
+                <td className="whitespace-nowrap tabular-nums">{inv.issuedAt?.toLocaleDateString("sv-SE") ?? "–"}</td>
+                <td className="av-num">{inv.amountExVat.toLocaleString("sv-SE")} kr</td>
+                <td>
                   <StatusChip status={inv.status} label={INVOICE_STATUS_LABELS[inv.status] ?? inv.status} />
                 </td>
               </DataRow>

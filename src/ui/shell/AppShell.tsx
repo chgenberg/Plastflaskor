@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Suspense, useEffect, useId, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { logoutAction } from "@/actions";
-import { Button, controlClass } from "@/ui/shell/primitives";
+import { Button, controlCompact } from "@/ui/shell/primitives";
 
 const ROLE_LABEL: Record<string, string> = {
   CUSTOMER: "Kund",
@@ -55,7 +55,7 @@ export function AppShell({
               name="q"
               type="search"
               placeholder="Sök order, kund, produkt…"
-              className={controlClass}
+              className={controlCompact}
             />
           </form>
         ) : null}
@@ -98,12 +98,12 @@ export function AppShell({
                 name="q"
                 type="search"
                 placeholder="Sök order, kund, produkt…"
-                className={controlClass}
+                className={controlCompact}
               />
             </form>
           ) : null}
         </header>
-        <main className={`mx-auto w-full max-w-6xl flex-1 ${dense ? "px-3 py-5 md:px-6" : "px-4 py-10 md:px-10"}`}>{children}</main>
+        <main className={`mx-auto w-full max-w-7xl flex-1 ${dense ? "px-3 py-4 md:px-5" : "px-4 py-5 md:px-6"}`}>{children}</main>
       </div>
     </div>
   );

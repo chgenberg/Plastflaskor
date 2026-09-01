@@ -1,5 +1,5 @@
 import { invoiceBuyerLabel } from "@/domain/enums";
-import { DashList, DashRow, LinkButton, StatusChip } from "@/ui/shell/primitives";
+import { DashTable, LinkButton, StatusChip, TableActions } from "@/ui/shell/primitives";
 
 export type InvoiceRow = {
   id: string;
@@ -22,37 +22,48 @@ function fmtDate(value?: Date | string | null) {
 
 export function InvoiceTable({ rows, showCustomer }: { rows: InvoiceRow[]; showCustomer?: boolean }) {
   return (
-    <DashList>
+    <DashTable
+      count={`${rows.length} faktura${rows.length === 1 ? "" : "r"}`}
+      columns={[
+        { label: "Faktura" },
+        { label: "Order" },
+        ...(showCustomer ? [{ label: "Kund" }] : []),
+        { label: "Utfärdad" },
+        { label: "Förfaller" },
+        { label: "Belopp", align: "right" as const },
+        { label: "Status" },
+        { label: "PDF", sr: true },
+      ]}
+    >
       {rows.map((r) => {
         const label = invoiceBuyerLabel(r.status, r.dueAt);
         return (
-          <DashRow
-            key={r.id}
-            primary={r.invoiceNo}
-            columns={[
-              r.orderNo,
-              showCustomer ? r.customer : null,
-              `Utfärdad ${fmtDate(r.issuedAt)}`,
-              `Förfaller ${fmtDate(r.dueAt)}`,
-              `${r.amountIncVat.toLocaleString("sv-SE")} kr`,
-            ].filter(Boolean)}
-            status={
+          <tr key={r.id}>
+            <td className="font-semibold">{r.invoiceNo}</td>
+            <td>{r.orderNo}</td>
+            {showCustomer ? <td>{r.customer ?? "–"}</td> : null}
+            <td className="whitespace-nowrap tabular-nums text-[var(--av-text-muted)]">{fmtDate(r.issuedAt)}</td>
+            <td className="whitespace-nowrap tabular-nums text-[var(--av-text-muted)]">{fmtDate(r.dueAt)}</td>
+            <td className="av-num font-semibold">{r.amountIncVat.toLocaleString("sv-SE")} kr</td>
+            <td>
               <StatusChip
                 status={r.status === "PAID" ? "PAID" : "INVOICED"}
                 label={label}
                 requestedDate={label === "Förfallen" ? "2000-01-01" : null}
               />
-            }
-            actions={
-              r.pdfId ? (
-                <LinkButton href={`/api/documents/${r.pdfId}`} variant="secondary" size="sm">
-                  PDF
-                </LinkButton>
-              ) : null
-            }
-          />
+            </td>
+            <td className="av-actions">
+              {r.pdfId ? (
+                <TableActions>
+                  <LinkButton href={`/api/documents/${r.pdfId}`} variant="secondary" size="sm">
+                    PDF
+                  </LinkButton>
+                </TableActions>
+              ) : null}
+            </td>
+          </tr>
         );
       })}
-    </DashList>
+    </DashTable>
   );
 }

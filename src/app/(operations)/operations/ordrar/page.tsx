@@ -69,7 +69,7 @@ export default async function OpsOrders({
       : (laneDef?.label ?? phaseDef?.label ?? "Ordermottagning");
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader title={title} subtitle="Filtrera på fas eller sök order, kund, produkt, org.nr eller tracking." />
       <OrderFilterForm
         values={{ q, lane, phase, from, to, size, waterType, factory, late }}
@@ -78,12 +78,7 @@ export default async function OpsOrders({
       {orders.length === 0 ? (
         <EmptyState title="Inga ordrar" body={q || lane || phase || status || alert ? "Inget matchade filtret." : "När ordrar kommer in syns de här."} />
       ) : (
-        <div className="space-y-2">
-          <p className="text-[12px] text-[var(--av-text-muted)]">
-            {orders.length} order{orders.length === 1 ? "" : "ar"}
-          </p>
-          <OrderResultsTable orders={orders} />
-        </div>
+        <OrderResultsTable orders={orders} />
       )}
     </div>
   );

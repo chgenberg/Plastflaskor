@@ -20,7 +20,7 @@ export default async function OpsHome() {
   }
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-4">
       <PageHeader
         title="Vad behöver du göra nu?"
         subtitle="Kräver åtgärd"
