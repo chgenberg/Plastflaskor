@@ -6,7 +6,7 @@ import { buyerNextAction } from "@/domain/orderBrief";
 import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
 import { BuyerOrderTable } from "@/ui/order/BuyerOrderCard";
-import { EmptyState, KpiCard, LinkButton, NextStep, PageHeader } from "@/ui/shell/primitives";
+import { DashPage, EmptyState, KpiCard, KpiStrip, LinkButton, NextStep, PageHeader } from "@/ui/shell/primitives";
 
 export default async function KontoHome() {
   const user = await requireRole(["CUSTOMER", "AQUA_STAFF", "AQUA_ADMIN"]);
@@ -18,7 +18,7 @@ export default async function KontoHome() {
   const next = buyerNextAction(orders);
 
   return (
-    <div className="space-y-4">
+    <DashPage>
       <PageHeader
         title={`Hej ${user.name?.split(" ")[0] ?? ""}`}
         subtitle="Status, godkännande och fakturor."
@@ -31,12 +31,12 @@ export default async function KontoHome() {
         cta={next.cta}
         tone={proof > 0 ? "next" : "done"}
       />
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <KpiStrip>
         <KpiCard label="Aktiva ordrar" value={active} href="/konto/ordrar?view=active" />
         <KpiCard label="Väntar på ditt godkännande" value={proof} href="/konto/ordrar?view=proof" />
         <KpiCard label="På väg" value={shipped} href="/konto/ordrar?view=shipped" />
         <KpiCard label="Fakturor" value={invoices} href="/konto/fakturor" />
-      </div>
+      </KpiStrip>
       {orders.length === 0 ? (
         <EmptyState
           title={user.customerId ? "Inga ordrar ännu" : "Det här är kundportalen"}
@@ -71,9 +71,9 @@ export default async function KontoHome() {
           })}
         />
       )}
-      <p className="text-sm text-[var(--av-text-muted)]">
-        Behöver ni en etikett? <Link href="/designa" className="font-medium text-[var(--av-accent)]">Öppna designern</Link>
+      <p className="text-[13px] text-[var(--av-text-muted)]">
+        Behöver ni en etikett? <Link href="/designa" className="text-[var(--av-text)] hover:text-[var(--av-accent)]">Öppna designern</Link>
       </p>
-    </div>
+    </DashPage>
   );
 }

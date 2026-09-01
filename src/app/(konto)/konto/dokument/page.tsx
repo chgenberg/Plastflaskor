@@ -1,14 +1,14 @@
 import { DOCUMENT_KIND_LABELS } from "@/domain/enums";
 import { requireRole } from "@/server/rbac";
 import { listOrdersForCustomer } from "@/server/services/order.service";
-import { DashTable, EmptyState, LinkButton, PageHeader, TableActions } from "@/ui/shell/primitives";
+import { DashPage, DashTable, EmptyState, LinkButton, PageHeader, TableActions } from "@/ui/shell/primitives";
 
 export default async function KontoDocs() {
   const user = await requireRole(["CUSTOMER", "AQUA_STAFF", "AQUA_ADMIN"]);
   const orders = user.customerId ? await listOrdersForCustomer(user.customerId) : [];
   const docs = orders.flatMap((o) => o.documents.map((d) => ({ ...d, orderNo: o.orderNo })));
   return (
-    <div className="space-y-4">
+    <DashPage>
       <PageHeader title="Dokument" subtitle="Korrektur, fraktsedlar och fakturor kopplade till era ordrar." />
       {!user.customerId ? (
         <EmptyState title="Inget kundkonto kopplat" body="Dokument visas för kundkonton." />
@@ -45,6 +45,6 @@ export default async function KontoDocs() {
           ))}
         </DashTable>
       )}
-    </div>
+    </DashPage>
   );
 }

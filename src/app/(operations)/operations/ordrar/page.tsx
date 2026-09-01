@@ -4,7 +4,7 @@ import { ORDER_LIST_LANES, PIPELINE_PHASES } from "@/domain/enums";
 import { isExceptionKind, ordersWithAlert } from "@/domain/exceptions";
 import { OrderFilterForm } from "@/ui/ops/OrderFilterForm";
 import { OrderResultsTable } from "@/ui/ops/OrderResultsTable";
-import { EmptyState, LinkButton, PageHeader } from "@/ui/shell/primitives";
+import { DashPage, EmptyState, LinkButton, PageHeader } from "@/ui/shell/primitives";
 
 const SIZES = ["33", "50"] as const;
 const WATER_TYPES = ["stilla", "kolsyrat"] as const;
@@ -69,7 +69,7 @@ export default async function OpsOrders({
       : (laneDef?.label ?? phaseDef?.label ?? "Ordermottagning");
 
   return (
-    <div className="space-y-4">
+    <DashPage>
       <PageHeader
         title={title}
         subtitle="Filtrera på fas eller sök order, kund, produkt, org.nr eller tracking."
@@ -91,6 +91,6 @@ export default async function OpsOrders({
       ) : (
         <OrderResultsTable orders={orders} />
       )}
-    </div>
+    </DashPage>
   );
 }

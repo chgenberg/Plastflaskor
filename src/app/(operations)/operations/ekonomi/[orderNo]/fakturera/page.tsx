@@ -8,7 +8,7 @@ import { buildPriceSnapshot, parseExtras, parseSnapshot } from "@/domain/extras"
 import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
 import { OrderConfirmationPreview } from "@/ui/order/OrderConfirmationPreview";
-import { Button, FileLink, PageHeader, Panel } from "@/ui/shell/primitives";
+import { Button, DashPage, FileLink, PageHeader, Panel } from "@/ui/shell/primitives";
 import { FortnoxBadge } from "@/ui/shell/FortnoxBadge";
 import { FortnoxInvoiceForm } from "@/ui/ops/FortnoxInvoiceForm";
 import { orderArtworkLink } from "@/domain/orderArtwork";
@@ -54,7 +54,8 @@ export default async function InvoicePage({
     order.shippingAddress;
   const freight = order.shipments.find((s) => s.type === "GOODS_TO_CUSTOMER") ?? order.shipments[0];
   return (
-    <div className="mx-auto max-w-xl space-y-8">
+    <div className="mx-auto max-w-xl">
+    <DashPage>
       <PageHeader
         title="Slutför order & fakturera"
         subtitle={order.orderNo}
@@ -189,6 +190,7 @@ export default async function InvoicePage({
           <p className="mt-6 text-sm text-[var(--av-text-muted)]">Faktura utfärdad. Väntar på betalning.</p>
         ) : null}
       </Panel>
+    </DashPage>
     </div>
   );
 }

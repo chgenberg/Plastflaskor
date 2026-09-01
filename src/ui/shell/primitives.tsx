@@ -27,22 +27,37 @@ export function StatusChip({
   );
 }
 
-export function KpiCard({ label, value, href }: { label: string; value: number | string; href?: string }) {
-  const inner = (
-    <div className="av-card px-4 py-3 transition hover:border-[var(--av-border-strong)]">
-      <p className="av-label">{label}</p>
-      <p className="mt-1 text-[22px] font-semibold tabular-nums tracking-tight text-[var(--av-text)]">{value}</p>
-    </div>
-  );
-  return href ? <Link href={href}>{inner}</Link> : inner;
+export function DashPage({ children }: { children: ReactNode }) {
+  return <div className="av-dash-page">{children}</div>;
 }
 
-const ACTION_TONE = {
-  green: "bg-[var(--av-status-done-bg)] text-[var(--av-status-done-fg)]",
-  yellow: "bg-[var(--av-status-next-bg)] text-[var(--av-status-next-fg)]",
-  red: "bg-[var(--av-status-blocked-bg)] text-[var(--av-status-blocked-fg)]",
-  grey: "text-[var(--av-text)]",
-} as const;
+export function KpiStrip({ children, cols }: { children: ReactNode; cols?: 2 | 3 | 4 }) {
+  return (
+    <div className="av-kpi-strip" style={cols ? { ["--av-kpi-cols" as string]: String(cols) } : undefined}>
+      {children}
+    </div>
+  );
+}
+
+export function KpiCard({ label, value, href }: { label: string; value: number | string; href?: string }) {
+  const inner = (
+    <>
+      <p className="av-label">{label}</p>
+      <p className="av-kpi-value">{value}</p>
+    </>
+  );
+  return href ? (
+    <Link href={href} className="av-kpi-item">
+      {inner}
+    </Link>
+  ) : (
+    <div className="av-kpi-item">{inner}</div>
+  );
+}
+
+export function ActionList({ children }: { children: ReactNode }) {
+  return <div className="av-action-list">{children}</div>;
+}
 
 export function ActionCard({
   href,
@@ -54,14 +69,16 @@ export function ActionCard({
   href: string;
   label: string;
   value: number | string;
-  tone: keyof typeof ACTION_TONE;
+  tone: "green" | "yellow" | "red" | "grey";
   detail?: string;
 }) {
   return (
-    <Link href={href} className={`av-card block px-4 py-3 transition hover:border-[var(--av-border-strong)] ${ACTION_TONE[tone]}`}>
-      <p className="text-[12px] font-medium opacity-80">{label}</p>
-      <p className="mt-1 text-[22px] font-semibold tabular-nums tracking-tight">{value}</p>
-      {detail ? <p className="mt-1 text-[12px] font-medium opacity-80">{detail}</p> : null}
+    <Link href={href} className={`av-action-row is-${tone}`}>
+      <span className="av-action-copy">
+        <strong>{label}</strong>
+        {detail ? <span>{detail}</span> : null}
+      </span>
+      <span className="av-action-value">{value}</span>
     </Link>
   );
 }
@@ -79,31 +96,36 @@ export function NextStep({
   cta?: string;
   tone?: "next" | "done" | "blocked";
 }) {
-  const wrap =
-    tone === "done"
-      ? "border-[var(--av-status-done-fg)]/15 bg-[var(--av-status-done-bg)]"
-      : tone === "blocked"
-        ? "border-[var(--av-status-blocked-fg)]/15 bg-[var(--av-status-blocked-bg)]"
-        : "border-[var(--av-status-next-fg)]/15 bg-[var(--av-status-next-bg)]";
   return (
-    <section className={`rounded-[var(--av-radius-lg)] border px-4 py-3.5 shadow-[var(--av-shadow-sm)] ${wrap}`}>
+    <section className={`av-next is-${tone}`}>
       <p className="av-label">Vad behöver du göra nu?</p>
-      <h2 className="mt-1 text-[17px] font-semibold tracking-tight text-[var(--av-text)]">{title}</h2>
-      <p className="mt-0.5 text-[13px] text-[var(--av-text-secondary)]">{body}</p>
+      <h2>{title}</h2>
+      <p>{body}</p>
       {href && cta ? (
-        <div className="mt-3">
-          <LinkButton href={href} size="sm">{cta}</LinkButton>
+        <div className="av-next-cta">
+          <LinkButton href={href} size="sm">
+            {cta}
+          </LinkButton>
         </div>
       ) : null}
     </section>
   );
 }
 
-export function EmptyState({ title, body }: { title: string; body: string }) {
+export function EmptyState({
+  title,
+  body,
+  action,
+}: {
+  title: string;
+  body: string;
+  action?: ReactNode;
+}) {
   return (
-    <div className="rounded-[var(--av-radius-lg)] border border-dashed border-[var(--av-border-strong)] bg-[var(--av-surface)] px-6 py-8 text-center">
-      <h3 className="text-[15px] font-semibold tracking-tight">{title}</h3>
-      <p className="mt-1 text-[13px] text-[var(--av-text-muted)]">{body}</p>
+    <div className="av-empty">
+      <h3>{title}</h3>
+      <p>{body}</p>
+      {action ? <div className="av-empty-action">{action}</div> : null}
     </div>
   );
 }
@@ -118,10 +140,10 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="av-page-header">
       <div>
-        <h1 className="text-[22px] font-semibold tracking-tight text-[var(--av-text)]">{title}</h1>
-        {subtitle ? <p className="mt-0.5 max-w-2xl text-[13px] text-[var(--av-text-muted)]">{subtitle}</p> : null}
+        <h1>{title}</h1>
+        {subtitle ? <p>{subtitle}</p> : null}
       </div>
       {action}
     </div>
@@ -131,7 +153,7 @@ export function PageHeader({
 export function Panel({ title, children, padded = true }: { title?: ReactNode; children: ReactNode; padded?: boolean }) {
   return (
     <section className="av-card overflow-hidden">
-      {title ? <p className="border-b border-[var(--av-border)] px-4 py-2 text-[13px] font-medium text-[var(--av-text)]">{title}</p> : null}
+      {title ? <p className="av-section-title border-b border-[var(--av-border)] px-4 py-2.5">{title}</p> : null}
       <div className={padded ? "p-4" : ""}>{children}</div>
     </section>
   );
@@ -317,7 +339,7 @@ export const controlCompact =
   "h-9 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] bg-[var(--av-surface)] px-2.5 text-[13px] outline-none focus:border-[var(--av-accent)]/40";
 
 export function SectionTitle({ children }: { children: ReactNode }) {
-  return <h2 className="text-[15px] font-semibold tracking-tight text-[var(--av-text)]">{children}</h2>;
+  return <h2 className="av-section-title">{children}</h2>;
 }
 
 export function FileLink({ href, children }: { href: string; children: ReactNode }) {

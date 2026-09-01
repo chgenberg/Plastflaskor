@@ -5,7 +5,7 @@ import { getSessionUser } from "@/server/rbac";
 import { listAllOrders, orderValue } from "@/server/services/order.service";
 import { getFortnoxConnection } from "@/server/integrations/status";
 import { markInvoicePaid } from "@/actions";
-import { Button, DashTable, EmptyState, KpiCard, LinkButton, PageHeader, SectionTitle, StatusChip, TableActions } from "@/ui/shell/primitives";
+import { Button, DashPage, DashTable, EmptyState, KpiCard, KpiStrip, LinkButton, PageHeader, SectionTitle, StatusChip, TableActions } from "@/ui/shell/primitives";
 import { FortnoxBadge } from "@/ui/shell/FortnoxBadge";
 
 export default async function FinancePage() {
@@ -18,16 +18,16 @@ export default async function FinancePage() {
   const isAdmin = isAquaAdmin(user?.role);
 
   return (
-    <div className="space-y-4">
+    <DashPage>
       <PageHeader
         title="Fakturering"
         subtitle="Redo att fakturera, utfärdade och väntar betalning."
         action={<FortnoxBadge label={fortnox.label} />}
       />
-      <div className="grid gap-3 sm:grid-cols-2">
+      <KpiStrip cols={2}>
         <KpiCard label="Redo att faktureras" value={ready.length} />
         <KpiCard label="Väntar betalning" value={waiting.length} />
-      </div>
+      </KpiStrip>
       {ready.length === 0 ? (
         <EmptyState title="Inget att fakturera" body="När en order är levererad eller redo för faktura syns den här." />
       ) : (
@@ -130,6 +130,6 @@ export default async function FinancePage() {
           </DashTable>
         </section>
       )}
-    </div>
+    </DashPage>
   );
 }

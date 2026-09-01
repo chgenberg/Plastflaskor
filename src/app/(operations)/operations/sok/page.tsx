@@ -1,6 +1,6 @@
 import { listAllOrders } from "@/server/services/order.service";
 import { OrderResultsTable } from "@/ui/ops/OrderResultsTable";
-import { Button, EmptyState, PageHeader, controlCompact } from "@/ui/shell/primitives";
+import { Button, DashPage, EmptyState, PageHeader, controlCompact } from "@/ui/shell/primitives";
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q } = await searchParams;
@@ -8,7 +8,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const orders = term ? await listAllOrders({ q: term }) : [];
 
   return (
-    <div className="space-y-4">
+    <DashPage>
       <PageHeader title="Sök" subtitle="Hitta order, kund, produkt, org.nr, kontakt, spårning eller faktura." />
       <form action="/operations/sok" className="av-card flex flex-col gap-2 p-3 sm:flex-row sm:items-center">
         <label className="sr-only" htmlFor="ops-search-page">
@@ -33,6 +33,6 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       ) : (
         <OrderResultsTable orders={orders} />
       )}
-    </div>
+    </DashPage>
   );
 }

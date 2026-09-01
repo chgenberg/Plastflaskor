@@ -3,7 +3,7 @@ import { requireSupplier, scopedFactoryId } from "@/server/supplierAccess";
 import { getJob } from "@/server/services/production.service";
 import { factoryAction } from "@/actions";
 import { labelStockLabel } from "@/domain/bottleCatalog";
-import { Button, FileLink, LinkButton, PageHeader, Panel, controlClass } from "@/ui/shell/primitives";
+import { Button, DashPage, FileLink, LinkButton, PageHeader, Panel, controlClass } from "@/ui/shell/primitives";
 import { SendToPrinterButton } from "@/ui/supplier/SendToPrinterButton";
 
 export default async function LabelJobPage({ params }: { params: Promise<{ jobId: string }> }) {
@@ -33,7 +33,8 @@ export default async function LabelJobPage({ params }: { params: Promise<{ jobId
   const artworkDoc = !previewHref ? job.order.documents.find((d) => d.kind === "ARTWORK") : null;
 
   return (
-    <div className="mx-auto max-w-lg space-y-5">
+    <div className="mx-auto max-w-lg">
+    <DashPage>
       <PageHeader
         title={job.order.orderNo}
         subtitle={job.order.customer.name}
@@ -128,6 +129,7 @@ export default async function LabelJobPage({ params }: { params: Promise<{ jobId
           </div>
         </Panel>
       ) : null}
+    </DashPage>
     </div>
   );
 }

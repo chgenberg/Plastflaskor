@@ -3,7 +3,7 @@ import { prisma } from "@/server/db";
 import { listCustomers } from "@/server/services/customer.service";
 import { createCustomerAction } from "@/actions/opsMasters";
 import { priceListDisplayName } from "@/domain/priceLists";
-import { Button, DashTable, EmptyState, PageHeader, Panel, controlClass, controlCompact } from "@/ui/shell/primitives";
+import { Button, DashPage, DashTable, EmptyState, PageHeader, Panel, controlClass, controlCompact } from "@/ui/shell/primitives";
 
 const FIELD = controlClass;
 
@@ -20,7 +20,7 @@ export default async function CustomersPage({
   ]);
 
   return (
-    <div className="space-y-4">
+    <DashPage>
       <PageHeader title="Kunder" subtitle="Företag, prislista, ordrar och repeat." />
 
       <form action="/operations/kunder" method="get" className="av-card grid gap-2 p-3 sm:grid-cols-[1fr_auto]">
@@ -113,6 +113,6 @@ export default async function CustomersPage({
           </div>
         </form>
       </Panel>
-    </div>
+    </DashPage>
   );
 }

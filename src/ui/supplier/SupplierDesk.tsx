@@ -4,7 +4,7 @@ import { bottlerDeskStatus } from "@/domain/bottlerDesk";
 import { planFromItem } from "@/domain/bottlerPlan";
 import { LabelJobsTable } from "@/ui/supplier/LabelJobsTable";
 import { BottlerJobsTable } from "@/ui/supplier/BottlerJobsTable";
-import { ActionCard, EmptyState, LinkButton, PageHeader } from "@/ui/shell/primitives";
+import { ActionCard, ActionList, DashPage, EmptyState, KpiCard, KpiStrip, LinkButton, PageHeader, SectionTitle } from "@/ui/shell/primitives";
 
 type Job = Awaited<ReturnType<typeof import("@/server/services/production.service").listJobsForFactory>>[number];
 
@@ -52,10 +52,10 @@ export function SupplierDesk({
 
   if (missingFactory) {
     return (
-      <div className="space-y-4">
+      <DashPage>
         <PageHeader title="Översikt" subtitle={`${title} — ingen pris- eller fakturainformation.`} />
         <EmptyState title="Ingen leverantör kopplad" body="Logga in som etikett eller bottler för att se jobb." />
-      </div>
+      </DashPage>
     );
   }
 
@@ -74,42 +74,33 @@ export function SupplierDesk({
   const highlighted = highlightReport ? reports.find((r) => r.reportNo === highlightReport) : null;
 
   return (
-    <div className="space-y-4">
+    <DashPage>
       <PageHeader
         title="Vad behöver du göra nu?"
         subtitle={`${title} — ingen pris- eller fakturainformation.`}
+        action={
+          kind === "bottler" && shipped.length > 0 ? (
+            <LinkButton href={`${basePath}/skickat`} variant="secondary" size="sm">
+              Skickade ({shipped.length})
+            </LinkButton>
+          ) : undefined
+        }
       />
-      {kind === "bottler" && shipped.length > 0 ? (
-        <p className="text-sm">
-          <LinkButton href={`${basePath}/skickat`} variant="secondary">
-            Skickade ({shipped.length})
-          </LinkButton>
-        </p>
-      ) : null}
       {kind === "label" ? (
         <div className="space-y-2">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <ActionCard
-              href={basePath}
-              label="Nästa skickdatum"
-              value={nextShipDate ?? "–"}
-              tone={nextShipLate ? "yellow" : "grey"}
-            />
-            <ActionCard
-              href={`${basePath}?lage=rapport`}
-              label="Leveransrapport"
-              value={latestReport?.reportNo ?? "Ny"}
-              tone={latestReport ? "green" : "grey"}
-            />
-          </div>
+          <KpiStrip cols={2}>
+            <KpiCard href={basePath} label="Nästa skickdatum" value={nextShipDate ?? "–"} />
+            <KpiCard href={`${basePath}?lage=rapport`} label="Leveransrapport" value={latestReport?.reportNo ?? "Ny"} />
+          </KpiStrip>
           {nextShipDate ? (
             <p className="text-[12px] text-[var(--av-text-muted)]">
+              {nextShipLate ? "Deadline har passerat. " : ""}
               Kortaste deadline. Kör så mycket som hinns; allt som är klart skickas samtidigt.
             </p>
           ) : null}
         </div>
       ) : inboundReports.length > 0 || inbound > 0 ? (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <ActionList>
           {inboundReports.length > 0
             ? inboundReports.map((r) => (
                 <ActionCard
@@ -124,7 +115,7 @@ export function SupplierDesk({
             : (
                 <ActionCard href={basePath} label="Etiketter att ta emot" value={inbound} tone="yellow" />
               )}
-        </div>
+        </ActionList>
       ) : null}
       {receivedReport ? (
         <div className="av-card px-4 py-3 text-[13px]">
@@ -149,7 +140,7 @@ export function SupplierDesk({
           ) : null}
         </div>
       ) : null}
-      <h2 className="text-[13px] font-semibold tracking-tight">Beställningar</h2>
+      <SectionTitle>Beställningar</SectionTitle>
       {visible.length === 0 ? (
         <EmptyState
           title="Inga beställningar just nu"
@@ -207,6 +198,6 @@ export function SupplierDesk({
           })}
         />
       )}
-    </div>
+    </DashPage>
   );
 }

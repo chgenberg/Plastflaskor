@@ -3,7 +3,7 @@ import { listJobsForFactory } from "@/server/services/production.service";
 import { requireSupplier, scopedFactoryId } from "@/server/supplierAccess";
 import { planFromItem } from "@/domain/bottlerPlan";
 import { BottlerInvoiceForm } from "@/ui/supplier/BottlerInvoiceForm";
-import { DashTable, EmptyState, LinkButton, PageHeader, TableActions } from "@/ui/shell/primitives";
+import { DashPage, DashTable, EmptyState, LinkButton, PageHeader, SectionTitle, TableActions } from "@/ui/shell/primitives";
 
 export default async function BottlerDocs({
   searchParams,
@@ -15,10 +15,10 @@ export default async function BottlerDocs({
   const { underlag } = await searchParams;
   if ((user.role === "BOTTLER" || user.role === "FACTORY") && !user.factoryId) {
     return (
-      <div className="space-y-4">
+      <DashPage>
         <PageHeader title="Dokument" />
         <EmptyState title="Ingen bottler kopplad" body="Fakturaunderlag visas här. Inga fakturor eller priser." />
-      </div>
+      </DashPage>
     );
   }
   const [reports, jobs, billed] = await Promise.all([
@@ -30,7 +30,7 @@ export default async function BottlerDocs({
   const highlighted = underlag ? reports.find((r) => r.reportNo === underlag) : null;
 
   return (
-    <div className="space-y-6">
+    <DashPage>
       <PageHeader
         title="Dokument"
         subtitle="Fakturaunderlag för tappning. Ingen pris- eller fakturainformation."
@@ -52,7 +52,7 @@ export default async function BottlerDocs({
       ) : null}
       {eligible.length > 0 ? (
         <div className="space-y-2">
-          <h2 className="text-[13px] font-semibold tracking-tight">Skickade ordrar utan underlag</h2>
+          <SectionTitle>Skickade ordrar utan underlag</SectionTitle>
           <BottlerInvoiceForm
             rows={eligible.map((j) => {
               const item = j.order.items[0];
@@ -85,7 +85,7 @@ export default async function BottlerDocs({
       )}
       {reports.length > 0 ? (
         <div className="space-y-2">
-          <h2 className="text-[13px] font-semibold tracking-tight">Skapade underlag</h2>
+          <SectionTitle>Skapade underlag</SectionTitle>
           <DashTable
             count={`${reports.length} underlag`}
             columns={[
@@ -124,6 +124,6 @@ export default async function BottlerDocs({
           </DashTable>
         </div>
       ) : null}
-    </div>
+    </DashPage>
   );
 }

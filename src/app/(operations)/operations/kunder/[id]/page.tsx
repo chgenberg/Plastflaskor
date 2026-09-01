@@ -6,7 +6,7 @@ import { orderValue } from "@/server/services/order.service";
 import { updateCustomerAction } from "@/actions/opsMasters";
 import { LEAD_STATUS_LABELS, ORDER_STEP_LABELS } from "@/domain/enums";
 import { priceListDisplayName } from "@/domain/priceLists";
-import { Button, DataRow, DataTable, EmptyState, FileLink, LinkButton, PageHeader, Panel, StatusChip, controlClass } from "@/ui/shell/primitives";
+import { Button, DashPage, DataRow, DataTable, EmptyState, FileLink, LinkButton, PageHeader, Panel, StatusChip, controlClass } from "@/ui/shell/primitives";
 
 const FIELD = controlClass;
 
@@ -91,7 +91,7 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
   ];
 
   return (
-    <div className="space-y-4">
+    <DashPage>
       <PageHeader
         title={customer.name}
         subtitle={`Kund · ${priceListName}`}
@@ -359,6 +359,6 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
           </ul>
         )}
       </Panel>
-    </div>
+    </DashPage>
   );
 }

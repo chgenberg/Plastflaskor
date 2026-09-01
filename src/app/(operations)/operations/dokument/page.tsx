@@ -1,6 +1,6 @@
 import { listBottlerInvoices } from "@/server/services/bottlerInvoice.service";
 import { listLabelDispatches } from "@/server/services/labelDispatch.service";
-import { DashTable, EmptyState, LinkButton, PageHeader, TableActions } from "@/ui/shell/primitives";
+import { DashPage, DashTable, EmptyState, LinkButton, PageHeader, SectionTitle, TableActions } from "@/ui/shell/primitives";
 
 export default async function OpsDocumentsPage() {
   const [labels, bottler] = await Promise.all([
@@ -9,13 +9,13 @@ export default async function OpsDocumentsPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <DashPage>
       <PageHeader
         title="Dokument"
         subtitle="Leverantörsunderlag. Etikett och bottler ser aldrig kr. Här öppnar Aqua samma PDF."
       />
       <section className="space-y-2">
-        <h2 className="text-[13px] font-semibold tracking-tight">Etikett · leveransrapport</h2>
+        <SectionTitle>Etikett · leveransrapport</SectionTitle>
         {labels.length === 0 ? (
           <EmptyState title="Inga leveransrapporter" body="När etikettproducenten skapar en rapport syns den här." />
         ) : (
@@ -60,7 +60,7 @@ export default async function OpsDocumentsPage() {
         )}
       </section>
       <section className="space-y-2">
-        <h2 className="text-[13px] font-semibold tracking-tight">Bottler · fakturaunderlag</h2>
+        <SectionTitle>Bottler · fakturaunderlag</SectionTitle>
         {bottler.length === 0 ? (
           <EmptyState title="Inga bottler-underlag" body="När bottler skapar underlag för tappning syns det här." />
         ) : (
@@ -102,6 +102,6 @@ export default async function OpsDocumentsPage() {
           </DashTable>
         )}
       </section>
-    </div>
+    </DashPage>
   );
 }

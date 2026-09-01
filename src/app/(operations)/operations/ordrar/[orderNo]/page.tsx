@@ -9,7 +9,7 @@ import { approveArtworkAction, approveFactoryDateAction, confirmDeliveryAction, 
 import { DocumentUpload } from "@/ui/shell/DocumentUpload";
 import { OrderConfirmationPreview } from "@/ui/order/OrderConfirmationPreview";
 import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
-import { Button, Field, FileLink, LinkButton, NextStep, PageHeader, Panel, StatusChip, Timeline, controlClass } from "@/ui/shell/primitives";
+import { Button, DashPage, Field, FileLink, LinkButton, NextStep, PageHeader, Panel, StatusChip, Timeline, controlClass } from "@/ui/shell/primitives";
 import { EXTRA_KINDS } from "@/domain/extras";
 import { orderArtworkLink } from "@/domain/orderArtwork";
 
@@ -46,7 +46,7 @@ export default async function OpsOrderDetail({ params }: { params: Promise<{ ord
   const artwork = orderArtworkLink(order);
 
   return (
-    <div className="space-y-7">
+    <DashPage>
       <PageHeader
         title={order.orderNo}
         subtitle={`${order.customer.name}${item ? ` · ${item.variant.product.name}` : ""}`}
@@ -286,6 +286,6 @@ export default async function OpsOrderDetail({ params }: { params: Promise<{ ord
           </Panel>
         </div>
       </div>
-    </div>
+    </DashPage>
   );
 }

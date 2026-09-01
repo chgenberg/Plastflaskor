@@ -3,22 +3,22 @@ import { listJobsForFactory } from "@/server/services/production.service";
 import { bottlerDeskStatus } from "@/domain/bottlerDesk";
 import { planFromItem } from "@/domain/bottlerPlan";
 import { BottlerJobsTable } from "@/ui/supplier/BottlerJobsTable";
-import { EmptyState, PageHeader } from "@/ui/shell/primitives";
+import { DashPage, EmptyState, PageHeader } from "@/ui/shell/primitives";
 
 export default async function BottlerShippedPage() {
   const user = await requireSupplier("bottler");
   const factoryId = scopedFactoryId(user);
   if ((user.role === "BOTTLER" || user.role === "FACTORY") && !user.factoryId) {
     return (
-      <div className="space-y-4">
+      <DashPage>
         <PageHeader title="Skickat" />
         <EmptyState title="Ingen bottler kopplad" body="Logga in som bottler för att se skickade ordrar." />
-      </div>
+      </DashPage>
     );
   }
   const jobs = (await listJobsForFactory(factoryId, "bottler")).filter((j) => j.order.currentStatus === "SHIPPED");
   return (
-    <div className="space-y-4">
+    <DashPage>
       <PageHeader title="Skickat" subtitle="Bottler — ordrar ni har markerat som skickade. Ingen pris- eller fakturainformation." />
       {jobs.length === 0 ? (
         <EmptyState title="Inga skickade ordrar" body="När ni markerar en order som skickad flyttas den hit." />
@@ -47,6 +47,6 @@ export default async function BottlerShippedPage() {
           })}
         />
       )}
-    </div>
+    </DashPage>
   );
 }

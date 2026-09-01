@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { requireSupplier, scopedFactoryId } from "@/server/supplierAccess";
 import { getJob } from "@/server/services/production.service";
 import { PrintButton } from "@/ui/shell/PrintButton";
-import { EmptyState, FileLink, PageHeader, Panel } from "@/ui/shell/primitives";
+import { DashPage, EmptyState, FileLink, PageHeader, Panel } from "@/ui/shell/primitives";
 
 export default async function BottlerWaybillPage({
   params,
@@ -26,18 +26,21 @@ export default async function BottlerWaybillPage({
 
   if (!ship) {
     return (
-      <div className="mx-auto max-w-xl space-y-8">
+      <div className="mx-auto max-w-xl">
+        <DashPage>
         <PageHeader title="Fraktsedel" subtitle={job.order.orderNo} />
         <EmptyState
           title="Ingen fraktsedel ännu"
           body="Fraktsedel skapas av AquaVisibility. När den finns kan ni ladda ner den och markera jobbet som skickat."
         />
+        </DashPage>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-xl space-y-8">
+    <div className="mx-auto max-w-xl">
+    <DashPage>
       <PageHeader title="Fraktsedel" subtitle={job.order.orderNo} />
       <Panel>
         <p className="av-label">Fraktsedel</p>
@@ -89,6 +92,7 @@ export default async function BottlerWaybillPage({
         ) : null}
         <PrintButton />
       </Panel>
+    </DashPage>
     </div>
   );
 }

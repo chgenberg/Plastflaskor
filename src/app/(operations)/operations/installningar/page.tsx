@@ -1,6 +1,6 @@
 import { getFortnoxConnection } from "@/server/integrations/status";
 import { IntegrationBadge } from "@/ui/shell/FortnoxBadge";
-import { PageHeader, Panel } from "@/ui/shell/primitives";
+import { DashPage, PageHeader, Panel } from "@/ui/shell/primitives";
 
 const MOCK_LABEL = "API ansluten (mock)";
 
@@ -31,20 +31,20 @@ export default function OpsSettings() {
   const fortnox = getFortnoxConnection();
 
   return (
-    <div className="space-y-4">
+    <DashPage>
       <PageHeader
         title="Inställningar"
         subtitle="Mock-portar. UI:t ändras inte när live slås på."
         action={<IntegrationBadge label={fortnox.label} />}
       />
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-6 sm:grid-cols-2">
         {INTEGRATIONS.map((item) => (
-          <section key={item.id} className="av-card p-5">
+          <section key={item.id} className="space-y-2 border-t border-[var(--av-border)] pt-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <h2 className="text-[17px] font-semibold tracking-tight">{item.title}</h2>
+              <h2 className="text-[15px] font-medium tracking-tight">{item.title}</h2>
               <IntegrationBadge label={MOCK_LABEL} />
             </div>
-            <p className="mt-3 text-sm leading-relaxed text-[var(--av-text-muted)]">{item.body}</p>
+            <p className="text-[13px] leading-relaxed text-[var(--av-text-muted)]">{item.body}</p>
           </section>
         ))}
       </div>
@@ -56,6 +56,6 @@ export default function OpsSettings() {
           Profilvatten. Artwork i två steg. OB låser spec och pris. Etikettproducent och bottler.
         </p>
       </Panel>
-    </div>
+    </DashPage>
   );
 }

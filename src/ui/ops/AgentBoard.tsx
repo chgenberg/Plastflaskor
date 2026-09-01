@@ -1,4 +1,4 @@
-import { ActionCard } from "@/ui/shell/primitives";
+import { ActionCard, ActionList, SectionTitle } from "@/ui/shell/primitives";
 import type { CardGroup } from "@/lib/orchestrator/groups";
 
 function tone(group: CardGroup): "green" | "yellow" | "red" | "grey" {
@@ -13,34 +13,36 @@ export function AgentBoard({ groups }: { groups: CardGroup[] }) {
   const rest = groups.filter((g) => g.gate === "none");
 
   return (
-    <div className="space-y-4">
-      <section className="space-y-3">
-        <h2 className="text-[15px] font-semibold tracking-tight">OB / Faktura — stannar</h2>
+    <div className="space-y-6">
+      <section className="space-y-2">
+        <SectionTitle>OB / Faktura — stannar</SectionTitle>
         {locked.length === 0 ? (
-          <p className="text-sm text-[var(--av-text-muted)]">Inget som kräver ja just nu.</p>
+          <p className="text-[13px] text-[var(--av-text-muted)]">Inget som kräver ja just nu.</p>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <ActionList>
             {locked.map((group) => (
-              <div key={group.id} className="space-y-2">
-                <ActionCard href={group.href} label={group.title} value={group.count} tone={tone(group)} />
-                <p className="px-1 text-[12px] text-[var(--av-text-muted)]">
-                  Agenten stannar här. Aqua gör det i systemet.
-                </p>
-              </div>
+              <ActionCard
+                key={group.id}
+                href={group.href}
+                label={group.title}
+                value={group.count}
+                tone={tone(group)}
+                detail="Agenten stannar här. Aqua gör det i systemet."
+              />
             ))}
-          </div>
+          </ActionList>
         )}
       </section>
-      <section className="space-y-3">
-        <h2 className="text-[15px] font-semibold tracking-tight">ETD · POD · Korr · POA</h2>
+      <section className="space-y-2">
+        <SectionTitle>ETD · POD · Korr · POA</SectionTitle>
         {rest.length === 0 ? (
-          <p className="text-sm text-[var(--av-text-muted)]">Inga öppna kort.</p>
+          <p className="text-[13px] text-[var(--av-text-muted)]">Inga öppna kort.</p>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <ActionList>
             {rest.map((group) => (
               <ActionCard key={group.id} href={group.href} label={group.title} value={group.count} tone={tone(group)} />
             ))}
-          </div>
+          </ActionList>
         )}
       </section>
     </div>

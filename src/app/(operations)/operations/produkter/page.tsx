@@ -3,7 +3,7 @@ import { listWaterProducts } from "@/server/services/catalog.service";
 import { togglePrintRequirementAction } from "@/actions";
 import { updateProductAction } from "@/actions/catalogMasters";
 import { LABEL_REQUIREMENTS } from "@/domain/bottleCatalog";
-import { Button, PageHeader, Panel, controlClass } from "@/ui/shell/primitives";
+import { Button, DashPage, PageHeader, Panel, controlClass } from "@/ui/shell/primitives";
 import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
 import { visualSpecFromOptions } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
@@ -11,7 +11,7 @@ import { imageForProduct } from "@/domain/productImages";
 export default async function ProductsAdmin() {
   const products = await listWaterProducts();
   return (
-    <div className="space-y-4">
+    <DashPage>
       <PageHeader title="Produkter" subtitle="Profilvatten: modell, storlek, ledtid och regulatoriska etikettkrav." />
       <div className="grid gap-5">
         {products.map((p) => {
@@ -140,6 +140,6 @@ export default async function ProductsAdmin() {
           );
         })}
       </div>
-    </div>
+    </DashPage>
   );
 }

@@ -1,7 +1,7 @@
 import { requireRole } from "@/server/rbac";
 import { listOrdersForCustomer } from "@/server/services/order.service";
 import { InvoiceTable } from "@/ui/order/InvoiceTable";
-import { EmptyState, PageHeader } from "@/ui/shell/primitives";
+import { DashPage, EmptyState, PageHeader } from "@/ui/shell/primitives";
 
 export default async function KontoInvoices() {
   const user = await requireRole(["CUSTOMER", "AQUA_STAFF", "AQUA_ADMIN"]);
@@ -19,13 +19,13 @@ export default async function KontoInvoices() {
       pdfId: o.documents.find((d) => d.kind === "FINANCE")?.id ?? null,
     }));
   return (
-    <div className="space-y-4">
+    <DashPage>
       <PageHeader title="Fakturor" />
       {rows.length === 0 ? (
         <EmptyState title="Inga fakturor" body="När en order faktureras syns den här." />
       ) : (
         <InvoiceTable rows={rows} />
       )}
-    </div>
+    </DashPage>
   );
 }

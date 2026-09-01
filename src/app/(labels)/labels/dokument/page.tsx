@@ -1,21 +1,21 @@
 import { listLabelDispatches } from "@/server/services/labelDispatch.service";
 import { requireSupplier, scopedFactoryId } from "@/server/supplierAccess";
-import { DashTable, EmptyState, LinkButton, PageHeader, TableActions } from "@/ui/shell/primitives";
+import { DashPage, DashTable, EmptyState, LinkButton, PageHeader, TableActions } from "@/ui/shell/primitives";
 
 export default async function LabelsReports() {
   const user = await requireSupplier("label");
   const factoryId = scopedFactoryId(user);
   if (user.role === "LABEL" && !user.factoryId) {
     return (
-      <div className="space-y-4">
+      <DashPage>
         <PageHeader title="Leveransrapport" />
         <EmptyState title="Ingen etikettleverantör kopplad" body="Leveransrapporter visas här. Inga fakturor." />
-      </div>
+      </DashPage>
     );
   }
   const reports = await listLabelDispatches(factoryId, { chronological: true });
   return (
-    <div className="space-y-4">
+    <DashPage>
       <PageHeader
         title="Leveransrapport"
         subtitle="Skapade rapporter i tidsordning. Underlag utan priser."
@@ -69,6 +69,6 @@ export default async function LabelsReports() {
           ))}
         </DashTable>
       )}
-    </div>
+    </DashPage>
   );
 }

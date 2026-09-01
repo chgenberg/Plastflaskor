@@ -5,7 +5,7 @@ import { getPriceListForBuyer, resolveUnitPrice } from "@/server/services/catalo
 import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
 import { RepeatOrderForm } from "@/ui/order/RepeatOrderForm";
-import { PageHeader, Panel } from "@/ui/shell/primitives";
+import { DashPage, PageHeader, Panel } from "@/ui/shell/primitives";
 
 const REPEAT_QTYS = [270, 500, 1000, 2500, 5000];
 
@@ -30,7 +30,7 @@ export default async function KontoRepeat({ params }: { params: Promise<{ orderN
     ]),
   ) as Record<number, number | null>;
   return (
-    <div className="space-y-8">
+    <DashPage>
       <PageHeader title="Beställ igen" subtitle={`${order.orderNo} · samma artwork och spec`} />
       <Panel>
         <RepeatOrderForm
@@ -41,6 +41,6 @@ export default async function KontoRepeat({ params }: { params: Promise<{ orderN
           prices={prices}
         />
       </Panel>
-    </div>
+    </DashPage>
   );
 }

@@ -4,7 +4,7 @@ import { BUYER_STATUS } from "@/domain/enums";
 import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
 import { BuyerOrderTable } from "@/ui/order/BuyerOrderCard";
-import { EmptyState, FilterChip, LinkButton, PageHeader } from "@/ui/shell/primitives";
+import { DashPage, EmptyState, FilterChip, LinkButton, PageHeader } from "@/ui/shell/primitives";
 
 const DONE = new Set(["DELIVERED", "INVOICED", "PAID"]);
 
@@ -24,7 +24,7 @@ export default async function KontoOrders({ searchParams }: { searchParams: Prom
             ? all.filter((o) => o.currentStatus === "SHIPPED")
             : all;
   return (
-    <div className="space-y-4">
+    <DashPage>
       <PageHeader title="Ordrar" action={<LinkButton href="/konto/ordrar/ny">Ny order</LinkButton>} />
       <div className="flex flex-wrap gap-1.5">
         {[
@@ -66,6 +66,6 @@ export default async function KontoOrders({ searchParams }: { searchParams: Prom
           })}
         />
       )}
-    </div>
+    </DashPage>
   );
 }

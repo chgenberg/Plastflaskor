@@ -2,7 +2,7 @@ import { activateDueLeads, leadMatchesBucket, listLeads, type LeadBucket } from 
 import { orderValue } from "@/server/services/order.service";
 import { remindLeadAction, updateLeadAction } from "@/actions";
 import { LEAD_STATUS_LABELS } from "@/domain/enums";
-import { Button, DashTable, EmptyState, FilterChip, LinkButton, PageHeader, StatusChip, TableActions } from "@/ui/shell/primitives";
+import { Button, DashPage, DashTable, EmptyState, FilterChip, LinkButton, PageHeader, StatusChip, TableActions } from "@/ui/shell/primitives";
 
 const BUCKETS: { id: LeadBucket | "all"; label: string; key: keyof Awaited<ReturnType<typeof listLeads>>["buckets"] | null }[] = [
   { id: "all", label: "Alla", key: null },
@@ -21,7 +21,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
   const visible = bucket === "all" ? leads : leads.filter((l) => leadMatchesBucket(l, bucket));
 
   return (
-    <div className="space-y-4">
+    <DashPage>
       <PageHeader title="Leads" subtitle="Aktiva repeat-möjligheter en månad före förväntad order." />
       <div className="flex flex-wrap gap-1.5">
         {BUCKETS.map((b) => {
@@ -96,6 +96,6 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
           })}
         </DashTable>
       )}
-    </div>
+    </DashPage>
   );
 }

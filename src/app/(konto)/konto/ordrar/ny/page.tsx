@@ -3,7 +3,7 @@ import { parseBottleOptions } from "@/domain/bottleCatalog";
 import { listWaterProducts, getPriceListForBuyer } from "@/server/services/catalog.service";
 import { prisma } from "@/server/db";
 import { BottleOrderForm } from "@/ui/order/BottleOrderForm";
-import { PageHeader, Panel } from "@/ui/shell/primitives";
+import { DashPage, PageHeader, Panel } from "@/ui/shell/primitives";
 
 export default async function NewCustomerOrder({ searchParams }: { searchParams: Promise<{ design?: string }> }) {
   const { design: designId } = await searchParams;
@@ -43,7 +43,7 @@ export default async function NewCustomerOrder({ searchParams }: { searchParams:
     }),
   );
   return (
-    <div className="space-y-8">
+    <DashPage>
       <PageHeader title="Ny order" subtitle="Profilvatten — preliminärt leveransdatum räknas från produktens ledtid. Aqua bekräftar slutdatum." />
       <Panel>
         <BottleOrderForm
@@ -64,6 +64,6 @@ export default async function NewCustomerOrder({ searchParams }: { searchParams:
           }
         />
       </Panel>
-    </div>
+    </DashPage>
   );
 }

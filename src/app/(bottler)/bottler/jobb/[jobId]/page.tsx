@@ -7,7 +7,7 @@ import { formatShipAddress } from "@/domain/bottleCatalog";
 import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
 import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
-import { Button, FileLink, LinkButton, PageHeader, Panel, StatusChip, controlClass } from "@/ui/shell/primitives";
+import { Button, DashPage, FileLink, LinkButton, PageHeader, Panel, StatusChip, controlClass } from "@/ui/shell/primitives";
 
 export default async function BottlerJobPage({ params }: { params: Promise<{ jobId: string }> }) {
   const { jobId } = await params;
@@ -34,7 +34,8 @@ export default async function BottlerJobPage({ params }: { params: Promise<{ job
   const lane = bottlerDeskStatus({ jobStatus: job.status, orderStatus: job.order.currentStatus });
 
   return (
-    <div className="mx-auto max-w-lg space-y-5">
+    <div className="mx-auto max-w-lg">
+    <DashPage>
       <PageHeader
         title={job.order.orderNo}
         subtitle={`${job.order.customer.name}${item ? ` · ${item.variant.product.name}` : ""}`}
@@ -127,6 +128,7 @@ export default async function BottlerJobPage({ params }: { params: Promise<{ job
           ))}
         </div>
       </Panel>
+    </DashPage>
     </div>
   );
 }

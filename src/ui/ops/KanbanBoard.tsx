@@ -26,17 +26,15 @@ export function KanbanBoard({ orders }: { orders: KanbanOrder[] }) {
         {PIPELINE_PHASES.map((phase) => {
           const cards = orders.filter((o) => (phase.statuses as readonly string[]).includes(o.currentStatus));
           return (
-            <section key={phase.id} className="av-card flex w-[220px] shrink-0 flex-col">
-              <header className="flex items-start justify-between gap-2 border-b border-[var(--av-border)] px-3 py-2">
+            <section key={phase.id} className="flex w-[220px] shrink-0 flex-col border-r border-[var(--av-border)] pr-3">
+              <header className="flex items-start justify-between gap-2 px-1 py-2">
                 <div className="min-w-0">
-                  <h2 className="text-[13px] font-medium leading-snug text-[var(--av-text)]">{phase.label}</h2>
+                  <h2 className="av-section-title">{phase.label}</h2>
                   {phase.hint ? (
                     <p className="mt-0.5 text-[11px] leading-snug text-[var(--av-text-muted)]">{phase.hint}</p>
                   ) : null}
                 </div>
-                <span className="shrink-0 rounded-md bg-[var(--av-accent-soft)] px-2 py-0.5 text-[11px] font-semibold tabular-nums text-[var(--av-accent)]">
-                  {cards.length}
-                </span>
+                <span className="shrink-0 text-[12px] tabular-nums text-[var(--av-text-muted)]">{cards.length}</span>
               </header>
               <div className="flex max-h-[calc(100dvh-14rem)] flex-col gap-1 overflow-y-auto p-1.5">
                 {cards.length === 0 ? <p className="px-2 py-4 text-center text-[12px] text-[var(--av-text-muted)]">Inga ordrar</p> : null}
@@ -48,10 +46,10 @@ export function KanbanBoard({ orders }: { orders: KanbanOrder[] }) {
                     <Link
                       key={o.id}
                       href={`/operations/ordrar/${o.orderNo}`}
-                      className="rounded-[var(--av-radius-md)] border border-[var(--av-border)] bg-[var(--av-surface)] px-2.5 py-1.5 hover:border-[var(--av-accent)]/30"
+                      className="rounded-[var(--av-radius-md)] bg-[var(--av-surface)] px-2.5 py-2 hover:bg-[var(--av-bg)]"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <p className="text-[13px] font-semibold tracking-tight">{o.orderNo}</p>
+                        <p className="text-[13px] font-medium tracking-tight">{o.orderNo}</p>
                         {late || flagged ? (
                           <span className="text-[11px] font-medium text-[var(--av-status-blocked-fg)]">
                             {late ? "Försenad" : "Flagga"}

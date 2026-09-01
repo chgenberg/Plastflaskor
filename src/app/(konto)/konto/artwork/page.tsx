@@ -1,13 +1,13 @@
 import { requireRole } from "@/server/rbac";
 import { listDesignsForUser } from "@/server/services/document.service";
 import { DESIGN_STATUS_LABELS } from "@/domain/enums";
-import { DashTable, EmptyState, LinkButton, PageHeader, StatusChip, TableActions } from "@/ui/shell/primitives";
+import { DashPage, DashTable, EmptyState, LinkButton, PageHeader, StatusChip, TableActions } from "@/ui/shell/primitives";
 
 export default async function KontoArtworkPage() {
   const user = await requireRole(["CUSTOMER", "AQUA_STAFF", "AQUA_ADMIN"]);
   const designs = await listDesignsForUser(user);
   return (
-    <div className="space-y-4">
+    <DashPage>
       <PageHeader
         title="Artwork"
         subtitle="Era artwork-filer och tidigare designer."
@@ -51,6 +51,6 @@ export default async function KontoArtworkPage() {
           ))}
         </DashTable>
       )}
-    </div>
+    </DashPage>
   );
 }

@@ -5,7 +5,7 @@ import { priceListDisplayName } from "@/domain/priceLists";
 import { getPriceListForBuyer, listWaterProducts } from "@/server/services/catalog.service";
 import { listCustomers } from "@/server/services/customer.service";
 import { ManualOrderCustomerPicker, ManualOrderForm } from "@/ui/order/ManualOrderForm";
-import { EmptyState, PageHeader, Panel } from "@/ui/shell/primitives";
+import { DashPage, EmptyState, PageHeader, Panel } from "@/ui/shell/primitives";
 
 export default async function NewManualOrderPage({
   searchParams,
@@ -86,7 +86,7 @@ export default async function NewManualOrderPage({
   );
 
   return (
-    <div className="space-y-4">
+    <DashPage>
       <PageHeader
         title="Ny order"
         subtitle="Registrera en inköpsorder som kommit via mejl. Priset tas från kundens prislista — listor blandas inte."
@@ -114,6 +114,6 @@ export default async function NewManualOrderPage({
           />
         </Panel>
       )}
-    </div>
+    </DashPage>
   );
 }

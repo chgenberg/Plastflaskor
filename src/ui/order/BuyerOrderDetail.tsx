@@ -7,7 +7,7 @@ import { imageForProduct } from "@/domain/productImages";
 import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
 import { OrderConfirmationPreview } from "@/ui/order/OrderConfirmationPreview";
 import { ArtworkUpload } from "@/ui/shell/ArtworkUpload";
-import { Button, Field, FileLink, NextStep, PageHeader, Panel, StatusChip, Timeline } from "@/ui/shell/primitives";
+import { Button, DashPage, Field, FileLink, NextStep, PageHeader, Panel, StatusChip, Timeline } from "@/ui/shell/primitives";
 import { canSeePrices } from "@/domain/policies/priceVisibility";
 import { orderArtworkLink } from "@/domain/orderArtwork";
 
@@ -76,7 +76,7 @@ export function BuyerOrderDetail({ order, role, repeatHref }: { order: Order; ro
   const trackSteps = shipment ? shipmentTrackingSteps(shipment.status) : [];
 
   return (
-    <div className="space-y-6">
+    <DashPage>
       <PageHeader title={order.orderNo} subtitle={item?.variant.product.name} />
       <p className="text-[12px] text-[var(--av-text-muted)]">Agenten bevakar kedjan. Ni behöver inte mejla oss för status.</p>
       <StatusChip status={order.currentStatus} label={BUYER_STATUS[order.currentStatus]} requestedDate={order.requestedDate} />
@@ -242,6 +242,6 @@ export function BuyerOrderDetail({ order, role, repeatHref }: { order: Order; ro
           </ul>
         </Panel>
       ) : null}
-    </div>
+    </DashPage>
   );
 }

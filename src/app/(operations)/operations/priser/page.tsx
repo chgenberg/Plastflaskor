@@ -1,7 +1,7 @@
 import { updatePriceItemAction } from "@/actions/catalogMasters";
 import { priceListDisplayName } from "@/domain/priceLists";
 import { prisma } from "@/server/db";
-import { Button, DataRow, DataTable, EmptyState, PageHeader, controlCompact } from "@/ui/shell/primitives";
+import { Button, DashPage, DataRow, DataTable, EmptyState, PageHeader, controlCompact } from "@/ui/shell/primitives";
 
 export default async function PriceListsAdmin() {
   const lists = await prisma.priceList.findMany({
@@ -22,7 +22,7 @@ export default async function PriceListsAdmin() {
   });
 
   return (
-    <div className="space-y-4">
+    <DashPage>
       <PageHeader title="Prislistor" subtitle="Standard, Partner, Key Account och Specialavtal. Ordern låser snapshot vid OB." />
       {lists.length === 0 ? (
         <EmptyState title="Inga prislistor" body="När listor seedas syns kod, kunder och profilvatten-rader här." />
@@ -109,6 +109,6 @@ export default async function PriceListsAdmin() {
           ))}
         </div>
       )}
-    </div>
+    </DashPage>
   );
 }

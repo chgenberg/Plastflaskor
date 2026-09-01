@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { FACTORY_JOB_LABELS, ORDER_STEP_LABELS, type OrderStatusCode } from "@/domain/enums";
 import { prisma } from "@/server/db";
-import { DashTable, EmptyState, FilterChip, PageHeader, StatusChip } from "@/ui/shell/primitives";
+import { DashPage, DashTable, EmptyState, FilterChip, PageHeader, StatusChip } from "@/ui/shell/primitives";
 
 const GROUPS = [
   { id: "date", label: "Datum" },
@@ -57,7 +57,7 @@ export default async function ProductionBoard({ searchParams }: { searchParams: 
   }
 
   return (
-    <div className="space-y-4">
+    <DashPage>
       <PageHeader title="Produktion" subtitle="Gruppera flaskjobb efter datum, produkt, storlek eller stilla/kolsyrat." />
       <div className="flex flex-wrap gap-1.5">
         {GROUPS.map((g) => (
@@ -111,6 +111,6 @@ export default async function ProductionBoard({ searchParams }: { searchParams: 
           </div>
         ))
       )}
-    </div>
+    </DashPage>
   );
 }

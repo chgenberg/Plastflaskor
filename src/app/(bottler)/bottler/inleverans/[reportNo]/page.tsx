@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getInboundLabelDispatch } from "@/server/services/labelDispatch.service";
 import { requireSupplier, scopedFactoryId } from "@/server/supplierAccess";
-import { FileLink, LinkButton, PageHeader } from "@/ui/shell/primitives";
+import { DashPage, FileLink, LinkButton, PageHeader } from "@/ui/shell/primitives";
 import { ReceiveDispatchForm } from "@/ui/supplier/ReceiveDispatchForm";
 
 export default async function BottlerReceivePage({ params }: { params: Promise<{ reportNo: string }> }) {
@@ -12,7 +12,7 @@ export default async function BottlerReceivePage({ params }: { params: Promise<{
   const shipped = new Date(detail.shippedAt).toLocaleDateString("sv-SE");
 
   return (
-    <div className="space-y-4">
+    <DashPage>
       <PageHeader
         title={detail.reportNo}
         subtitle="Leveransrapport från etikettproducent. Inga priser."
@@ -39,6 +39,6 @@ export default async function BottlerReceivePage({ params }: { params: Promise<{
         ) : null}
       </div>
       <ReceiveDispatchForm detail={detail} />
-    </div>
+    </DashPage>
   );
 }

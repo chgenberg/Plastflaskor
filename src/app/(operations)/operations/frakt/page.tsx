@@ -1,12 +1,12 @@
 import { ORDER_STEP_LABELS, type OrderStatusCode } from "@/domain/enums";
 import { listAllOrders } from "@/server/services/order.service";
 import Link from "next/link";
-import { DashTable, EmptyState, LinkButton, PageHeader, StatusChip, TableActions } from "@/ui/shell/primitives";
+import { DashPage, DashTable, EmptyState, LinkButton, PageHeader, StatusChip, TableActions } from "@/ui/shell/primitives";
 
 export default async function ShippingPage() {
   const orders = await listAllOrders({ phaseStatuses: ["READY_TO_SHIP", "SHIPPED"] });
   return (
-    <div className="space-y-4">
+    <DashPage>
       <PageHeader title="Frakt" subtitle="Fraktsedel, spårning och leverans." />
       {orders.length === 0 ? (
         <EmptyState title="Inget att skicka" body="När produktion är klar syns ordrarna här." />
@@ -60,6 +60,6 @@ export default async function ShippingPage() {
           })}
         </DashTable>
       )}
-    </div>
+    </DashPage>
   );
 }
