@@ -23,7 +23,7 @@ export default async function OpsLayout({ children }: { children: React.ReactNod
           id: "ordrar",
           label: "Ordrar",
           children: [
-            { href: "/operations/ordrar", label: "Alla ordrar" },
+            { href: "/operations/ordrar", label: "Ordermottagning" },
             { href: "/operations/pipeline", label: "Pipeline" },
             { href: "/operations/leads", label: "Leads" },
           ],

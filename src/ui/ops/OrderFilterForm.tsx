@@ -1,5 +1,31 @@
-import { PIPELINE_PHASES, ORDER_STEP_LABELS, ORDER_STEPS } from "@/domain/enums";
-import { Button, controlClass } from "@/ui/shell/primitives";
+import { ORDER_LIST_LANES } from "@/domain/enums";
+import { Button, FilterChip, controlClass } from "@/ui/shell/primitives";
+
+type FilterValues = {
+  q?: string;
+  lane?: string;
+  phase?: string;
+  from?: string;
+  to?: string;
+  size?: string;
+  waterType?: string;
+  factory?: string;
+  late?: string;
+};
+
+function hrefFor(values: FilterValues, lane: string | undefined) {
+  const p = new URLSearchParams();
+  if (values.q) p.set("q", values.q);
+  if (lane) p.set("lane", lane);
+  if (values.size) p.set("size", values.size);
+  if (values.waterType) p.set("waterType", values.waterType);
+  if (values.factory) p.set("factory", values.factory);
+  if (values.late) p.set("late", values.late);
+  if (values.from) p.set("from", values.from);
+  if (values.to) p.set("to", values.to);
+  const qs = p.toString();
+  return qs ? `/operations/ordrar?${qs}` : "/operations/ordrar";
+}
 
 export function OrderFilterForm({
   action = "/operations/ordrar",
@@ -7,88 +33,68 @@ export function OrderFilterForm({
   factories,
 }: {
   action?: string;
-  values: {
-    q?: string;
-    phase?: string;
-    status?: string;
-    from?: string;
-    to?: string;
-    size?: string;
-    waterType?: string;
-    factory?: string;
-    invoice?: string;
-    late?: string;
-  };
+  values: FilterValues;
   factories: { id: string; name: string }[];
 }) {
+  const lane = values.lane ?? "";
   return (
-    <form action={action} className="av-card grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-4">
-      <input
-        name="q"
-        defaultValue={values.q}
-        placeholder="Sök order, kund, produkt, org.nr, tracking, faktura"
-        className={`${controlClass} sm:col-span-2 lg:col-span-4`}
-      />
-      <select name="phase" defaultValue={values.phase ?? ""} className={controlClass}>
-        <option value="">Alla faser</option>
-        {PIPELINE_PHASES.map((p) => (
-          <option key={p.id} value={p.id}>
-            {p.label}
-          </option>
+    <div className="av-card space-y-3 p-4">
+      <form action={action} className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        {lane ? <input type="hidden" name="lane" value={lane} /> : null}
+        {values.size ? <input type="hidden" name="size" value={values.size} /> : null}
+        {values.waterType ? <input type="hidden" name="waterType" value={values.waterType} /> : null}
+        {values.factory ? <input type="hidden" name="factory" value={values.factory} /> : null}
+        {values.late ? <input type="hidden" name="late" value={values.late} /> : null}
+        <input
+          name="q"
+          defaultValue={values.q}
+          placeholder="Sök ordernr, kund, produkt, org.nr, tracking…"
+          className={controlClass}
+        />
+        <Button type="submit">Sök</Button>
+      </form>
+      <div className="flex flex-wrap gap-1.5">
+        <FilterChip href={hrefFor(values, undefined)} active={!lane && !values.phase} solid>
+          Alla
+        </FilterChip>
+        {ORDER_LIST_LANES.map((item) => (
+          <FilterChip key={item.id} href={hrefFor(values, item.id)} active={lane === item.id} solid>
+            {item.label}
+          </FilterChip>
         ))}
-      </select>
-      <select name="status" defaultValue={values.status ?? ""} className={controlClass}>
-        <option value="">Alla statusar</option>
-        {ORDER_STEPS.map((s) => (
-          <option key={s} value={s}>
-            {ORDER_STEP_LABELS[s]}
-          </option>
-        ))}
-      </select>
-      <select name="size" defaultValue={values.size ?? ""} className={controlClass}>
-        <option value="">Alla storlekar</option>
-        <option value="33">33 cl</option>
-        <option value="50">50 cl</option>
-      </select>
-      <select name="waterType" defaultValue={values.waterType ?? ""} className={controlClass}>
-        <option value="">Stilla och kolsyrat</option>
-        <option value="stilla">Stilla</option>
-        <option value="kolsyrat">Kolsyrat</option>
-      </select>
-      <select name="invoice" defaultValue={values.invoice ?? ""} className={controlClass}>
-        <option value="">Alla fakturastatusar</option>
-        <option value="NOT_READY">Ej fakturerad</option>
-        <option value="READY">Redo</option>
-        <option value="ISSUED">Utfärdad</option>
-        <option value="PARTIALLY_PAID">Delvis betald</option>
-        <option value="PAID">Betald</option>
-      </select>
-      <select name="late" defaultValue={values.late ?? ""} className={controlClass}>
-        <option value="">I tid och försenade</option>
-        <option value="1">Försenade</option>
-        <option value="0">I tid</option>
-      </select>
-      {factories.length > 1 ? (
-        <select name="factory" defaultValue={values.factory ?? ""} className={controlClass}>
-          <option value="">Alla bottlers</option>
-          {factories.map((f) => (
-            <option key={f.id} value={f.id}>
-              {f.name}
-            </option>
-          ))}
-        </select>
-      ) : null}
-      <label className="text-[13px] text-[var(--av-text-muted)]">
-        Leverans från
-        <input type="date" name="from" defaultValue={values.from} className={`${controlClass} mt-1 text-[var(--av-text)]`} />
-      </label>
-      <label className="text-[13px] text-[var(--av-text-muted)]">
-        Leverans till
-        <input type="date" name="to" defaultValue={values.to} className={`${controlClass} mt-1 text-[var(--av-text)]`} />
-      </label>
-      <div className="flex items-end">
-        <Button type="submit">Filtrera</Button>
       </div>
-    </form>
+      <form action={action} className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+        {values.q ? <input type="hidden" name="q" value={values.q} /> : null}
+        {lane ? <input type="hidden" name="lane" value={lane} /> : null}
+        <select name="size" defaultValue={values.size ?? ""} className={controlClass}>
+          <option value="">Alla storlekar</option>
+          <option value="33">33 cl</option>
+          <option value="50">50 cl</option>
+        </select>
+        <select name="waterType" defaultValue={values.waterType ?? ""} className={controlClass}>
+          <option value="">Stilla och kolsyrat</option>
+          <option value="stilla">Stilla</option>
+          <option value="kolsyrat">Kolsyrat</option>
+        </select>
+        <select name="late" defaultValue={values.late ?? ""} className={controlClass}>
+          <option value="">I tid och försenade</option>
+          <option value="1">Försenade</option>
+          <option value="0">I tid</option>
+        </select>
+        {factories.length > 1 ? (
+          <select name="factory" defaultValue={values.factory ?? ""} className={controlClass}>
+            <option value="">Alla bottlers</option>
+            {factories.map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.name}
+              </option>
+            ))}
+          </select>
+        ) : null}
+        <Button type="submit" variant="secondary">
+          Fler filter
+        </Button>
+      </form>
+    </div>
   );
 }

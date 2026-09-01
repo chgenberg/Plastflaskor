@@ -74,6 +74,47 @@ export const PIPELINE_PHASES = [
   { id: "invoiced", label: "Fakturerad", statuses: ["INVOICED", "PAID"] },
 ] as const;
 
+/** Grova filterflikar för ordermottagning — samma idé som husets lista. */
+export const ORDER_LIST_LANES = [
+  {
+    id: "active",
+    label: "Aktiv",
+    statuses: [
+      "SUBMITTED",
+      "AQUA_REVIEW",
+      "ARTWORK_AQUA_REVIEW",
+      "ARTWORK_CUSTOMER_APPROVAL",
+      "CONFIRMED",
+      "LABEL_PRODUCTION",
+      "LABELS_DISPATCHED",
+      "LABELS_RECEIVED",
+      "PRODUCTION_SCHEDULED",
+      "IN_PRODUCTION",
+      "READY_TO_SHIP",
+      "SHIPPED",
+    ],
+  },
+  {
+    id: "received",
+    label: "Mottagen",
+    statuses: ["SUBMITTED", "AQUA_REVIEW", "ARTWORK_AQUA_REVIEW", "ARTWORK_CUSTOMER_APPROVAL"],
+  },
+  {
+    id: "production",
+    label: "Tillverkning",
+    statuses: [
+      "CONFIRMED",
+      "LABEL_PRODUCTION",
+      "LABELS_DISPATCHED",
+      "LABELS_RECEIVED",
+      "PRODUCTION_SCHEDULED",
+      "IN_PRODUCTION",
+    ],
+  },
+  { id: "shipped", label: "Skickad", statuses: ["READY_TO_SHIP", "SHIPPED"] },
+  { id: "delivered", label: "Levererad", statuses: ["DELIVERED", "READY_TO_INVOICE", "INVOICED", "PAID"] },
+] as const;
+
 export const ORDER_STATUS_TRANSITIONS: Record<OrderStatusCode, readonly OrderStatusCode[]> = {
   SUBMITTED: ["AQUA_REVIEW"],
   AQUA_REVIEW: ["ARTWORK_AQUA_REVIEW"],

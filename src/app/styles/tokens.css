@@ -82,6 +82,39 @@
   text-transform: uppercase;
 }
 
+.av-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.av-table th {
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--av-text-muted);
+  border-bottom: 1px solid var(--av-border);
+  white-space: nowrap;
+}
+
+.av-table th.av-num,
+.av-table td.av-num {
+  text-align: right;
+}
+
+.av-table td {
+  padding: 0.5rem 0.75rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--av-border);
+}
+
+.av-table tbody tr:hover td {
+  background: var(--av-bg);
+}
+
 .av-mono {
   font-family: var(--av-font-mono);
   font-variant-numeric: tabular-nums;

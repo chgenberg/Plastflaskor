@@ -358,20 +358,22 @@ export function FilterChip({
   href,
   active,
   children,
+  solid,
 }: {
   href: string;
   active?: boolean;
   children: ReactNode;
+  solid?: boolean;
 }) {
+  const radius = solid ? "rounded-full" : "rounded-[var(--av-radius-md)]";
+  const on = solid
+    ? "bg-[var(--av-text)] text-white"
+    : "bg-[var(--av-accent-soft)] text-[var(--av-accent)]";
+  const off = solid
+    ? "border border-[var(--av-border-strong)] bg-[var(--av-surface)] text-[var(--av-text)] hover:bg-[var(--av-bg)]"
+    : "text-[var(--av-text-muted)] hover:bg-[var(--av-bg)] hover:text-[var(--av-text)]";
   return (
-    <Link
-      href={href}
-      className={`${btnBase} ${btnH.sm} rounded-[var(--av-radius-md)] ${
-        active
-          ? "bg-[var(--av-accent-soft)] text-[var(--av-accent)]"
-          : "text-[var(--av-text-muted)] hover:bg-[var(--av-bg)] hover:text-[var(--av-text)]"
-      }`}
-    >
+    <Link href={href} className={`${btnBase} ${btnH.sm} ${radius} ${active ? on : off}`}>
       {children}
     </Link>
   );

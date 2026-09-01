@@ -1,7 +1,6 @@
-import Link from "next/link";
 import { InvoiceStatus, OrderStatus } from "@prisma/client";
 import { listActiveFactories, listAllOrders } from "@/server/services/order.service";
-import { PIPELINE_PHASES } from "@/domain/enums";
+import { ORDER_LIST_LANES, PIPELINE_PHASES } from "@/domain/enums";
 import { isExceptionKind, ordersWithAlert } from "@/domain/exceptions";
 import { OrderFilterForm } from "@/ui/ops/OrderFilterForm";
 import { OrderResultsTable } from "@/ui/ops/OrderResultsTable";
@@ -19,6 +18,7 @@ export default async function OpsOrders({
 }: {
   searchParams: Promise<{
     phase?: string;
+    lane?: string;
     q?: string;
     late?: string;
     status?: string;
@@ -32,18 +32,26 @@ export default async function OpsOrders({
   }>;
 }) {
   const params = await searchParams;
-  const { phase, q, late, status, from, to, size, waterType, factory, invoice, alert } = params;
+  const { phase, lane, q, late, status, from, to, size, waterType, factory, invoice, alert } = params;
+  const laneDef = ORDER_LIST_LANES.find((item) => item.id === lane);
   const phaseDef = PIPELINE_PHASES.find((p) => p.id === phase);
   const statusCode = asEnum(status, Object.values(OrderStatus));
   const invoiceStatus = asEnum(invoice, Object.values(InvoiceStatus));
   const sizeCode = asEnum(size, SIZES);
   const waterCode = asEnum(waterType, WATER_TYPES);
   const lateCode = late === "1" || late === "0" ? late : undefined;
+  const phaseStatuses = !statusCode
+    ? laneDef
+      ? [...laneDef.statuses]
+      : phaseDef
+        ? [...phaseDef.statuses]
+        : undefined
+    : undefined;
 
   const all = await listAllOrders({
     q,
     status: statusCode,
-    phaseStatuses: !statusCode && phaseDef ? [...phaseDef.statuses] : undefined,
+    phaseStatuses,
     factoryId: factory,
     invoiceStatus,
     dateFrom: from,
@@ -58,27 +66,24 @@ export default async function OpsOrders({
     ? "Behöver åtgärd"
     : late === "1"
       ? "Försenade"
-      : (phaseDef?.label ?? "Alla ordrar");
+      : (laneDef?.label ?? phaseDef?.label ?? "Ordermottagning");
 
   return (
-    <div className="space-y-8">
-      <PageHeader title={title} subtitle="Sök på order, kund, produkt, org.nr, kontakt, tracking eller faktura." />
-      <div className="flex flex-wrap gap-3 text-sm">
-        <Link href="/operations/ordrar" className={!late && !phase && !alert ? "font-medium text-[var(--av-accent)]" : "text-[var(--av-text-muted)]"}>
-          Alla
-        </Link>
-        <Link href="/operations/pipeline" className="text-[var(--av-text-muted)]">
-          Pipeline
-        </Link>
-      </div>
+    <div className="space-y-5">
+      <PageHeader title={title} subtitle="Filtrera på fas eller sök order, kund, produkt, org.nr eller tracking." />
       <OrderFilterForm
-        values={{ q, phase, status, from, to, size, waterType, factory, invoice, late }}
+        values={{ q, lane, phase, from, to, size, waterType, factory, late }}
         factories={factories}
       />
       {orders.length === 0 ? (
-        <EmptyState title="Inga ordrar" body={q || phase || status || alert ? "Inget matchade filtret." : "När ordrar kommer in syns de här."} />
+        <EmptyState title="Inga ordrar" body={q || lane || phase || status || alert ? "Inget matchade filtret." : "När ordrar kommer in syns de här."} />
       ) : (
-        <OrderResultsTable orders={orders} />
+        <div className="space-y-2">
+          <p className="text-[12px] text-[var(--av-text-muted)]">
+            {orders.length} order{orders.length === 1 ? "" : "ar"}
+          </p>
+          <OrderResultsTable orders={orders} />
+        </div>
       )}
     </div>
   );
