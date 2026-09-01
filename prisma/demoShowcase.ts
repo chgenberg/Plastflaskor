@@ -55,6 +55,12 @@ const CUSTOMER_SHOW: ShowcaseSpec[] = [
   { orderNo: "AV-SHOW-12", status: "READY_TO_INVOICE", qty: 1080, owner: "customer", invoiceRef: "Att fakturera" },
   { orderNo: "AV-SHOW-13", status: "INVOICED", qty: 2500, owner: "customer", invoiceRef: "Faktura öppen" },
   { orderNo: "AV-SHOW-14", status: "PAID", qty: 1080, owner: "customer", invoiceRef: "Betald" },
+  { orderNo: "AV-SHOW-15", status: "CONFIRMED", qty: 1080, owner: "customer", invoiceRef: "Julbord" },
+  { orderNo: "AV-SHOW-16", status: "LABEL_PRODUCTION", qty: 2500, owner: "customer", invoiceRef: "Kickoff vår" },
+  { orderNo: "AV-SHOW-17", status: "LABEL_PRODUCTION", qty: 540, owner: "customer", invoiceRef: "Mässa Malmö" },
+  { orderNo: "AV-SHOW-18", status: "LABELS_RECEIVED", qty: 1080, owner: "customer", invoiceRef: "Inleverans" },
+  { orderNo: "AV-SHOW-19", status: "PRODUCTION_SCHEDULED", qty: 2500, owner: "customer", invoiceRef: "Vecka 38" },
+  { orderNo: "AV-SHOW-20", status: "IN_PRODUCTION", qty: 1080, owner: "customer", invoiceRef: "Tappning 2" },
 ];
 
 const PIPELINE_SHOW: ShowcaseSpec[] = STATUSES.map((status, i) => ({
@@ -112,13 +118,8 @@ export async function ensureDemoShowcase(prisma: PrismaClient) {
     await ensureShowcaseOrder(prisma, ctx, spec, ctx.customerId, ctx.customerAddrId);
   }
 
-  const pipelineCount = await prisma.order.count({
-    where: { currentStatus: { in: ["CONFIRMED", "LABEL_PRODUCTION", "LABELS_DISPATCHED", "IN_PRODUCTION"] } },
-  });
-  if (pipelineCount < 8) {
-    for (const spec of PIPELINE_SHOW) {
-      await ensureShowcaseOrder(prisma, ctx, spec, ctx.pipelineCustomerId, ctx.pipelineAddrId);
-    }
+  for (const spec of PIPELINE_SHOW) {
+    await ensureShowcaseOrder(prisma, ctx, spec, ctx.pipelineCustomerId, ctx.pipelineAddrId);
   }
 
   await enrichSupplierFacing(prisma, ctx);
