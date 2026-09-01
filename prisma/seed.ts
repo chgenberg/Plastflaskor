@@ -709,7 +709,7 @@ async function main() {
       email: "staff@demo.aqua",
       name: "Alex Operations",
       passwordHash,
-      role: "AQUA_STAFF",
+      role: "AQUA_ADMIN",
       companyId: aquaCo.id,
     },
   });

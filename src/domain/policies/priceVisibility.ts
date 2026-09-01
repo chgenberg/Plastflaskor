@@ -1,15 +1,16 @@
 import type { Role } from "@prisma/client";
+import { isAquaAdmin } from "@/domain/policies/roles";
 
 export function canSeePrices(role?: Role | string | null) {
-  return role === "CUSTOMER" || role === "AQUA_STAFF" || role === "AQUA_ADMIN";
+  return role === "CUSTOMER" || isAquaAdmin(role);
 }
 
 export function canSeeFinance(role?: Role | string | null) {
-  return role === "AQUA_STAFF" || role === "AQUA_ADMIN";
+  return isAquaAdmin(role);
 }
 
 export function canSeeFactoryFloor(role?: Role | string | null) {
-  return role === "FACTORY" || role === "LABEL" || role === "BOTTLER" || role === "AQUA_STAFF" || role === "AQUA_ADMIN";
+  return role === "FACTORY" || role === "LABEL" || role === "BOTTLER" || isAquaAdmin(role);
 }
 
 export function stripPrices<T extends Record<string, unknown>>(row: T): T {

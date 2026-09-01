@@ -9,7 +9,7 @@ import { Button, controlCompact } from "@/ui/shell/primitives";
 
 const ROLE_LABEL: Record<string, string> = {
   CUSTOMER: "Kund",
-  AQUA_STAFF: "Drift",
+  AQUA_STAFF: "Admin",
   AQUA_ADMIN: "Admin",
   LABEL: "Etikett",
   BOTTLER: "Bottler",
@@ -34,7 +34,7 @@ export function AppShell({
   role?: string | null;
   dense?: boolean;
 }) {
-  const showOpsSearch = title === "Operations" || title === "Drift";
+  const showOpsSearch = title === "Operations" || title === "Admin" || title === "Drift";
 
   return (
     <div className="min-h-dvh bg-[var(--av-bg)] text-[var(--av-text)] md:flex">

@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { isAquaAdmin } from "@/domain/policies/roles";
 import { auth } from "./auth";
 
 export async function getSessionUser() {
@@ -27,6 +28,6 @@ export function homeForRole(role?: string | null) {
   if (role === "LABEL") return "/labels";
   if (role === "BOTTLER") return "/bottler";
   if (role === "FACTORY") return "/bottler";
-  if (role === "AQUA_STAFF" || role === "AQUA_ADMIN") return "/operations";
+  if (isAquaAdmin(role)) return "/operations";
   return "/";
 }

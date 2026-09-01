@@ -182,7 +182,7 @@ async function bootstrapDemoWorld(prisma: PrismaClient): Promise<DemoCtx | null>
   const staff = await upsertUser(prisma, {
     email: "staff@demo.aqua",
     name: "Alex Operations",
-    role: "AQUA_STAFF",
+    role: "AQUA_ADMIN",
     passwordHash,
     companyId: aqua.id,
   });

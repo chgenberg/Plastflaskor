@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { DocumentKind } from "@prisma/client";
+import { isAquaAdmin } from "@/domain/policies/roles";
 import { getSessionUser } from "@/server/rbac";
 import { prisma } from "@/server/db";
 import { saveUploadedDocument } from "@/server/services/document.service";
@@ -21,7 +22,7 @@ export async function POST(req: Request) {
   }
   const order = await prisma.order.findUnique({ where: { id: orderId } });
   if (!order) return NextResponse.json({ error: "Order saknas" }, { status: 404 });
-  if (user.role !== "AQUA_STAFF" && user.role !== "AQUA_ADMIN") {
+  if (!isAquaAdmin(user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const kind = KINDS.includes(kindRaw as DocumentKind) ? (kindRaw as DocumentKind) : DocumentKind.OTHER;

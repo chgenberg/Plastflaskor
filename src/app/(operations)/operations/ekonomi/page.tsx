@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ORDER_STEP_LABELS, type OrderStatusCode } from "@/domain/enums";
+import { isAquaAdmin } from "@/domain/policies/roles";
 import { getSessionUser } from "@/server/rbac";
 import { listAllOrders, orderValue } from "@/server/services/order.service";
 import { getFortnoxConnection } from "@/server/integrations/status";
@@ -14,7 +15,7 @@ export default async function FinancePage() {
   const ready = orders.filter((o) => o.currentStatus === "READY_TO_INVOICE" || o.currentStatus === "DELIVERED");
   const invoiced = orders.filter((o) => o.invoice && o.invoice.status === "ISSUED");
   const waiting = invoiced.filter((o) => o.invoice?.status !== "PAID");
-  const isAdmin = user?.role === "AQUA_ADMIN";
+  const isAdmin = isAquaAdmin(user?.role);
 
   return (
     <div className="space-y-4">

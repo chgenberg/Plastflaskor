@@ -39,8 +39,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <p className="font-medium text-[var(--av-text)]">Demovisning — samma lösenord: AquaDemo26!</p>
         <ul className="space-y-1">
           <li>Kundportal · kund@demo.aqua</li>
-          <li>Aqua Drift · staff@demo.aqua</li>
-          <li>Aqua Admin · admin@demo.aqua</li>
+          <li>Admin · admin@demo.aqua eller staff@demo.aqua</li>
           <li>Etikett · labels@demo.aqua</li>
           <li>Bottler · bottler@demo.aqua</li>
         </ul>

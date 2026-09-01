@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { isAquaAdmin } from "@/domain/policies/roles";
 import { getSessionUser } from "@/server/rbac";
 import { getOrderByNo } from "@/server/services/order.service";
 import { getFortnoxConnection } from "@/server/integrations/status";
@@ -177,7 +178,7 @@ export default async function InvoicePage({
           </p>
         ) : null}
         <FortnoxInvoiceForm orderNo={order.orderNo} created={issued || Boolean(ok)} />
-        {issued && user?.role === "AQUA_ADMIN" && order.invoice ? (
+        {issued && isAquaAdmin(user?.role) && order.invoice ? (
           <form action={markInvoicePaid} className="mt-6">
             <input type="hidden" name="invoiceNo" value={order.invoice.invoiceNo} />
             <Button type="submit" className="w-full">

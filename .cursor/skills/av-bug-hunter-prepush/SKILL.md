@@ -170,9 +170,9 @@ Cite as `contract #N`.
 11. **`INTEGRATION_MODE=live` startar.** `composition.ts` får inte
     krascha när `live` är satt. Live-adapters får `notImplemented`
     — de får inte importera mock i `app/` / `ui/`.
-12. **`markInvoicePaid` är AQUA_ADMIN.** Staff får fakturera
-    (`invoiceAction`) men inte markera betald. UI-knappen “Markera
-    betald” får bara renderas för admin.
+12. **`markInvoicePaid` är Admin.** `isAquaAdmin` (AQUA_ADMIN, plus
+    AQUA_STAFF som alias) får fakturera och markera betald. Knappen
+    “Markera betald” renderas inte för kund, etikett eller bottler.
 
 ## Output
 

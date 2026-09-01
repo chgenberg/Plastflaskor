@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { signIn, signOut } from "@/server/auth";
+import { isAquaAdmin } from "@/domain/policies/roles";
 import { getSessionUser, homeForRole } from "@/server/rbac";
 import {
   repeatOrder,
@@ -136,7 +137,7 @@ export async function repeatOrderAction(formData: FormData) {
   if (!parsed.success) throw new Error("Ogiltig repeat-order");
   const source = await prisma.order.findUnique({ where: { id: parsed.data.sourceOrderId } });
   if (!source) throw new Error("Order saknas");
-  const staff = user?.role === "AQUA_STAFF" || user?.role === "AQUA_ADMIN";
+  const staff = isAquaAdmin(user?.role);
   if (user?.role === "RESELLER") throw new Error("Forbidden");
   if (user?.role === "CUSTOMER" && source.customerId !== user.customerId) throw new Error("Forbidden");
   if (!staff && user?.role !== "CUSTOMER") throw new Error("Forbidden");
@@ -152,7 +153,7 @@ export async function repeatOrderAction(formData: FormData) {
 
 export async function opsAdvanceAction(formData: FormData) {
   const user = await getSessionUser();
-  if (user?.role !== "AQUA_STAFF" && user?.role !== "AQUA_ADMIN") throw new Error("Forbidden");
+  if (!isAquaAdmin(user?.role)) throw new Error("Forbidden");
   const orderNo = String(formData.get("orderNo"));
   const toStatus = String(formData.get("toStatus")) as OrderStatus;
   const order = await getOrderByNo(orderNo);
@@ -164,7 +165,7 @@ export async function opsAdvanceAction(formData: FormData) {
 
 export async function saveExtrasAction(formData: FormData) {
   const user = await getSessionUser();
-  if (user?.role !== "AQUA_STAFF" && user?.role !== "AQUA_ADMIN") throw new Error("Forbidden");
+  if (!isAquaAdmin(user?.role)) throw new Error("Forbidden");
   const orderNo = String(formData.get("orderNo"));
   const order = await getOrderByNo(orderNo);
   if (!order) throw new Error("Order saknas");
@@ -186,7 +187,7 @@ export async function saveExtrasAction(formData: FormData) {
 
 export async function sendObAction(formData: FormData) {
   const user = await getSessionUser();
-  if (user?.role !== "AQUA_STAFF" && user?.role !== "AQUA_ADMIN") throw new Error("Forbidden");
+  if (!isAquaAdmin(user?.role)) throw new Error("Forbidden");
   const orderNo = String(formData.get("orderNo"));
   const order = await getOrderByNo(orderNo);
   if (!order) throw new Error("Order saknas");
@@ -204,7 +205,7 @@ export async function sendObAction(formData: FormData) {
 
 export async function invoiceAction(formData: FormData) {
   const user = await getSessionUser();
-  if (user?.role !== "AQUA_STAFF" && user?.role !== "AQUA_ADMIN") throw new Error("Forbidden");
+  if (!isAquaAdmin(user?.role)) throw new Error("Forbidden");
   const orderNo = String(formData.get("orderNo"));
   const order = await getOrderByNo(orderNo);
   if (!order) throw new Error("Order saknas");
@@ -216,7 +217,7 @@ export async function invoiceAction(formData: FormData) {
 }
 
 function canRunFactory(role?: string | null) {
-  return role === "FACTORY" || role === "LABEL" || role === "BOTTLER" || role === "AQUA_STAFF" || role === "AQUA_ADMIN";
+  return role === "FACTORY" || role === "LABEL" || role === "BOTTLER" || isAquaAdmin(role);
 }
 
 export async function factoryAction(formData: FormData) {
@@ -251,7 +252,7 @@ export async function factoryAction(formData: FormData) {
 
 export async function createWaybillAction(formData: FormData) {
   const user = await getSessionUser();
-  if (!user || (user.role !== "AQUA_STAFF" && user.role !== "AQUA_ADMIN")) throw new Error("Forbidden");
+  if (!user || !isAquaAdmin(user.role)) throw new Error("Forbidden");
   const orderNo = String(formData.get("orderNo") || "");
   const jobId = String(formData.get("jobId") || "");
   const order = orderNo
@@ -344,7 +345,7 @@ export async function saveDesignAction(input: {
   if (input.designId) {
     const existing = await prisma.design.findUnique({ where: { id: input.designId } });
     if (!existing) throw new Error("Design saknas");
-    const staff = user?.role === "AQUA_STAFF" || user?.role === "AQUA_ADMIN";
+    const staff = isAquaAdmin(user?.role);
     if (existing.userId && existing.userId !== user?.id && !staff) throw new Error("Forbidden");
     return prisma.design.update({
       where: { id: input.designId },
@@ -374,7 +375,7 @@ export async function saveDesignAction(input: {
 
 export async function approveArtworkAction(formData: FormData) {
   const user = await getSessionUser();
-  if (user?.role !== "AQUA_STAFF" && user?.role !== "AQUA_ADMIN") throw new Error("Forbidden");
+  if (!isAquaAdmin(user?.role)) throw new Error("Forbidden");
   const orderNo = String(formData.get("orderNo"));
   const order = await getOrderByNo(orderNo);
   if (!order) throw new Error("Order saknas");
@@ -397,7 +398,7 @@ export async function customerApproveProofAction(formData: FormData) {
 
 export async function confirmDeliveryAction(formData: FormData) {
   const user = await getSessionUser();
-  if (user?.role !== "AQUA_STAFF" && user?.role !== "AQUA_ADMIN") throw new Error("Forbidden");
+  if (!isAquaAdmin(user?.role)) throw new Error("Forbidden");
   const orderNo = String(formData.get("orderNo"));
   const order = await getOrderByNo(orderNo);
   if (!order) throw new Error("Order saknas");
@@ -409,7 +410,7 @@ export async function confirmDeliveryAction(formData: FormData) {
 
 export async function approveFactoryDateAction(formData: FormData) {
   const user = await getSessionUser();
-  if (user?.role !== "AQUA_STAFF" && user?.role !== "AQUA_ADMIN") throw new Error("Forbidden");
+  if (!isAquaAdmin(user?.role)) throw new Error("Forbidden");
   const orderNo = String(formData.get("orderNo"));
   const date = String(formData.get("date"));
   const order = await getOrderByNo(orderNo);
@@ -420,14 +421,14 @@ export async function approveFactoryDateAction(formData: FormData) {
 
 export async function updateLeadAction(formData: FormData) {
   const user = await getSessionUser();
-  if (user?.role !== "AQUA_STAFF" && user?.role !== "AQUA_ADMIN") throw new Error("Forbidden");
+  if (!isAquaAdmin(user?.role)) throw new Error("Forbidden");
   await updateLead(String(formData.get("leadId")), String(formData.get("status")) as RepeatLeadStatus, String(formData.get("note") || "") || undefined);
   revalidatePath("/operations/leads");
 }
 
 export async function remindLeadAction(formData: FormData) {
   const user = await getSessionUser();
-  if (user?.role !== "AQUA_STAFF" && user?.role !== "AQUA_ADMIN") throw new Error("Forbidden");
+  if (!isAquaAdmin(user?.role)) throw new Error("Forbidden");
   await remindLead(String(formData.get("leadId")));
   revalidatePath("/operations/leads");
 }
@@ -461,7 +462,7 @@ export async function markNotificationRead(id: string) {
 
 export async function togglePrintRequirementAction(formData: FormData) {
   const user = await getSessionUser();
-  if (user?.role !== "AQUA_STAFF" && user?.role !== "AQUA_ADMIN") throw new Error("Forbidden");
+  if (!isAquaAdmin(user?.role)) throw new Error("Forbidden");
   const id = String(formData.get("requirementId") ?? "");
   const required = String(formData.get("required")) === "true";
   if (!id) throw new Error("Tryckkrav saknas");
@@ -471,7 +472,7 @@ export async function togglePrintRequirementAction(formData: FormData) {
 
 export async function markInvoicePaid(formData: FormData) {
   const user = await getSessionUser();
-  if (user?.role !== "AQUA_ADMIN") throw new Error("Forbidden");
+  if (!isAquaAdmin(user?.role)) throw new Error("Forbidden");
   const invoiceNo = String(formData.get("invoiceNo"));
   await prisma.invoice.update({
     where: { invoiceNo },
@@ -488,7 +489,7 @@ export async function markInvoicePaid(formData: FormData) {
 
 export async function setFactoryDeadlineAction(formData: FormData) {
   const user = await getSessionUser();
-  if (user?.role !== "AQUA_STAFF" && user?.role !== "AQUA_ADMIN") throw new Error("Forbidden");
+  if (!isAquaAdmin(user?.role)) throw new Error("Forbidden");
   const orderNo = String(formData.get("orderNo"));
   const date = String(formData.get("date"));
   const order = await getOrderByNo(orderNo);

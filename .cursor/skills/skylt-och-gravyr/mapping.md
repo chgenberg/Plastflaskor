@@ -22,7 +22,7 @@ implementationsordern.
 
 | Skylt | Aqua |
 |-------|------|
-| `owner / admin / manager` | `AQUA_ADMIN / AQUA_STAFF` |
+| `owner / admin / manager` | `AQUA_ADMIN` (`AQUA_STAFF` är alias) |
 | `Customer` på `Company` (`orderer`) | `RESELLER` (tier Gold/Standard) |
 | — | `FACTORY` (separat yta, ser aldrig ÅF-priser/fakturor) |
 | Gäst som designar | Publik studio/kassa utan ÅF-login |

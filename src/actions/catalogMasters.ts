@@ -1,12 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { isAquaAdmin } from "@/domain/policies/roles";
 import { getSessionUser } from "@/server/rbac";
 import { updateWaterProduct, updatePriceListItem } from "@/server/services/catalog.service";
 
 async function requireStaff() {
   const user = await getSessionUser();
-  if (user?.role !== "AQUA_STAFF" && user?.role !== "AQUA_ADMIN") throw new Error("Forbidden");
+  if (!isAquaAdmin(user?.role)) throw new Error("Forbidden");
 }
 
 export async function updateProductAction(formData: FormData) {

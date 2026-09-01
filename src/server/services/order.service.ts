@@ -1,4 +1,5 @@
 import { BuyerType, InvoiceStatus, OrderStatus, Role } from "@prisma/client";
+import { isAquaAdmin } from "@/domain/policies/roles";
 import { prisma } from "../db";
 import { getIntegrations } from "../integrations/composition";
 import { getPriceListForBuyer, resolveUnitPrice } from "./catalog.service";
@@ -457,7 +458,7 @@ export function orderValue(order: {
 }
 
 export function assertBuyerCanAccess(order: { resellerId: string | null; customerId: string; buyerType: string }, user: { role?: string; resellerId?: string | null; customerId?: string | null }) {
-  if (user.role === "AQUA_STAFF" || user.role === "AQUA_ADMIN") return;
+  if (isAquaAdmin(user.role)) return;
   if (user.role === "RESELLER" && order.resellerId && order.resellerId === user.resellerId) return;
   if (user.role === "CUSTOMER" && order.customerId === user.customerId) return;
   throw new Error("Forbidden");

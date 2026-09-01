@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { isAquaAdmin } from "@/domain/policies/roles";
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -22,7 +23,7 @@ export async function middleware(req: NextRequest) {
   if (pathname.startsWith("/factory")) {
     if (role === "LABEL") return NextResponse.redirect(new URL("/labels", req.url));
     if (role === "BOTTLER" || role === "FACTORY") return NextResponse.redirect(new URL("/bottler", req.url));
-    if (role === "AQUA_STAFF" || role === "AQUA_ADMIN") return NextResponse.redirect(new URL("/operations", req.url));
+    if (isAquaAdmin(role)) return NextResponse.redirect(new URL("/operations", req.url));
     return NextResponse.redirect(new URL("/login", req.url));
   }
 

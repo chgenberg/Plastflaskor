@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-01T13:40:00.000Z",
+  "updatedAt": "2026-09-01T13:25:00.000Z",
   "cards": [
     {
       "id": "wb-agent-os-v1",
@@ -52,6 +52,19 @@
       "source": "cursor",
       "createdAt": "2026-09-01T13:15:00.000Z",
       "updatedAt": "2026-09-01T13:40:00.000Z"
+    },
+    {
+      "id": "wb-merge-staff-admin",
+      "title": "Slå ihop Drift och Admin",
+      "body": "En Aqua-roll: Admin. AQUA_STAFF är alias med samma befogenheter, inklusive markera betald.",
+      "status": "done",
+      "domainId": "auth",
+      "playbook": "new-order",
+      "files": ["src/domain/policies/roles.ts", "src/server/rbac.ts", "src/actions/index.ts"],
+      "gate": "none",
+      "source": "cursor",
+      "createdAt": "2026-09-01T13:25:00.000Z",
+      "updatedAt": "2026-09-01T13:25:00.000Z"
     }
   ]
 }

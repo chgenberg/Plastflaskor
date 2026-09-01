@@ -2,12 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { isAquaAdmin } from "@/domain/policies/roles";
 import { getSessionUser } from "@/server/rbac";
 import { createDirectCustomer, updateCustomer } from "@/server/services/customer.service";
 
 async function requireStaffAdmin() {
   const user = await getSessionUser();
-  if (user?.role !== "AQUA_STAFF" && user?.role !== "AQUA_ADMIN") throw new Error("Forbidden");
+  if (!isAquaAdmin(user?.role)) throw new Error("Forbidden");
 }
 
 function field(formData: FormData, key: string) {

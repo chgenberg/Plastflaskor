@@ -8,4 +8,5 @@
 - Fortnox är mock tills live.
 - Indata: Josefine / Indatahuset (skiss). Ingen egen yta ännu.
 - Mejlpaus-env: EMAIL_PAUSED.
-- Demo: kund@ / staff@ / labels@ / bottler@demo.aqua · AquaDemo26!
+- Demo: kund@ / staff@ / admin@ / labels@ / bottler@demo.aqua · AquaDemo26!
+- Aqua intern roll är Admin. AQUA_STAFF är alias med samma befogenheter.

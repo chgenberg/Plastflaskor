@@ -7,7 +7,7 @@ export default async function OpsLayout({ children }: { children: React.ReactNod
   const user = await requireRole(["AQUA_STAFF", "AQUA_ADMIN"]);
   return (
     <AppShell
-      title="Drift"
+      title="Admin"
       email={user.email}
       role={user.role}
       nav={[

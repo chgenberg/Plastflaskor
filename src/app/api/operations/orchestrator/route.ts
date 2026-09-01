@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAquaAdmin } from "@/domain/policies/roles";
 import { getSessionUser } from "@/server/rbac";
 import { orchestratorSnapshot, patchOrchestratorCard } from "@/server/orchestrator";
 
 export const dynamic = "force-dynamic";
 
 function isOps(role?: string) {
-  return role === "AQUA_STAFF" || role === "AQUA_ADMIN";
+  return isAquaAdmin(role);
 }
 
 export async function GET() {

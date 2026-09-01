@@ -1,5 +1,6 @@
 import { readFile } from "fs/promises";
 import path from "path";
+import { isAquaAdmin } from "@/domain/policies/roles";
 import { prisma } from "../db";
 import { renderSimplePdf } from "../pdf/simplePdf";
 import type { DocumentKind } from "@prisma/client";
@@ -81,7 +82,7 @@ export async function getAuthorizedDocument(id: string, user: SessionLike) {
     }
     return doc;
   }
-  if (user.role === "AQUA_STAFF" || user.role === "AQUA_ADMIN") return doc;
+  if (isAquaAdmin(user.role)) return doc;
   return null;
 }
 
@@ -112,7 +113,7 @@ export async function getAuthorizedArtworkFile(id: string, user: SessionLike) {
     if (!final) return null;
     return file;
   }
-  if (user.role === "AQUA_STAFF" || user.role === "AQUA_ADMIN") return file;
+  if (isAquaAdmin(user.role)) return file;
   return null;
 }
 

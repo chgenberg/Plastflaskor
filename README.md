@@ -22,8 +22,8 @@ Lösenord: `AquaDemo26!`
 | reseller.standard@demo.aqua | /partner (Standard) |
 | reseller.gold@demo.aqua | /partner (Gold) |
 | kund@demo.aqua | /konto (slutkund) |
-| staff@demo.aqua | /operations |
-| admin@demo.aqua | /operations |
+| staff@demo.aqua | /operations (Admin) |
+| admin@demo.aqua | /operations (Admin) |
 | factory@demo.aqua | /factory |
 
 ## Demo-vandring (QA)
