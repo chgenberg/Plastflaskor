@@ -1,11 +1,14 @@
 import { requireRole } from "@/server/rbac";
 import { listOrdersForCustomer } from "@/server/services/order.service";
+import { findKontoOrder, KontoOrderPeek } from "@/ui/order/KontoOrderPeek";
 import { InvoiceTable } from "@/ui/order/InvoiceTable";
 import { DashPage, EmptyState, PageHeader } from "@/ui/shell/primitives";
 
-export default async function KontoInvoices() {
+export default async function KontoInvoices({ searchParams }: { searchParams: Promise<{ order?: string }> }) {
+  const { order: peekNo } = await searchParams;
   const user = await requireRole(["CUSTOMER", "AQUA_STAFF", "AQUA_ADMIN"]);
   const orders = user.customerId ? await listOrdersForCustomer(user.customerId) : [];
+  const peek = findKontoOrder(orders, peekNo);
   const rows = orders
     .filter((o) => o.invoice)
     .map((o) => ({
@@ -26,6 +29,7 @@ export default async function KontoInvoices() {
       ) : (
         <InvoiceTable rows={rows} />
       )}
+      {peek ? <KontoOrderPeek order={peek} role={user.role} closeHref="/konto/fakturor" /> : null}
     </DashPage>
   );
 }

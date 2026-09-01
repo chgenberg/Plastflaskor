@@ -6,11 +6,14 @@ import { buyerNextAction } from "@/domain/orderBrief";
 import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
 import { BuyerOrderTable } from "@/ui/order/BuyerOrderCard";
+import { findKontoOrder, kontoPeekHref, KontoOrderPeek } from "@/ui/order/KontoOrderPeek";
 import { DashPage, EmptyState, KpiCard, KpiStrip, LinkButton, NextStep, PageHeader } from "@/ui/shell/primitives";
 
-export default async function KontoHome() {
+export default async function KontoHome({ searchParams }: { searchParams: Promise<{ order?: string }> }) {
+  const { order: peekNo } = await searchParams;
   const user = await requireRole(["CUSTOMER", "AQUA_STAFF", "AQUA_ADMIN"]);
   const orders = user.customerId ? await listOrdersForCustomer(user.customerId) : [];
+  const peek = findKontoOrder(orders, peekNo);
   const active = orders.filter((o) => !["PAID", "DELIVERED", "INVOICED"].includes(o.currentStatus)).length;
   const proof = orders.filter((o) => o.currentStatus === "ARTWORK_CUSTOMER_APPROVAL").length;
   const shipped = orders.filter((o) => o.currentStatus === "SHIPPED").length;
@@ -51,7 +54,7 @@ export default async function KontoHome() {
           rows={orders.slice(0, 6).map((o) => {
             const item = o.items[0];
             return {
-              href: `/konto/ordrar/${o.orderNo}`,
+              href: kontoPeekHref("/konto", o.orderNo),
               orderNo: o.orderNo,
               spec: specFromOrderItem({
                 visualSpecJson: o.visualSpecJson,
@@ -74,6 +77,7 @@ export default async function KontoHome() {
       <p className="text-[13px] text-[var(--av-text-muted)]">
         Behöver ni en etikett? <Link href="/designa" className="text-[var(--av-text)] hover:text-[var(--av-accent)]">Öppna designern</Link>
       </p>
+      {peek ? <KontoOrderPeek order={peek} role={user.role} closeHref="/konto" /> : null}
     </DashPage>
   );
 }

@@ -4,15 +4,18 @@ import { BUYER_STATUS } from "@/domain/enums";
 import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
 import { BuyerOrderTable } from "@/ui/order/BuyerOrderCard";
+import { findKontoOrder, kontoPeekHref, KontoOrderPeek } from "@/ui/order/KontoOrderPeek";
 import { DashPage, EmptyState, FilterChip, LinkButton, PageHeader } from "@/ui/shell/primitives";
 
 const DONE = new Set(["DELIVERED", "INVOICED", "PAID"]);
 
-export default async function KontoOrders({ searchParams }: { searchParams: Promise<{ view?: string }> }) {
-  const { view: raw } = await searchParams;
+export default async function KontoOrders({ searchParams }: { searchParams: Promise<{ view?: string; order?: string }> }) {
+  const { view: raw, order: peekNo } = await searchParams;
   const view = raw === "delivered" || raw === "active" || raw === "proof" || raw === "shipped" ? raw : "all";
   const user = await requireRole(["CUSTOMER", "AQUA_STAFF", "AQUA_ADMIN"]);
   const all = user.customerId ? await listOrdersForCustomer(user.customerId) : [];
+  const closeHref = view === "all" ? "/konto/ordrar" : `/konto/ordrar?view=${view}`;
+  const peek = findKontoOrder(all, peekNo);
   const orders =
     view === "active"
       ? all.filter((o) => !DONE.has(o.currentStatus))
@@ -46,7 +49,7 @@ export default async function KontoOrders({ searchParams }: { searchParams: Prom
           rows={orders.map((o) => {
             const item = o.items[0];
             return {
-              href: `/konto/ordrar/${o.orderNo}`,
+              href: kontoPeekHref("/konto/ordrar", o.orderNo, view === "all" ? undefined : { view }),
               orderNo: o.orderNo,
               spec: specFromOrderItem({
                 visualSpecJson: o.visualSpecJson,
@@ -66,6 +69,7 @@ export default async function KontoOrders({ searchParams }: { searchParams: Prom
           })}
         />
       )}
+      {peek ? <KontoOrderPeek order={peek} role={user.role} closeHref={closeHref} /> : null}
     </DashPage>
   );
 }

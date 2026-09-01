@@ -40,7 +40,7 @@ export function InvoiceTable({ rows, showCustomer }: { rows: InvoiceRow[]; showC
         return (
           <tr key={r.id}>
             <td>
-              <RowHit href={`/konto/ordrar/${r.orderNo}`}>{r.invoiceNo}</RowHit>
+              <RowHit href={`/konto/fakturor?order=${r.orderNo}`}>{r.invoiceNo}</RowHit>
             </td>
             <td>{r.orderNo}</td>
             {showCustomer ? <td>{r.customer ?? "–"}</td> : null}

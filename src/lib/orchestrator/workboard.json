@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-01T22:50:00.000Z",
+  "updatedAt": "2026-09-01T23:00:00.000Z",
   "cards": [
     {
       "id": "wb-agent-os-v1",
@@ -338,6 +338,23 @@
       "source": "cursor",
       "createdAt": "2026-09-01T22:45:00.000Z",
       "updatedAt": "2026-09-01T22:50:00.000Z"
+    },
+    {
+      "id": "wb-konto-order-peek",
+      "title": "Kundportal: order-popup från listan",
+      "body": "Radklick öppnar dialog med samma orderdetalj. ?order= + redirect från /konto/ordrar/AV-*. Beställ igen oförändrad.",
+      "status": "done",
+      "domainId": "commerce",
+      "playbook": "new-order",
+      "files": [
+        "src/ui/order/OrderPeek.tsx",
+        "src/ui/order/KontoOrderPeek.tsx",
+        "src/app/(konto)/konto/ordrar/page.tsx"
+      ],
+      "gate": "none",
+      "source": "cursor",
+      "createdAt": "2026-09-01T22:57:00.000Z",
+      "updatedAt": "2026-09-01T23:00:00.000Z"
     }
   ]
 }

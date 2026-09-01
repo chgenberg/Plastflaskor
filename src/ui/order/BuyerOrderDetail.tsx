@@ -42,7 +42,19 @@ type Order = {
   shippingAddress?: { line1: string; postalCode: string; city: string } | null;
 };
 
-export function BuyerOrderDetail({ order, role, repeatHref }: { order: Order; role: string; repeatHref: string }) {
+export function BuyerOrderDetail({
+  order,
+  role,
+  repeatHref,
+  returnTo,
+  embedded,
+}: {
+  order: Order;
+  role: string;
+  repeatHref: string;
+  returnTo?: string;
+  embedded?: boolean;
+}) {
   const item = order.items[0];
   const spec = specFromOrderItem({
     visualSpecJson: order.visualSpecJson,
@@ -74,10 +86,11 @@ export function BuyerOrderDetail({ order, role, repeatHref }: { order: Order; ro
   const approved = order.aquaApprovedDelivery ?? order.confirmedDate;
   const shipment = order.shipments[0];
   const trackSteps = shipment ? shipmentTrackingSteps(shipment.status) : [];
-
-  return (
-    <DashPage>
-      <PageHeader title={order.orderNo} subtitle={item?.variant.product.name} />
+  const artworkReturnTo = returnTo ?? repeatHref.replace(/\/repeat$/, "");
+  const body = (
+    <>
+      {embedded ? null : <PageHeader title={order.orderNo} subtitle={item?.variant.product.name} />}
+      {embedded && item ? <p className="text-[13px] text-[var(--av-text-muted)]">{item.variant.product.name}</p> : null}
       <p className="text-[12px] text-[var(--av-text-muted)]">Agenten bevakar kedjan. Ni behöver inte mejla oss för status.</p>
       <StatusChip status={order.currentStatus} label={BUYER_STATUS[order.currentStatus]} requestedDate={order.requestedDate} />
       {order.currentStatus === "SUBMITTED" || order.currentStatus === "AQUA_REVIEW" ? (
@@ -177,7 +190,7 @@ export function BuyerOrderDetail({ order, role, repeatHref }: { order: Order; ro
           ) : (
             <p className="text-sm text-[var(--av-text-muted)]">Ingen artwork uppladdad ännu.</p>
           )}
-          <ArtworkUpload orderId={order.id} returnTo={repeatHref.replace(/\/repeat$/, "")} />
+          <ArtworkUpload orderId={order.id} returnTo={artworkReturnTo} />
         </Panel>
       )}
 
@@ -242,6 +255,7 @@ export function BuyerOrderDetail({ order, role, repeatHref }: { order: Order; ro
           </ul>
         </Panel>
       ) : null}
-    </DashPage>
+    </>
   );
+  return embedded ? <div className="av-peek-detail">{body}</div> : <DashPage>{body}</DashPage>;
 }
