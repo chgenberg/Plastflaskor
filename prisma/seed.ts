@@ -1,5 +1,6 @@
 import { PrismaClient, OrderStatus, PriceListCode, ProductCategory, Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { ensureDemoShowcase } from "./demoShowcase";
 
 const prisma = new PrismaClient();
 
@@ -488,6 +489,8 @@ Du väljer själv hur du vill designa utseendet. En dekor i fyrfärgstryck går 
 async function main() {
   await prisma.$executeRawUnsafe("PRAGMA foreign_keys = OFF");
   const tables = [
+    "OrchestratorCard",
+    "OrchestratorRun",
     "Notification",
     "StatusEvent",
     "Document",
@@ -1113,7 +1116,8 @@ async function main() {
     ],
   });
 
-  console.log("Seed klar: profilvatten, labels@ + bottler@, kunder, flaskordrar.");
+  await ensureDemoShowcase(prisma);
+  console.log("Seed klar: profilvatten, labels@ + bottler@, kunder, flaskordrar, visningsdata.");
 }
 
 main()
