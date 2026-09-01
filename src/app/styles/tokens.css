@@ -251,7 +251,7 @@
 }
 
 .av-shell-aside {
-  width: 232px;
+  width: 244px;
   flex-shrink: 0;
   flex-direction: column;
   background: #f3f1eb;
@@ -259,15 +259,17 @@
 }
 
 .av-shell-brand {
-  padding: 1.35rem 1.15rem 0.85rem;
+  padding: 1.2rem 1.15rem 0.65rem;
 }
 
 .av-shell-title {
-  margin-top: 0.85rem;
+  margin-top: 0.45rem;
+  max-width: 13.5rem;
   font-size: 12px;
-  font-weight: 400;
-  letter-spacing: 0.01em;
-  color: var(--av-text-muted);
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.35;
+  color: var(--av-text-secondary);
 }
 
 .av-shell-search {
@@ -302,7 +304,7 @@
 .av-nav {
   flex: 1;
   overflow-y: auto;
-  padding: 0.15rem 0.75rem 1.25rem;
+  padding: 0.35rem 0.7rem 1.25rem;
 }
 
 .av-nav--mobile {
@@ -313,7 +315,11 @@
 }
 
 .av-nav-group + .av-nav-group {
-  margin-top: 1.05rem;
+  margin-top: 1.4rem;
+}
+
+.av-nav-group--bare + .av-nav-group--bare {
+  margin-top: 0.15rem;
 }
 
 .av-nav--mobile .av-nav-group {
@@ -322,11 +328,12 @@
 }
 
 .av-nav-label {
-  margin: 0 0 0.2rem;
+  margin: 0 0 0.35rem;
   padding: 0 0.55rem;
-  font-size: 11px;
-  font-weight: 400;
-  letter-spacing: 0.02em;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--av-text-muted);
 }
 
@@ -337,21 +344,22 @@
 }
 
 .av-nav-link {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 30px;
-  padding: 0.2rem 0.55rem;
+  min-height: 32px;
+  padding: 0.25rem 0.55rem 0.25rem 0.7rem;
   font-size: 13.5px;
   font-weight: 400;
   line-height: 1.3;
   color: var(--av-text-secondary);
-  border-radius: 6px;
+  border-radius: 7px;
 }
 
 .av-nav-link:hover {
   color: var(--av-text);
-  background: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.45);
 }
 
 .av-nav-link:focus-visible,
@@ -363,14 +371,30 @@
 
 .av-nav-link.is-active {
   color: var(--av-text);
-  background: rgba(255, 255, 255, 0.8);
-  box-shadow: inset 2px 0 0 var(--av-accent);
+  font-weight: 500;
+  background: #fff;
+}
+
+.av-nav-link.is-active::before {
+  content: "";
+  position: absolute;
+  top: 7px;
+  bottom: 7px;
+  left: 0;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--av-accent);
 }
 
 .av-nav-link--dense {
   min-height: 48px;
-  padding: 0.65rem 0.65rem;
+  padding: 0.65rem 0.7rem;
   font-size: 15px;
+}
+
+.av-nav-link--dense.is-active::before {
+  top: 12px;
+  bottom: 12px;
 }
 
 .av-nav-badge {

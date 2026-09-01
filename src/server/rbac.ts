@@ -1,10 +1,37 @@
 import { redirect } from "next/navigation";
 import { isAquaAdmin } from "@/domain/policies/roles";
 import { auth } from "./auth";
+import { prisma } from "./db";
 
 export async function getSessionUser() {
   const session = await auth();
-  return session?.user ?? null;
+  const user = session?.user;
+  if (!user) return null;
+  const email = user.email?.toLowerCase().trim();
+  if (!email) return user;
+  const fresh = await prisma.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      resellerId: true,
+      factoryId: true,
+      customerId: true,
+      isActive: true,
+    },
+  });
+  if (!fresh?.isActive) return null;
+  return {
+    id: fresh.id,
+    name: fresh.name,
+    email: fresh.email,
+    role: fresh.role,
+    resellerId: fresh.resellerId,
+    factoryId: fresh.factoryId,
+    customerId: fresh.customerId,
+  };
 }
 
 export async function requireRole(roles: string[]) {

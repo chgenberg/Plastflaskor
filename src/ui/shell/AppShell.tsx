@@ -133,28 +133,31 @@ function DashNav({ nav, dense, mobile }: { nav: DashNavMother[]; dense?: boolean
 
   return (
     <nav className={mobile ? "av-nav av-nav--mobile" : "av-nav"} aria-label="Huvudmeny">
-      {nav.map((mother) => (
-        <section key={mother.id} className="av-nav-group">
-          <h2 className="av-nav-label">{mother.label}</h2>
-          <ul className="av-nav-list">
-            {mother.children.map((child) => {
-              const on = childActive(child.href, path, search);
-              return (
-                <li key={child.href}>
-                  <Link
-                    href={child.href}
-                    aria-current={on ? "page" : undefined}
-                    className={`av-nav-link${dense ? " av-nav-link--dense" : ""}${on ? " is-active" : ""}`}
-                  >
-                    <span>{child.label}</span>
-                    {child.badge ? <span className="av-nav-badge">{child.badge}</span> : null}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      ))}
+      {nav.map((mother) => {
+        const bare = mother.children.length === 1;
+        return (
+          <section key={mother.id} className={bare ? "av-nav-group av-nav-group--bare" : "av-nav-group"}>
+            {bare ? null : <h2 className="av-nav-label">{mother.label}</h2>}
+            <ul className="av-nav-list">
+              {mother.children.map((child) => {
+                const on = childActive(child.href, path, search);
+                return (
+                  <li key={child.href}>
+                    <Link
+                      href={child.href}
+                      aria-current={on ? "page" : undefined}
+                      className={`av-nav-link${dense ? " av-nav-link--dense" : ""}${on ? " is-active" : ""}`}
+                    >
+                      <span>{child.label}</span>
+                      {child.badge ? <span className="av-nav-badge">{child.badge}</span> : null}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        );
+      })}
     </nav>
   );
 }

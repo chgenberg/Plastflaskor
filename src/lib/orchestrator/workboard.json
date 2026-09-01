@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-01T22:25:00.000Z",
+  "updatedAt": "2026-09-01T22:50:00.000Z",
   "cards": [
     {
       "id": "wb-agent-os-v1",
@@ -319,6 +319,25 @@
       "source": "cursor",
       "createdAt": "2026-09-01T22:25:00.000Z",
       "updatedAt": "2026-09-01T22:25:00.000Z"
+    },
+    {
+      "id": "wb-konto-session-nav",
+      "title": "Kundportal: session + meny",
+      "body": "Hydrera session från e-post efter seed-wipe. Återbind demo-ordrar. Puts sidomeny, firmanamn under loggan.",
+      "status": "done",
+      "domainId": "auth",
+      "playbook": "new-order",
+      "files": [
+        "src/server/auth.ts",
+        "src/server/rbac.ts",
+        "src/ui/shell/AppShell.tsx",
+        "src/app/styles/tokens.css",
+        "prisma/demoShowcase.ts"
+      ],
+      "gate": "none",
+      "source": "cursor",
+      "createdAt": "2026-09-01T22:45:00.000Z",
+      "updatedAt": "2026-09-01T22:50:00.000Z"
     }
   ]
 }

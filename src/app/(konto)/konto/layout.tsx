@@ -1,3 +1,4 @@
+import { prisma } from "@/server/db";
 import { requireRole } from "@/server/rbac";
 import { AppShell } from "@/ui/shell/AppShell";
 
@@ -5,9 +6,12 @@ export const dynamic = "force-dynamic";
 
 export default async function KontoLayout({ children }: { children: React.ReactNode }) {
   const user = await requireRole(["CUSTOMER", "AQUA_STAFF", "AQUA_ADMIN"]);
+  const customer = user.customerId
+    ? await prisma.customer.findUnique({ where: { id: user.customerId }, select: { name: true } })
+    : null;
   return (
     <AppShell
-      title="Kundportal"
+      title={customer?.name ?? "Kundportal"}
       email={user.email}
       role={user.role}
       nav={[

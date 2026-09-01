@@ -128,6 +128,14 @@ export async function ensureDemoShowcase(prisma: PrismaClient) {
   await ensureQuoteInbox(prisma, ctx);
   await ensureStaffPings(prisma, ctx);
 
+  await prisma.order.updateMany({
+    where: {
+      orderNo: { startsWith: "AV-K-" },
+      customerId: { not: ctx.customerId },
+    },
+    data: { customerId: ctx.customerId, shippingAddressId: ctx.customerAddrId, buyerType: "CUSTOMER" },
+  });
+
   const kundOrders = await prisma.order.count({ where: { customerId: ctx.customerId } });
   const invoices = await prisma.invoice.count({ where: { customerId: ctx.customerId } });
   console.log(`Demo-showcase klar: ${kundOrders} ordrar hos kund@, ${invoices} fakturor, artwork på etikett/bottler.`);
@@ -434,7 +442,12 @@ async function ensureShowcaseOrder(
   const vis = visual(ctx.product.name, spec.qty, ctx.variant.volumeMl, opt.waterType ?? "stilla");
 
   const order = existing
-    ? existing
+    ? existing.customerId === customerId
+      ? existing
+      : await prisma.order.update({
+          where: { id: existing.id },
+          data: { customerId, shippingAddressId, buyerType: "CUSTOMER" },
+        })
     : await prisma.order.create({
         data: {
           orderNo: spec.orderNo,
