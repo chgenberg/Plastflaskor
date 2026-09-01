@@ -2,14 +2,16 @@ import Link from "next/link";
 import { listWaterProducts } from "@/server/services/catalog.service";
 import { quoteAction } from "@/actions";
 import { PAGE_IMAGES } from "@/domain/pageImages";
-import { EditorialShot, PageIntro } from "@/ui/public/PageIntro";
+import { Reveal } from "@/ui/motion/Reveal";
+import { EditorialShot, PageIntro, PublicPage } from "@/ui/public/PageIntro";
 import { Button, controlClass } from "@/ui/shell/primitives";
 
 export default async function QuotePage({ searchParams }: { searchParams: Promise<{ product?: string; design?: string; qty?: string; error?: string }> }) {
   const { product, design, qty, error } = await searchParams;
   const products = await listWaterProducts();
   return (
-    <main className="mx-auto max-w-xl px-4 pb-20 pt-16">
+    <PublicPage narrow>
+      <Reveal>
       <PageIntro badge="Kontakt" title="Begär offert" />
       {error ? <p className="mt-3 text-sm text-[var(--av-status-blocked-fg)]">Kontrollera e-post, företag och antal och försök igen.</p> : null}
       <p className="mt-3 text-sm text-[var(--av-text-secondary)]">
@@ -20,6 +22,7 @@ export default async function QuotePage({ searchParams }: { searchParams: Promis
         .
       </p>
       <EditorialShot src={PAGE_IMAGES.offertProv} alt="Prov för offert" />
+      </Reveal>
       <form action={quoteAction} className="av-card mt-8 space-y-4 p-7">
         <input type="hidden" name="designId" value={design ?? ""} />
         <label className="block text-sm">
@@ -60,6 +63,6 @@ export default async function QuotePage({ searchParams }: { searchParams: Promis
           Skicka offertförfrågan
         </Button>
       </form>
-    </main>
+    </PublicPage>
   );
 }

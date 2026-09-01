@@ -1,11 +1,14 @@
 import { PAGE_IMAGES } from "@/domain/pageImages";
-import { EditorialShot, PageIntro, PillLink } from "@/ui/public/PageIntro";
+import { Reveal } from "@/ui/motion/Reveal";
+import { EditorialShot, PageIntro, PillLink, PublicPage } from "@/ui/public/PageIntro";
 
 export default function ResellerLanding() {
   return (
-    <main className="mx-auto max-w-3xl px-4 pb-20 pt-16">
-      <PageIntro badge="Återförsäljare" title="För återförsäljare" />
-      <EditorialShot src={PAGE_IMAGES.aterforsaljareKit} alt="Samplekit för återförsäljare" />
+    <PublicPage narrow>
+      <Reveal>
+        <PageIntro badge="Återförsäljare" title="För återförsäljare" />
+        <EditorialShot src={PAGE_IMAGES.aterforsaljareKit} alt="Samplekit för återförsäljare" />
+      </Reveal>
       <p className="mt-5 text-[var(--av-text-secondary)]">
         Vi jobbar i första hand mot återförsäljare inom profil- och presentreklam samt butikskedjor. Priser, ordrar och
         artwork ligger i kundportalen efter inloggning.
@@ -20,6 +23,6 @@ export default function ResellerLanding() {
           Bli återförsäljare
         </PillLink>
       </div>
-    </main>
+    </PublicPage>
   );
 }

@@ -3,6 +3,8 @@ import { getSessionUser, homeForRole } from "@/server/rbac";
 import { safeInternalPath } from "@/domain/safePath";
 import { redirect } from "next/navigation";
 import Image from "next/image";
+import { Reveal } from "@/ui/motion/Reveal";
+import { PublicPage } from "@/ui/public/PageIntro";
 import { Button, controlClass } from "@/ui/shell/primitives";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string }> }) {
@@ -12,7 +14,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   if (user) redirect(dest);
 
   return (
-    <main className="mx-auto flex max-w-md flex-col justify-center px-4 pb-24 pt-16">
+    <PublicPage narrow>
+      <Reveal>
       <div className="mb-8 text-center">
         <Image src="/brand/aqua-visibility-logo.png" alt="aqua visibility" width={140} height={46} className="mx-auto h-9 w-auto" />
         <h1 className="mt-8 text-[28px] font-semibold tracking-tight">Logga in</h1>
@@ -44,6 +47,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <li>Bottler · bottler@demo.aqua</li>
         </ul>
       </div>
-    </main>
+      </Reveal>
+    </PublicPage>
   );
 }

@@ -358,7 +358,7 @@ export function FileLink({ href, children }: { href: string; children: ReactNode
   );
 }
 
-const btnBase = "inline-flex items-center justify-center font-semibold transition disabled:opacity-40";
+const btnBase = "av-btn inline-flex items-center justify-center font-semibold disabled:opacity-40";
 const btnH = {
   sm: "h-8 px-3.5 text-[13px] font-medium",
   md: "h-10 px-4 text-[13px]",

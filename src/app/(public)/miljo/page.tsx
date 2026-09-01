@@ -1,11 +1,14 @@
 import { PAGE_IMAGES } from "@/domain/pageImages";
-import { EditorialShot, PageIntro } from "@/ui/public/PageIntro";
+import { Reveal } from "@/ui/motion/Reveal";
+import { EditorialShot, PageIntro, PublicPage } from "@/ui/public/PageIntro";
 
 export default function EnvironmentPage() {
   return (
-    <main className="mx-auto max-w-3xl px-4 pb-20 pt-16">
-      <PageIntro badge="Miljö" title="Vi tar ansvar för miljön - miljövänliga profilerade muggar och flaskor" />
-      <EditorialShot src={PAGE_IMAGES.miljoKompost} alt="Komposterbar pappersmugg" />
+    <PublicPage narrow>
+      <Reveal>
+        <PageIntro badge="Miljö" title="Vi tar ansvar för miljön - miljövänliga profilerade muggar och flaskor" />
+        <EditorialShot src={PAGE_IMAGES.miljoKompost} alt="Komposterbar pappersmugg" />
+      </Reveal>
       <div className="mt-8 space-y-4 text-[var(--av-text-secondary)]">
         <p>
           Var snällare mot miljön med organiska pappersmuggar med tryck och vattenflaska av återanvänd plast. Vi
@@ -40,6 +43,6 @@ export default function EnvironmentPage() {
         </p>
         <EditorialShot src={PAGE_IMAGES.offertLeverans} alt="Leverans inom Sverige och EU" className="aspect-[16/10]" />
       </div>
-    </main>
+    </PublicPage>
   );
 }

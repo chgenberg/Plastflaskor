@@ -55,3 +55,20 @@
 .av-serif {
   font-family: var(--av-font-serif);
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .av-marquee,
+  .av-reveal,
+  .av-media img,
+  a.av-card,
+  .av-lift,
+  .av-btn {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+
+  .av-reveal {
+    opacity: 1;
+  }
+}

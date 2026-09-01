@@ -29,12 +29,12 @@ export function PublicFooter() {
         <div className="text-sm">
           <p className="av-label">Portal</p>
           <div className="mt-4 flex flex-col gap-2 text-[var(--av-text-secondary)]">
-            <Link href="/login" className="font-medium text-[var(--av-text)]">
+            <Link href="/login" className="font-medium text-[var(--av-text)] hover:text-[var(--av-accent)]">
               Logga in till kundportalen
             </Link>
-            <Link href="/aterforsaljare">För återförsäljare</Link>
-            <Link href="/offert">Begär offert</Link>
-            <Link href="/inspiration">Inspiration</Link>
+            <Link href="/aterforsaljare" className="hover:text-[var(--av-text)]">För återförsäljare</Link>
+            <Link href="/offert" className="hover:text-[var(--av-text)]">Begär offert</Link>
+            <Link href="/inspiration" className="hover:text-[var(--av-text)]">Inspiration</Link>
           </div>
         </div>
       </div>

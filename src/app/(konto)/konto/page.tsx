@@ -5,6 +5,7 @@ import { BUYER_STATUS } from "@/domain/enums";
 import { buyerNextAction } from "@/domain/orderBrief";
 import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
+import { Reveal } from "@/ui/motion/Reveal";
 import { BuyerOrderTable } from "@/ui/order/BuyerOrderCard";
 import { findKontoOrder, kontoPeekHref, KontoOrderPeek } from "@/ui/order/KontoOrderPeek";
 import { DashPage, EmptyState, KpiCard, KpiStrip, LinkButton, NextStep, PageHeader } from "@/ui/shell/primitives";
@@ -27,19 +28,23 @@ export default async function KontoHome({ searchParams }: { searchParams: Promis
         subtitle="Status, godkännande och fakturor."
         action={<LinkButton href="/konto/ordrar/ny">Ny order</LinkButton>}
       />
-      <NextStep
-        title={next.title}
-        body={next.body}
-        href={`/konto${next.hrefSuffix}`}
-        cta={next.cta}
-        tone={proof > 0 ? "next" : "done"}
-      />
-      <KpiStrip>
-        <KpiCard label="Aktiva ordrar" value={active} href="/konto/ordrar?view=active" />
-        <KpiCard label="Väntar på ditt godkännande" value={proof} href="/konto/ordrar?view=proof" />
-        <KpiCard label="På väg" value={shipped} href="/konto/ordrar?view=shipped" />
-        <KpiCard label="Fakturor" value={invoices} href="/konto/fakturor" />
-      </KpiStrip>
+      <Reveal>
+        <NextStep
+          title={next.title}
+          body={next.body}
+          href={`/konto${next.hrefSuffix}`}
+          cta={next.cta}
+          tone={proof > 0 ? "next" : "done"}
+        />
+      </Reveal>
+      <Reveal>
+        <KpiStrip>
+          <KpiCard label="Aktiva ordrar" value={active} href="/konto/ordrar?view=active" />
+          <KpiCard label="Väntar på ditt godkännande" value={proof} href="/konto/ordrar?view=proof" />
+          <KpiCard label="På väg" value={shipped} href="/konto/ordrar?view=shipped" />
+          <KpiCard label="Fakturor" value={invoices} href="/konto/fakturor" />
+        </KpiStrip>
+      </Reveal>
       {orders.length === 0 ? (
         <EmptyState
           title={user.customerId ? "Inga ordrar ännu" : "Det här är kundportalen"}

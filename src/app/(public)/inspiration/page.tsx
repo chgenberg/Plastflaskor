@@ -1,5 +1,6 @@
 import { PAGE_IMAGES } from "@/domain/pageImages";
-import { EditorialShot, PageIntro, PillLink } from "@/ui/public/PageIntro";
+import { Reveal } from "@/ui/motion/Reveal";
+import { EditorialShot, PageIntro, PillLink, PublicPage } from "@/ui/public/PageIntro";
 
 const SHOTS = [
   { src: PAGE_IMAGES.valAntal, alt: "Profilvatten på event", title: "Event" },
@@ -12,22 +13,26 @@ const SHOTS = [
 
 export default function InspirationPage() {
   return (
-    <main className="mx-auto max-w-6xl px-4 pb-20 pt-16">
-      <PageIntro badge="Inspiration" title="Referenser och användning" />
-      <p className="mt-4 max-w-2xl text-[var(--av-text-secondary)]">
-        Profilvatten, dryck och flaskor med egen etikett. Priser och order ligger i kundportalen.
-      </p>
-      <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {SHOTS.map((s) => (
-          <figure key={s.src} className="av-card overflow-hidden">
-            <EditorialShot src={s.src} alt={s.alt} className="aspect-[4/5] rounded-none" />
-            <figcaption className="px-6 py-4 text-sm font-medium">{s.title}</figcaption>
-          </figure>
-        ))}
-      </div>
+    <PublicPage>
+      <Reveal>
+        <PageIntro badge="Inspiration" title="Referenser och användning" />
+        <p className="mt-4 max-w-2xl text-[var(--av-text-secondary)]">
+          Profilvatten, dryck och flaskor med egen etikett. Priser och order ligger i kundportalen.
+        </p>
+      </Reveal>
+      <Reveal>
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {SHOTS.map((s) => (
+            <figure key={s.src} className="av-card av-lift overflow-hidden">
+              <EditorialShot src={s.src} alt={s.alt} className="aspect-[4/5] rounded-none" />
+              <figcaption className="px-6 py-4 text-sm font-medium">{s.title}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </Reveal>
       <div className="mt-10">
         <PillLink href="/login">Logga in till kundportalen</PillLink>
       </div>
-    </main>
+    </PublicPage>
   );
 }

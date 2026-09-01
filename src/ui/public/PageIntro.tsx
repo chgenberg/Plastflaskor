@@ -54,8 +54,12 @@ export function Surface({ children, className = "" }: { children: ReactNode; cla
 
 export function EditorialShot({ src, alt, className = "mt-8 aspect-[16/10]" }: { src: string; alt: string; className?: string }) {
   return (
-    <div className={`relative overflow-hidden rounded-[var(--av-radius-lg)] ${className}`}>
+    <div className={`av-media ${className}`}>
       <Image src={src} alt={alt} fill className="object-cover" sizes="800px" />
     </div>
   );
+}
+
+export function PublicPage({ children, narrow }: { children: ReactNode; narrow?: boolean }) {
+  return <main className={narrow ? "av-public-page av-public-page--narrow" : "av-public-page"}>{children}</main>;
 }

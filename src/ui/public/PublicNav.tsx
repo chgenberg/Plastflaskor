@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { logoutAction } from "@/actions";
 import { Button, LinkButton } from "@/ui/shell/primitives";
@@ -53,7 +54,20 @@ const ITEMS: Parent[] = [
   },
 ];
 
+const PARENT_HREFS = new Set(ITEMS.map((item) => item.href));
+
+function pathActive(path: string, href: string, children: Child[]) {
+  if (path === href || path.startsWith(`${href}/`)) return true;
+  return children.some(
+    (child) =>
+      child.href !== "/login" &&
+      !PARENT_HREFS.has(child.href) &&
+      (path === child.href || path.startsWith(`${child.href}/`)),
+  );
+}
+
 export function PublicNav({ email }: { email?: string | null }) {
+  const path = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
 
@@ -84,7 +98,7 @@ export function PublicNav({ email }: { email?: string | null }) {
 
         <nav className="hidden flex-1 items-center gap-0.5 md:flex">
           {ITEMS.map((item) => (
-            <NavParent key={item.label} item={item} open={open} setOpen={setOpen} />
+            <NavParent key={item.label} item={item} open={open} setOpen={setOpen} active={pathActive(path, item.href, item.children)} />
           ))}
         </nav>
 
@@ -142,10 +156,12 @@ function NavParent({
   item,
   open,
   setOpen,
+  active,
 }: {
   item: Parent;
   open: string | null;
   setOpen: (v: string | null) => void;
+  active?: boolean;
 }) {
   const id = useId();
   const wrap = useRef<HTMLDivElement>(null);
@@ -171,7 +187,7 @@ function NavParent({
         aria-expanded={shown}
         aria-controls={id}
         onClick={() => setOpen(shown ? null : item.label)}
-        className="inline-flex h-9 items-center gap-1 rounded-[var(--av-radius-md)] px-3 text-[13px] font-medium text-[var(--av-text-secondary)] hover:bg-[var(--av-bg)] hover:text-[var(--av-text)]"
+        className={`inline-flex h-9 items-center gap-1 rounded-[var(--av-radius-md)] px-3 text-[13px] font-medium transition-colors hover:bg-[var(--av-bg)] hover:text-[var(--av-text)] ${active ? "bg-[var(--av-bg)] text-[var(--av-text)]" : "text-[var(--av-text-secondary)]"}`}
       >
         {item.label}
         <svg width="10" height="10" viewBox="0 0 12 12" aria-hidden className={`opacity-50 transition-transform ${shown ? "rotate-180" : ""}`}>

@@ -1,11 +1,14 @@
 import { PAGE_IMAGES } from "@/domain/pageImages";
-import { EditorialShot, PageIntro } from "@/ui/public/PageIntro";
+import { Reveal } from "@/ui/motion/Reveal";
+import { EditorialShot, PageIntro, PublicPage } from "@/ui/public/PageIntro";
 
 export default function OptionsPage() {
   return (
-    <main className="mx-auto max-w-3xl px-4 pb-20 pt-16">
-      <PageIntro badge="Valmöjligheter" title="Vi erbjuder följande sortiment:" />
-      <EditorialShot src={PAGE_IMAGES.valSortiment} alt="Hela sortimentet" />
+    <PublicPage narrow>
+      <Reveal>
+        <PageIntro badge="Valmöjligheter" title="Vi erbjuder följande sortiment:" />
+        <EditorialShot src={PAGE_IMAGES.valSortiment} alt="Hela sortimentet" />
+      </Reveal>
       <ul className="mt-8 grid gap-2 text-lg font-medium">
         <li>Pappersmuggar</li>
         <li>Profilvatten</li>
@@ -63,6 +66,6 @@ export default function OptionsPage() {
           </ol>
         </div>
       </div>
-    </main>
+    </PublicPage>
   );
 }

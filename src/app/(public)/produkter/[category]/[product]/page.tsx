@@ -5,7 +5,8 @@ import { getSessionUser } from "@/server/rbac";
 import { canSeePrices } from "@/domain/policies/priceVisibility";
 import { imageForProduct } from "@/domain/productImages";
 import { productFacts } from "@/domain/productFacts";
-import { PageIntro, PillLink } from "@/ui/public/PageIntro";
+import { Reveal } from "@/ui/motion/Reveal";
+import { PageIntro, PillLink, PublicPage } from "@/ui/public/PageIntro";
 
 export default async function ProductPage({ params }: { params: Promise<{ category: string; product: string }> }) {
   const { category, product } = await params;
@@ -35,16 +36,18 @@ export default async function ProductPage({ params }: { params: Promise<{ catego
   };
 
   return (
-    <main className="mx-auto max-w-3xl px-4 pb-20 pt-16">
+    <PublicPage narrow>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <p className="av-label">{category}</p>
-      <PageIntro title={item.name} />
-      <p className="mt-4 text-lg text-[var(--av-text-secondary)]">{item.oneLiner}</p>
-      {img ? (
-        <div className="relative mt-8 aspect-[4/5] overflow-hidden rounded-[var(--av-radius-lg)]">
-          <Image src={img} alt={item.name} fill className="object-cover" sizes="720px" priority />
-        </div>
-      ) : null}
+      <Reveal>
+        <p className="av-label">{category}</p>
+        <PageIntro title={item.name} />
+        <p className="mt-4 text-lg text-[var(--av-text-secondary)]">{item.oneLiner}</p>
+        {img ? (
+          <div className="av-media mt-8 aspect-[4/5]">
+            <Image src={img} alt={item.name} fill className="object-cover" sizes="720px" priority />
+          </div>
+        ) : null}
+      </Reveal>
       <dl className="av-card mt-10 grid gap-4 p-7 text-sm sm:grid-cols-2">
         {facts.map((row) => (
           <div key={row.label}>
@@ -76,6 +79,6 @@ export default async function ProductPage({ params }: { params: Promise<{ catego
           <p key={p.slice(0, 24)}>{p}</p>
         ))}
       </article>
-    </main>
+    </PublicPage>
   );
 }

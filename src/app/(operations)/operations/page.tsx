@@ -3,6 +3,7 @@ import { activateDueLeads, listLeads } from "@/server/services/lead.service";
 import { listBottlerInvoices } from "@/server/services/bottlerInvoice.service";
 import { listLabelDispatches } from "@/server/services/labelDispatch.service";
 import { exceptionSummary, exceptionsFor } from "@/domain/exceptions";
+import { Reveal } from "@/ui/motion/Reveal";
 import { ActionCard, ActionList, DashPage, KpiCard, KpiStrip, LinkButton, PageHeader, SectionTitle } from "@/ui/shell/primitives";
 import { loadOrchestratorBoard, runAquaHeartbeatIfStale } from "@/server/orchestrator";
 
@@ -37,12 +38,14 @@ export default async function OpsHome() {
         subtitle="Master Dashboard — kräver åtgärd."
         action={<LinkButton href="/operations/pipeline">Öppna pipeline</LinkButton>}
       />
-      <KpiStrip>
-        <KpiCard href="/operations/ordrar?phase=labels" label="Etiketter" value={house.labels} />
-        <KpiCard href="/operations/produktion" label="Bottler" value={house.bottler} />
-        <KpiCard href="/operations/frakt" label="Frakt" value={house.freight} />
-        <KpiCard href="/operations/ekonomi" label="Faktura" value={house.invoice} />
-      </KpiStrip>
+      <Reveal>
+        <KpiStrip>
+          <KpiCard href="/operations/ordrar?phase=labels" label="Etiketter" value={house.labels} />
+          <KpiCard href="/operations/produktion" label="Bottler" value={house.bottler} />
+          <KpiCard href="/operations/frakt" label="Frakt" value={house.freight} />
+          <KpiCard href="/operations/ekonomi" label="Faktura" value={house.invoice} />
+        </KpiStrip>
+      </Reveal>
       <p className="text-[13px] text-[var(--av-text-muted)]">
         Agenten bevakar samma kö.{" "}
         <a href="/operations/agenten" className="text-[var(--av-text)] hover:text-[var(--av-accent)]">
@@ -57,6 +60,7 @@ export default async function OpsHome() {
           </>
         ) : null}
       </p>
+      <Reveal>
       <section className="space-y-2">
         <SectionTitle>Kräver åtgärd</SectionTitle>
         <ActionList>
@@ -74,6 +78,7 @@ export default async function OpsHome() {
           )}
         </ActionList>
       </section>
+      </Reveal>
     </DashPage>
   );
 }

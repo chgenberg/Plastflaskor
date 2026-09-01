@@ -1,11 +1,14 @@
 import { PAGE_IMAGES } from "@/domain/pageImages";
-import { EditorialShot, PageIntro } from "@/ui/public/PageIntro";
+import { Reveal } from "@/ui/motion/Reveal";
+import { EditorialShot, PageIntro, PublicPage } from "@/ui/public/PageIntro";
 
 export default function AboutPage() {
   return (
-    <main className="mx-auto max-w-3xl px-4 pb-20 pt-16">
-      <PageIntro badge="Om oss" title="Mässprodukter och profilprodukter för företag" />
-      <EditorialShot src={PAGE_IMAGES.omService} alt="Service och kommunikation" />
+    <PublicPage narrow>
+      <Reveal>
+        <PageIntro badge="Om oss" title="Mässprodukter och profilprodukter för företag" />
+        <EditorialShot src={PAGE_IMAGES.omService} alt="Service och kommunikation" />
+      </Reveal>
       <div className="mt-8 space-y-4 text-[var(--av-text-secondary)]">
         <p>
           Företaget utvecklar, marknadsför och distribuerar dryck med kundanpassad förpackning och etikett. Vi jobbar
@@ -45,6 +48,6 @@ export default function AboutPage() {
           info@aquavisibility.se
         </p>
       </div>
-    </main>
+    </PublicPage>
   );
 }

@@ -4,6 +4,7 @@ import { bottlerDeskStatus } from "@/domain/bottlerDesk";
 import { planFromItem } from "@/domain/bottlerPlan";
 import { LabelJobsTable } from "@/ui/supplier/LabelJobsTable";
 import { BottlerJobsTable } from "@/ui/supplier/BottlerJobsTable";
+import { Reveal } from "@/ui/motion/Reveal";
 import { ActionCard, ActionList, DashPage, EmptyState, KpiCard, KpiStrip, LinkButton, PageHeader, SectionTitle } from "@/ui/shell/primitives";
 
 type Job = Awaited<ReturnType<typeof import("@/server/services/production.service").listJobsForFactory>>[number];
@@ -87,6 +88,7 @@ export function SupplierDesk({
         }
       />
       {kind === "label" ? (
+        <Reveal>
         <div className="space-y-2">
           <KpiStrip cols={2}>
             <KpiCard href={basePath} label="Nästa skickdatum" value={nextShipDate ?? "–"} />
@@ -99,7 +101,9 @@ export function SupplierDesk({
             </p>
           ) : null}
         </div>
+        </Reveal>
       ) : inboundReports.length > 0 || inbound > 0 ? (
+        <Reveal>
         <ActionList>
           {inboundReports.length > 0
             ? inboundReports.map((r) => (
@@ -116,6 +120,7 @@ export function SupplierDesk({
                 <ActionCard href={basePath} label="Etiketter att ta emot" value={inbound} tone="yellow" />
               )}
         </ActionList>
+        </Reveal>
       ) : null}
       {receivedReport ? (
         <div className="av-card px-4 py-3 text-[13px]">
