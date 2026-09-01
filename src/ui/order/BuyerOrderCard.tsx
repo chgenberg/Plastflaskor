@@ -1,6 +1,5 @@
-import Link from "next/link";
 import type { VisualSpec } from "@/domain/visualSpec";
-import { DashTable, LinkButton, StatusChip, TableActions } from "@/ui/shell/primitives";
+import { DashTable, LinkButton, RowHit, StatusChip, TableActions } from "@/ui/shell/primitives";
 
 export type BuyerOrderRow = {
   href: string;
@@ -16,6 +15,7 @@ export type BuyerOrderRow = {
 
 export function BuyerOrderTable({ rows }: { rows: BuyerOrderRow[] }) {
   const showCustomer = rows.some((r) => r.customer);
+  const showAction = rows.some((r) => r.actionHref && r.actionLabel);
   return (
     <DashTable
       count={`${rows.length} order${rows.length === 1 ? "" : "ar"}`}
@@ -25,7 +25,7 @@ export function BuyerOrderTable({ rows }: { rows: BuyerOrderRow[] }) {
         { label: "Innehåll" },
         { label: "Leverans" },
         { label: "Status" },
-        { label: "Åtgärd", sr: true },
+        ...(showAction ? [{ label: "Åtgärd", sr: true }] : []),
       ]}
     >
       {rows.map((r) => {
@@ -33,9 +33,7 @@ export function BuyerOrderTable({ rows }: { rows: BuyerOrderRow[] }) {
         return (
           <tr key={r.orderNo}>
             <td>
-              <Link href={r.href} className="font-semibold text-[var(--av-text)] hover:text-[var(--av-accent)]">
-                {r.orderNo}
-              </Link>
+              <RowHit href={r.href}>{r.orderNo}</RowHit>
             </td>
             {showCustomer ? <td>{r.customer ?? "–"}</td> : null}
             <td>{product}</td>
@@ -43,18 +41,17 @@ export function BuyerOrderTable({ rows }: { rows: BuyerOrderRow[] }) {
             <td>
               <StatusChip status={r.status} label={r.statusLabel} />
             </td>
-            <td className="av-actions">
-              <TableActions>
-                <LinkButton href={r.href} variant="secondary" size="sm">
-                  Öppna
-                </LinkButton>
+            {showAction ? (
+              <td className="av-actions">
                 {r.actionHref && r.actionLabel ? (
-                  <LinkButton href={r.actionHref} size="sm">
-                    {r.actionLabel}
-                  </LinkButton>
+                  <TableActions>
+                    <LinkButton href={r.actionHref} size="sm">
+                      {r.actionLabel}
+                    </LinkButton>
+                  </TableActions>
                 ) : null}
-              </TableActions>
-            </td>
+              </td>
+            ) : null}
           </tr>
         );
       })}

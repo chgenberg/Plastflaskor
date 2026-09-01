@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { ORDER_STEP_LABELS, invoiceBuyerLabel, type OrderStatusCode } from "@/domain/enums";
 import { parseExtras } from "@/domain/extras";
 import { isOverdue } from "@/domain/orderBrief";
-import { DashTable, StatusChip } from "@/ui/shell/primitives";
+import { DashTable, RowHit, StatusChip } from "@/ui/shell/primitives";
 
 function rowValue(order: {
   items: { qty: number; unitPriceExVat: number }[];
@@ -78,19 +77,17 @@ export function OrderResultsTable({ orders, hrefBase = "/operations/ordrar" }: {
         return (
           <tr key={o.id}>
             <td>
-              <Link href={href} className="font-semibold text-[var(--av-text)] hover:text-[var(--av-accent)]">
-                {o.orderNo}
-              </Link>
-              {o.invoiceRef ? <p className="text-[11px] text-[var(--av-text-muted)]">{o.invoiceRef}</p> : null}
+              <RowHit href={href}>{o.orderNo}</RowHit>
+              {o.invoiceRef ? <span className="ml-1.5 text-[11px] text-[var(--av-text-muted)]">{o.invoiceRef}</span> : null}
             </td>
             <td className="whitespace-nowrap tabular-nums text-[var(--av-text-muted)]">{fmtDate(o.createdAt)}</td>
             <td>
-              <p className="font-medium text-[var(--av-text)]">{o.customer.name}</p>
-              {o.customer.orgNr ? <p className="text-[11px] text-[var(--av-text-muted)]">{o.customer.orgNr}</p> : null}
+              {o.customer.name}
+              {o.customer.orgNr ? <span className="text-[var(--av-text-muted)]"> · {o.customer.orgNr}</span> : null}
             </td>
             <td>
-              <p className="text-[var(--av-text)]">{product}</p>
-              {qty ? <p className="text-[11px] text-[var(--av-text-muted)]">{qty}</p> : null}
+              {product}
+              {qty ? <span className="text-[var(--av-text-muted)]"> · {qty}</span> : null}
             </td>
             <td>
               <StatusChip

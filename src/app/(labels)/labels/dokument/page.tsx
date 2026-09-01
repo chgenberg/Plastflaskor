@@ -1,6 +1,6 @@
 import { listLabelDispatches } from "@/server/services/labelDispatch.service";
 import { requireSupplier, scopedFactoryId } from "@/server/supplierAccess";
-import { DashPage, DashTable, EmptyState, LinkButton, PageHeader, TableActions } from "@/ui/shell/primitives";
+import { DashPage, DashTable, EmptyState, PageHeader, RowHit } from "@/ui/shell/primitives";
 
 export default async function LabelsReports() {
   const user = await requireSupplier("label");
@@ -34,7 +34,6 @@ export default async function LabelsReports() {
             { label: "Tracking" },
             { label: "Ordrar" },
             { label: "Antal" },
-            { label: "Åtgärd", sr: true },
           ]}
         >
           {reports.map((r) => (
@@ -48,23 +47,14 @@ export default async function LabelsReports() {
                   minute: "2-digit",
                 })}
               </td>
-              <td className="font-semibold tabular-nums">{r.reportNo}</td>
+              <td className="tabular-nums">
+                <RowHit href={r.documentId ? `/api/documents/${r.documentId}` : `/labels?rapport=${encodeURIComponent(r.reportNo)}`}>
+                  {r.reportNo}
+                </RowHit>
+              </td>
               <td>{r.trackingNo}</td>
               <td>{r.orderNos.join(", ") || `${r.orderCount} ordrar`}</td>
               <td className="tabular-nums">{r.qty.toLocaleString("sv-SE")} st</td>
-              <td className="av-actions">
-                <TableActions>
-                  {r.documentId ? (
-                    <LinkButton href={`/api/documents/${r.documentId}`} variant="secondary" size="sm">
-                      Öppna
-                    </LinkButton>
-                  ) : (
-                    <LinkButton href={`/labels?rapport=${encodeURIComponent(r.reportNo)}`} variant="secondary" size="sm">
-                      Visa
-                    </LinkButton>
-                  )}
-                </TableActions>
-              </td>
             </tr>
           ))}
         </DashTable>

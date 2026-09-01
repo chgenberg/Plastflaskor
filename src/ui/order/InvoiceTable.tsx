@@ -1,5 +1,5 @@
 import { invoiceBuyerLabel } from "@/domain/enums";
-import { DashTable, LinkButton, StatusChip, TableActions } from "@/ui/shell/primitives";
+import { DashTable, LinkButton, RowHit, StatusChip, TableActions } from "@/ui/shell/primitives";
 
 export type InvoiceRow = {
   id: string;
@@ -39,7 +39,9 @@ export function InvoiceTable({ rows, showCustomer }: { rows: InvoiceRow[]; showC
         const label = invoiceBuyerLabel(r.status, r.dueAt);
         return (
           <tr key={r.id}>
-            <td className="font-semibold">{r.invoiceNo}</td>
+            <td>
+              <RowHit href={`/konto/ordrar/${r.orderNo}`}>{r.invoiceNo}</RowHit>
+            </td>
             <td>{r.orderNo}</td>
             {showCustomer ? <td>{r.customer ?? "–"}</td> : null}
             <td className="whitespace-nowrap tabular-nums text-[var(--av-text-muted)]">{fmtDate(r.issuedAt)}</td>

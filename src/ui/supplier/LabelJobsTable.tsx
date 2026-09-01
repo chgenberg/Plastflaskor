@@ -1,9 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { createLabelDispatchAction, factoryAction } from "@/actions";
-import { Button, LinkButton, TableActions, controlClass } from "@/ui/shell/primitives";
+import { Button, LinkButton, RowHit, TableActions, controlClass } from "@/ui/shell/primitives";
 
 export type LabelJobRow = {
   id: string;
@@ -118,9 +117,7 @@ export function LabelJobsTable({
                     </td>
                   ) : null}
                   <td>
-                    <Link href={r.href} className="font-semibold text-[var(--av-text)] hover:text-[var(--av-accent)]">
-                      {r.orderNo}
-                    </Link>
+                    <RowHit href={r.href}>{r.orderNo}</RowHit>
                   </td>
                   <td>{r.orderName}</td>
                   <td>{r.material}</td>
@@ -129,11 +126,8 @@ export function LabelJobsTable({
                     <td className="whitespace-nowrap font-medium tabular-nums">{r.reportNo ?? "–"}</td>
                   ) : null}
                   <td className="av-actions">
-                    <TableActions>
-                      <LinkButton href={r.href} variant="secondary" size="sm">
-                        Öppna
-                      </LinkButton>
-                      {!compose && r.canMarkReady ? (
+                    {!compose && r.canMarkReady ? (
+                      <TableActions>
                         <form action={factoryAction}>
                           <input type="hidden" name="jobId" value={r.id} />
                           <input type="hidden" name="action" value="ACCEPT_DEADLINE" />
@@ -141,8 +135,8 @@ export function LabelJobsTable({
                             Klara att skicka
                           </Button>
                         </form>
-                      ) : null}
-                    </TableActions>
+                      </TableActions>
+                    ) : null}
                   </td>
                 </tr>
               );

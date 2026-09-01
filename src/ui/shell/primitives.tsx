@@ -21,9 +21,17 @@ export function StatusChip({
           ? "bg-[var(--av-status-blocked-bg)] text-[var(--av-status-blocked-fg)]"
           : "bg-[var(--av-status-idle-bg)] text-[var(--av-status-idle-fg)]";
   return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${cls}`}>
+    <span className={`inline-flex items-center rounded-full px-1.5 py-px text-[11px] font-medium leading-5 ${cls}`}>
       {label ?? eventLabel(status)}
     </span>
+  );
+}
+
+export function RowHit({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Link href={href} className="av-row-hit">
+      {children}
+    </Link>
   );
 }
 

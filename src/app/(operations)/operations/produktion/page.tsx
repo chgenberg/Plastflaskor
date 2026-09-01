@@ -1,7 +1,6 @@
-import Link from "next/link";
 import { FACTORY_JOB_LABELS, ORDER_STEP_LABELS, type OrderStatusCode } from "@/domain/enums";
 import { prisma } from "@/server/db";
-import { DashPage, DashTable, EmptyState, FilterChip, PageHeader, StatusChip } from "@/ui/shell/primitives";
+import { DashPage, DashTable, EmptyState, FilterChip, PageHeader, RowHit, StatusChip } from "@/ui/shell/primitives";
 
 const GROUPS = [
   { id: "date", label: "Datum" },
@@ -88,9 +87,7 @@ export default async function ProductionBoard({ searchParams }: { searchParams: 
                 return (
                   <tr key={j.id}>
                     <td>
-                      <Link href={`/operations/ordrar/${j.order.orderNo}`} className="font-semibold text-[var(--av-text)] hover:text-[var(--av-accent)]">
-                        {j.order.orderNo}
-                      </Link>
+                      <RowHit href={`/operations/ordrar/${j.order.orderNo}`}>{j.order.orderNo}</RowHit>
                     </td>
                     <td>{j.order.customer.name}</td>
                     <td>{item ? `${item.variant.product.name} · ${item.qty.toLocaleString("sv-SE")} st` : "–"}</td>

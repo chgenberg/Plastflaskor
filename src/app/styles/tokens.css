@@ -125,7 +125,7 @@
   position: sticky;
   top: 0;
   z-index: 2;
-  padding: 0.4rem 0.7rem;
+  padding: 0.28rem 0.6rem;
   text-align: left;
   font-size: 11px;
   font-weight: 500;
@@ -144,10 +144,55 @@
 }
 
 .av-table td {
-  padding: 0.38rem 0.7rem;
+  padding: 0.2rem 0.6rem;
+  line-height: 1.3;
   vertical-align: middle;
   background: var(--av-surface);
   box-shadow: 0 1px 0 var(--av-border);
+}
+
+.av-table tbody tr {
+  position: relative;
+}
+
+.av-table tbody tr:has(.av-row-hit) {
+  cursor: pointer;
+}
+
+.av-row-hit {
+  font-weight: 500;
+  color: var(--av-text);
+}
+
+.av-row-hit:hover {
+  color: var(--av-accent);
+}
+
+.av-row-hit::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.av-table tbody tr .av-actions,
+.av-table tbody tr input,
+.av-table tbody tr button,
+.av-table tbody tr select,
+.av-table tbody tr a:not(.av-row-hit),
+.av-table tbody tr form {
+  position: relative;
+  z-index: 2;
+}
+
+.av-table .av-actions a,
+.av-table .av-actions button {
+  height: 26px;
+  min-height: 26px;
+  padding-left: 0.55rem;
+  padding-right: 0.55rem;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .av-table td.av-actions {

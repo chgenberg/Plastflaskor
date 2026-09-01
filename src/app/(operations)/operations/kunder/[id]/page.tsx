@@ -6,7 +6,7 @@ import { orderValue } from "@/server/services/order.service";
 import { updateCustomerAction } from "@/actions/opsMasters";
 import { LEAD_STATUS_LABELS, ORDER_STEP_LABELS } from "@/domain/enums";
 import { priceListDisplayName } from "@/domain/priceLists";
-import { Button, DashPage, DataRow, DataTable, EmptyState, FileLink, LinkButton, PageHeader, Panel, StatusChip, controlClass } from "@/ui/shell/primitives";
+import { Button, DashPage, DataRow, DataTable, EmptyState, FileLink, LinkButton, PageHeader, Panel, RowHit, StatusChip, controlClass } from "@/ui/shell/primitives";
 
 const FIELD = controlClass;
 
@@ -239,9 +239,7 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
               return (
                 <DataRow key={o.id} href={`/operations/ordrar/${o.orderNo}`}>
                   <td>
-                    <Link href={`/operations/ordrar/${o.orderNo}`} className="font-mono text-[var(--av-accent)]">
-                      {o.orderNo}
-                    </Link>
+                    <RowHit href={`/operations/ordrar/${o.orderNo}`}>{o.orderNo}</RowHit>
                   </td>
                   <td>{o.createdAt.toLocaleDateString("sv-SE")}</td>
                   <td>{item?.variant.product.name ?? "–"}</td>
@@ -274,11 +272,9 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
           >
             {customer.invoices.map((inv) => (
               <DataRow key={inv.id} href={`/operations/ekonomi/${inv.order.orderNo}/fakturera`}>
-                <td className="font-mono">
-                  <Link href={`/operations/ekonomi/${inv.order.orderNo}/fakturera`} className="text-[var(--av-accent)]">
-                    {inv.invoiceNo}
-                  </Link>
-                  {inv.fortnoxId ? <p className="text-[12px] text-[var(--av-text-muted)]">{inv.fortnoxId}</p> : null}
+                <td>
+                  <RowHit href={`/operations/ekonomi/${inv.order.orderNo}/fakturera`}>{inv.invoiceNo}</RowHit>
+                  {inv.fortnoxId ? <span className="ml-1.5 text-[12px] text-[var(--av-text-muted)]">{inv.fortnoxId}</span> : null}
                 </td>
                 <td className="font-mono">{inv.order.orderNo}</td>
                 <td className="whitespace-nowrap tabular-nums">{inv.issuedAt?.toLocaleDateString("sv-SE") ?? "–"}</td>

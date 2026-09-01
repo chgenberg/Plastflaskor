@@ -1,11 +1,10 @@
-import Link from "next/link";
 import { ORDER_STEP_LABELS, type OrderStatusCode } from "@/domain/enums";
 import { isAquaAdmin } from "@/domain/policies/roles";
 import { getSessionUser } from "@/server/rbac";
 import { listAllOrders, orderValue } from "@/server/services/order.service";
 import { getFortnoxConnection } from "@/server/integrations/status";
 import { markInvoicePaid } from "@/actions";
-import { Button, DashPage, DashTable, EmptyState, KpiCard, KpiStrip, LinkButton, PageHeader, SectionTitle, StatusChip, TableActions } from "@/ui/shell/primitives";
+import { Button, DashPage, DashTable, EmptyState, KpiCard, KpiStrip, LinkButton, PageHeader, RowHit, SectionTitle, StatusChip, TableActions } from "@/ui/shell/primitives";
 import { FortnoxBadge } from "@/ui/shell/FortnoxBadge";
 
 export default async function FinancePage() {
@@ -50,9 +49,7 @@ export default async function FinancePage() {
               return (
                 <tr key={o.id}>
                   <td>
-                    <Link href={`/operations/ordrar/${o.orderNo}`} className="font-semibold text-[var(--av-text)] hover:text-[var(--av-accent)]">
-                      {o.orderNo}
-                    </Link>
+                    <RowHit href={`/operations/ordrar/${o.orderNo}`}>{o.orderNo}</RowHit>
                   </td>
                   <td>{o.customer.name}</td>
                   <td>{item ? `${item.variant.product.name} · ${item.qty.toLocaleString("sv-SE")} st` : "–"}</td>
@@ -66,9 +63,6 @@ export default async function FinancePage() {
                   </td>
                   <td className="av-actions">
                     <TableActions>
-                      <LinkButton href={`/operations/ordrar/${o.orderNo}`} variant="secondary" size="sm">
-                        Öppna
-                      </LinkButton>
                       <LinkButton href={`/operations/ekonomi/${o.orderNo}/fakturera`} size="sm">
                         Fakturera
                       </LinkButton>
@@ -100,7 +94,9 @@ export default async function FinancePage() {
               const item = o.items[0];
               return (
                 <tr key={o.id}>
-                  <td className="font-semibold">{o.invoice?.invoiceNo ?? o.orderNo}</td>
+                  <td>
+                    <RowHit href={`/operations/ordrar/${o.orderNo}`}>{o.invoice?.invoiceNo ?? o.orderNo}</RowHit>
+                  </td>
                   <td>{o.customer.name}</td>
                   <td>{o.orderNo}</td>
                   <td>{item ? `${item.variant.product.name} · ${item.qty.toLocaleString("sv-SE")} st` : "–"}</td>

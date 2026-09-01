@@ -3,7 +3,7 @@ import { listJobsForFactory } from "@/server/services/production.service";
 import { requireSupplier, scopedFactoryId } from "@/server/supplierAccess";
 import { planFromItem } from "@/domain/bottlerPlan";
 import { BottlerInvoiceForm } from "@/ui/supplier/BottlerInvoiceForm";
-import { DashPage, DashTable, EmptyState, LinkButton, PageHeader, SectionTitle, TableActions } from "@/ui/shell/primitives";
+import { DashPage, DashTable, EmptyState, LinkButton, PageHeader, RowHit, SectionTitle } from "@/ui/shell/primitives";
 
 export default async function BottlerDocs({
   searchParams,
@@ -93,7 +93,6 @@ export default async function BottlerDocs({
               { label: "Underlag" },
               { label: "Ordrar" },
               { label: "Antal" },
-              { label: "Åtgärd", sr: true },
             ]}
           >
             {reports.map((r) => (
@@ -107,18 +106,11 @@ export default async function BottlerDocs({
                     minute: "2-digit",
                   })}
                 </td>
-                <td className="font-semibold tabular-nums">{r.reportNo}</td>
+                <td className="tabular-nums">
+                  {r.documentId ? <RowHit href={`/api/documents/${r.documentId}`}>{r.reportNo}</RowHit> : r.reportNo}
+                </td>
                 <td>{r.orderNos.join(", ") || `${r.orderCount} ordrar`}</td>
                 <td className="tabular-nums">{r.qty.toLocaleString("sv-SE")} st</td>
-                <td className="av-actions">
-                  <TableActions>
-                    {r.documentId ? (
-                      <LinkButton href={`/api/documents/${r.documentId}`} variant="secondary" size="sm">
-                        Öppna
-                      </LinkButton>
-                    ) : null}
-                  </TableActions>
-                </td>
               </tr>
             ))}
           </DashTable>

@@ -1,9 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { PLAN_CAPS, PLAN_SIZES, PLAN_WATERS, planLabels, type PlanCap, type PlanSize, type PlanWater } from "@/domain/bottlerPlan";
-import { LinkButton, StatusChip, controlCompact } from "@/ui/shell/primitives";
+import { LinkButton, RowHit, StatusChip, controlCompact } from "@/ui/shell/primitives";
 
 export type BottlerJobRow = {
   id: string;
@@ -22,7 +21,6 @@ export type BottlerJobRow = {
 };
 
 export function BottlerJobsTable({ rows }: { rows: BottlerJobRow[] }) {
-  const router = useRouter();
   const [size, setSize] = useState<PlanSize | "">("");
   const [water, setWater] = useState<PlanWater | "">("");
   const [cap, setCap] = useState<PlanCap | "">("");
@@ -97,20 +95,10 @@ export function BottlerJobsTable({ rows }: { rows: BottlerJobRow[] }) {
           </thead>
           <tbody>
             {filtered.map((r) => (
-              <tr
-                key={r.id}
-                className="av-row-link"
-                tabIndex={0}
-                role="link"
-                onClick={() => router.push(r.href)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    router.push(r.href);
-                  }
-                }}
-              >
-                <td className="font-semibold">{r.orderNo}</td>
+              <tr key={r.id}>
+                <td>
+                  <RowHit href={r.href}>{r.orderNo}</RowHit>
+                </td>
                 <td>{r.customer}</td>
                 <td>
                   {r.product} · {r.qty.toLocaleString("sv-SE")} st

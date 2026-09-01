@@ -1,6 +1,6 @@
 import { listBottlerInvoices } from "@/server/services/bottlerInvoice.service";
 import { listLabelDispatches } from "@/server/services/labelDispatch.service";
-import { DashPage, DashTable, EmptyState, LinkButton, PageHeader, SectionTitle, TableActions } from "@/ui/shell/primitives";
+import { DashPage, DashTable, EmptyState, PageHeader, RowHit, SectionTitle } from "@/ui/shell/primitives";
 
 export default async function OpsDocumentsPage() {
   const [labels, bottler] = await Promise.all([
@@ -27,7 +27,6 @@ export default async function OpsDocumentsPage() {
               { label: "Tracking" },
               { label: "Ordrar" },
               { label: "Antal" },
-              { label: "Åtgärd", sr: true },
             ]}
           >
             {labels.map((r) => (
@@ -41,19 +40,12 @@ export default async function OpsDocumentsPage() {
                     minute: "2-digit",
                   })}
                 </td>
-                <td className="font-semibold tabular-nums">{r.reportNo}</td>
+                <td className="tabular-nums">
+                  {r.documentId ? <RowHit href={`/api/documents/${r.documentId}`}>{r.reportNo}</RowHit> : r.reportNo}
+                </td>
                 <td>{r.trackingNo}</td>
                 <td>{r.orderNos.join(", ") || `${r.orderCount} ordrar`}</td>
                 <td className="tabular-nums">{r.qty.toLocaleString("sv-SE")} st</td>
-                <td className="av-actions">
-                  <TableActions>
-                    {r.documentId ? (
-                      <LinkButton href={`/api/documents/${r.documentId}`} variant="secondary" size="sm">
-                        Öppna
-                      </LinkButton>
-                    ) : null}
-                  </TableActions>
-                </td>
               </tr>
             ))}
           </DashTable>
@@ -71,7 +63,6 @@ export default async function OpsDocumentsPage() {
               { label: "Underlag" },
               { label: "Ordrar" },
               { label: "Antal" },
-              { label: "Åtgärd", sr: true },
             ]}
           >
             {bottler.map((r) => (
@@ -85,18 +76,11 @@ export default async function OpsDocumentsPage() {
                     minute: "2-digit",
                   })}
                 </td>
-                <td className="font-semibold tabular-nums">{r.reportNo}</td>
+                <td className="tabular-nums">
+                  {r.documentId ? <RowHit href={`/api/documents/${r.documentId}`}>{r.reportNo}</RowHit> : r.reportNo}
+                </td>
                 <td>{r.orderNos.join(", ") || `${r.orderCount} ordrar`}</td>
                 <td className="tabular-nums">{r.qty.toLocaleString("sv-SE")} st</td>
-                <td className="av-actions">
-                  <TableActions>
-                    {r.documentId ? (
-                      <LinkButton href={`/api/documents/${r.documentId}`} variant="secondary" size="sm">
-                        Öppna
-                      </LinkButton>
-                    ) : null}
-                  </TableActions>
-                </td>
               </tr>
             ))}
           </DashTable>

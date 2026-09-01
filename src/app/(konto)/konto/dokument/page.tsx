@@ -1,7 +1,7 @@
 import { DOCUMENT_KIND_LABELS } from "@/domain/enums";
 import { requireRole } from "@/server/rbac";
 import { listOrdersForCustomer } from "@/server/services/order.service";
-import { DashPage, DashTable, EmptyState, LinkButton, PageHeader, TableActions } from "@/ui/shell/primitives";
+import { DashPage, DashTable, EmptyState, LinkButton, PageHeader, RowHit, TableActions } from "@/ui/shell/primitives";
 
 export default async function KontoDocs() {
   const user = await requireRole(["CUSTOMER", "AQUA_STAFF", "AQUA_ADMIN"]);
@@ -27,15 +27,14 @@ export default async function KontoDocs() {
         >
           {docs.map((d) => (
             <tr key={d.id}>
-              <td className="font-medium">{d.title}</td>
+              <td>
+                <RowHit href={`/api/documents/${d.id}?inline=1`}>{d.title}</RowHit>
+              </td>
               <td>{DOCUMENT_KIND_LABELS[d.kind] ?? d.kind}</td>
               <td>{d.orderNo}</td>
               <td className="tabular-nums text-[var(--av-text-muted)]">v{d.version}</td>
               <td className="av-actions">
                 <TableActions>
-                  <LinkButton href={`/api/documents/${d.id}?inline=1`} variant="secondary" size="sm">
-                    Visa
-                  </LinkButton>
                   <LinkButton href={`/api/documents/${d.id}`} size="sm">
                     Ladda ner
                   </LinkButton>

@@ -1,7 +1,7 @@
 import { requireRole } from "@/server/rbac";
 import { listDesignsForUser } from "@/server/services/document.service";
 import { DESIGN_STATUS_LABELS } from "@/domain/enums";
-import { DashPage, DashTable, EmptyState, LinkButton, PageHeader, StatusChip, TableActions } from "@/ui/shell/primitives";
+import { DashPage, DashTable, EmptyState, LinkButton, PageHeader, RowHit, StatusChip, TableActions } from "@/ui/shell/primitives";
 
 export default async function KontoArtworkPage() {
   const user = await requireRole(["CUSTOMER", "AQUA_STAFF", "AQUA_ADMIN"]);
@@ -28,24 +28,22 @@ export default async function KontoArtworkPage() {
         >
           {designs.map((d) => (
             <tr key={d.id}>
-              <td className="font-medium">{d.projectName}</td>
+              <td>
+                <RowHit href={d.files[0] ? `/api/artwork-files/${d.files[0].id}` : "/designa"}>{d.projectName}</RowHit>
+              </td>
               <td>{d.order?.orderNo ?? "–"}</td>
               <td className="text-[var(--av-text-secondary)]">{d.files[0]?.fileName ?? "Inga filer"}</td>
               <td>
                 <StatusChip status={d.status} label={DESIGN_STATUS_LABELS[d.status] ?? "Utkast"} />
               </td>
               <td className="av-actions">
-                <TableActions>
-                  {d.files[0] ? (
-                    <LinkButton href={`/api/artwork-files/${d.files[0].id}`} variant="secondary" size="sm">
-                      Öppna fil
-                    </LinkButton>
-                  ) : (
+                {!d.files[0] ? (
+                  <TableActions>
                     <LinkButton href="/designa" size="sm">
                       Designa
                     </LinkButton>
-                  )}
-                </TableActions>
+                  </TableActions>
+                ) : null}
               </td>
             </tr>
           ))}

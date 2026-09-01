@@ -1,9 +1,8 @@
-import Link from "next/link";
 import { prisma } from "@/server/db";
 import { listCustomers } from "@/server/services/customer.service";
 import { createCustomerAction } from "@/actions/opsMasters";
 import { priceListDisplayName } from "@/domain/priceLists";
-import { Button, DashPage, DashTable, EmptyState, PageHeader, Panel, controlClass, controlCompact } from "@/ui/shell/primitives";
+import { Button, DashPage, DashTable, EmptyState, PageHeader, Panel, RowHit, controlClass, controlCompact } from "@/ui/shell/primitives";
 
 const FIELD = controlClass;
 
@@ -52,9 +51,7 @@ export default async function CustomersPage({
           {customers.map((c) => (
             <tr key={c.id}>
               <td>
-                <Link href={`/operations/kunder/${c.id}`} className="font-semibold text-[var(--av-text)] hover:text-[var(--av-accent)]">
-                  {c.name}
-                </Link>
+                <RowHit href={`/operations/kunder/${c.id}`}>{c.name}</RowHit>
               </td>
               <td>{priceListDisplayName(c.priceList?.name)}</td>
               <td className="tabular-nums text-[var(--av-text-secondary)]">{c.orgNr ?? "–"}</td>

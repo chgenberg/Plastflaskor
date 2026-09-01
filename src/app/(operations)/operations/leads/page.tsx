@@ -2,7 +2,7 @@ import { activateDueLeads, leadMatchesBucket, listLeads, type LeadBucket } from 
 import { orderValue } from "@/server/services/order.service";
 import { remindLeadAction, updateLeadAction } from "@/actions";
 import { LEAD_STATUS_LABELS } from "@/domain/enums";
-import { Button, DashPage, DashTable, EmptyState, FilterChip, LinkButton, PageHeader, StatusChip, TableActions } from "@/ui/shell/primitives";
+import { Button, DashPage, DashTable, EmptyState, FilterChip, LinkButton, PageHeader, RowHit, StatusChip, TableActions } from "@/ui/shell/primitives";
 
 const BUCKETS: { id: LeadBucket | "all"; label: string; key: keyof Awaited<ReturnType<typeof listLeads>>["buckets"] | null }[] = [
   { id: "all", label: "Alla", key: null },
@@ -58,7 +58,9 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
             const value = orderValue(lead.sourceOrder);
             return (
               <tr key={lead.id}>
-                <td className="font-medium">{lead.customer.name}</td>
+                <td>
+                  <RowHit href={`/operations/ordrar/${lead.sourceOrder.orderNo}`}>{lead.customer.name}</RowHit>
+                </td>
                 <td className="whitespace-nowrap text-[var(--av-text-secondary)]">
                   {lead.expectedAt.toLocaleDateString("sv-SE", { month: "short", year: "numeric" })}
                 </td>
@@ -70,9 +72,6 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                 </td>
                 <td className="av-actions">
                   <TableActions>
-                    <LinkButton href={`/operations/ordrar/${lead.sourceOrder.orderNo}`} variant="secondary" size="sm">
-                      Öppna
-                    </LinkButton>
                     <LinkButton href={`/operations/ordrar/${lead.sourceOrder.orderNo}/repeat?lead=${lead.id}`} size="sm">
                       Skapa repeat
                     </LinkButton>
