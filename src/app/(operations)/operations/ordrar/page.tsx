@@ -4,7 +4,7 @@ import { ORDER_LIST_LANES, PIPELINE_PHASES } from "@/domain/enums";
 import { isExceptionKind, ordersWithAlert } from "@/domain/exceptions";
 import { OrderFilterForm } from "@/ui/ops/OrderFilterForm";
 import { OrderResultsTable } from "@/ui/ops/OrderResultsTable";
-import { EmptyState, PageHeader } from "@/ui/shell/primitives";
+import { EmptyState, LinkButton, PageHeader } from "@/ui/shell/primitives";
 
 const SIZES = ["33", "50"] as const;
 const WATER_TYPES = ["stilla", "kolsyrat"] as const;
@@ -70,13 +70,24 @@ export default async function OpsOrders({
 
   return (
     <div className="space-y-4">
-      <PageHeader title={title} subtitle="Filtrera på fas eller sök order, kund, produkt, org.nr eller tracking." />
+      <PageHeader
+        title={title}
+        subtitle="Filtrera på fas eller sök order, kund, produkt, org.nr eller tracking."
+        action={<LinkButton href="/operations/ordrar/ny">Ny order</LinkButton>}
+      />
       <OrderFilterForm
         values={{ q, lane, phase, from, to, size, waterType, factory, late }}
         factories={factories}
       />
       {orders.length === 0 ? (
-        <EmptyState title="Inga ordrar" body={q || lane || phase || status || alert ? "Inget matchade filtret." : "När ordrar kommer in syns de här."} />
+        <EmptyState
+          title="Inga ordrar"
+          body={
+            q || lane || phase || status || alert
+              ? "Inget matchade filtret."
+              : "Registrera en inköpsorder från mejl med Ny order, eller vänta på att en kund skickar själv."
+          }
+        />
       ) : (
         <OrderResultsTable orders={orders} />
       )}

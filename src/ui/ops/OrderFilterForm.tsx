@@ -17,6 +17,7 @@ function hrefFor(values: FilterValues, lane: string | undefined) {
   const p = new URLSearchParams();
   if (values.q) p.set("q", values.q);
   if (lane) p.set("lane", lane);
+  else if (values.phase) p.set("phase", values.phase);
   if (values.size) p.set("size", values.size);
   if (values.waterType) p.set("waterType", values.waterType);
   if (values.factory) p.set("factory", values.factory);
@@ -41,6 +42,7 @@ export function OrderFilterForm({
     <div className="av-card space-y-2.5 p-3">
       <form action={action} className="flex flex-col gap-2 sm:flex-row sm:items-center">
         {lane ? <input type="hidden" name="lane" value={lane} /> : null}
+        {values.phase && !lane ? <input type="hidden" name="phase" value={values.phase} /> : null}
         {values.size ? <input type="hidden" name="size" value={values.size} /> : null}
         {values.waterType ? <input type="hidden" name="waterType" value={values.waterType} /> : null}
         {values.factory ? <input type="hidden" name="factory" value={values.factory} /> : null}
@@ -54,7 +56,7 @@ export function OrderFilterForm({
         <Button type="submit" size="sm">Sök</Button>
       </form>
       <div className="flex flex-wrap gap-1.5">
-        <FilterChip href={hrefFor(values, undefined)} active={!lane && !values.phase} solid>
+        <FilterChip href={hrefFor({ ...values, phase: undefined }, undefined)} active={!lane && !values.phase} solid>
           Alla
         </FilterChip>
         {ORDER_LIST_LANES.map((item) => (
@@ -66,6 +68,7 @@ export function OrderFilterForm({
       <form action={action} className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
         {values.q ? <input type="hidden" name="q" value={values.q} /> : null}
         {lane ? <input type="hidden" name="lane" value={lane} /> : null}
+        {values.phase && !lane ? <input type="hidden" name="phase" value={values.phase} /> : null}
         <select name="size" defaultValue={values.size ?? ""} className={controlCompact}>
           <option value="">Alla storlekar</option>
           <option value="33">33 cl</option>

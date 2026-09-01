@@ -1,7 +1,9 @@
 import { requireSupplier, scopedFactoryId } from "@/server/supplierAccess";
-import { prisma } from "@/server/db";
-import { shipmentTrackingSteps } from "@/domain/orderBrief";
-import { DashTable, EmptyState, PageHeader, StatusChip } from "@/ui/shell/primitives";
+import { listJobsForFactory } from "@/server/services/production.service";
+import { bottlerDeskStatus } from "@/domain/bottlerDesk";
+import { planFromItem } from "@/domain/bottlerPlan";
+import { BottlerJobsTable } from "@/ui/supplier/BottlerJobsTable";
+import { EmptyState, PageHeader } from "@/ui/shell/primitives";
 
 export default async function BottlerShippedPage() {
   const user = await requireSupplier("bottler");
@@ -10,64 +12,40 @@ export default async function BottlerShippedPage() {
     return (
       <div className="space-y-4">
         <PageHeader title="Skickat" />
-        <EmptyState title="Ingen bottler kopplad" body="Logga in som bottler för att se skickade flaskor." />
+        <EmptyState title="Ingen bottler kopplad" body="Logga in som bottler för att se skickade ordrar." />
       </div>
     );
   }
-  const shipments = await prisma.shipment.findMany({
-    where: {
-      type: "GOODS_TO_CUSTOMER",
-      ...(factoryId ? { order: { factoryId } } : {}),
-      OR: [{ status: { in: ["PICKED_UP", "IN_TRANSIT", "DELIVERED"] } }, { shippedAt: { not: null } }],
-    },
-    include: {
-      order: {
-        select: {
-          orderNo: true,
-          items: {
-            select: {
-              qty: true,
-              variant: { select: { product: { select: { name: true } } } },
-            },
-          },
-        },
-      },
-    },
-    orderBy: { shippedAt: "desc" },
-  });
+  const jobs = (await listJobsForFactory(factoryId, "bottler")).filter((j) => j.order.currentStatus === "SHIPPED");
   return (
     <div className="space-y-4">
-      <PageHeader title="Skickat" subtitle="Sändningar från bottler." />
-      {shipments.length === 0 ? (
-        <EmptyState title="Inga flaskor skickade" body="När ett jobb markeras som skickat syns sändningen här." />
+      <PageHeader title="Skickat" subtitle="Bottler — ordrar ni har markerat som skickade. Ingen pris- eller fakturainformation." />
+      {jobs.length === 0 ? (
+        <EmptyState title="Inga skickade ordrar" body="När ni markerar en order som skickad flyttas den hit." />
       ) : (
-        <DashTable
-          count={`${shipments.length} sändning${shipments.length === 1 ? "" : "ar"}`}
-          columns={[
-            { label: "Order" },
-            { label: "Innehåll" },
-            { label: "Transportör" },
-            { label: "Spårning" },
-            { label: "Status" },
-          ]}
-        >
-          {shipments.map((s) => {
-            const steps = shipmentTrackingSteps(s.status);
-            const current = steps.find((st) => st.current);
-            const item = s.order.items[0];
-            return (
-              <tr key={s.id}>
-                <td className="font-semibold">{s.order.orderNo}</td>
-                <td>{item ? `${item.variant.product.name} · ${item.qty.toLocaleString("sv-SE")} st` : "–"}</td>
-                <td>{s.carrier}</td>
-                <td className="tabular-nums">{s.trackingNo ?? "–"}</td>
-                <td>
-                  <StatusChip status={s.status} label={current?.label ?? "Skapad"} />
-                </td>
-              </tr>
-            );
+        <BottlerJobsTable
+          rows={jobs.map((j) => {
+            const item = j.order.items[0];
+            const plan = planFromItem({
+              volumeMl: item?.variant.volumeMl,
+              visualSpecJson: j.order.visualSpecJson ?? item?.visualSpecJson,
+              optionsJson: item?.variant.optionsJson,
+              productName: item?.variant.product.name,
+            });
+            return {
+              id: j.id,
+              href: `/bottler/jobb/${j.id}`,
+              orderNo: j.order.orderNo,
+              customer: j.order.customer.name,
+              product: item?.variant.product.name ?? "–",
+              qty: item?.qty ?? 0,
+              deadline: j.order.factoryDeadline,
+              deadlineAccepted: j.order.factoryDeadlineAccepted,
+              ...bottlerDeskStatus({ jobStatus: j.status, orderStatus: j.order.currentStatus }),
+              ...plan,
+            };
           })}
-        </DashTable>
+        />
       )}
     </div>
   );

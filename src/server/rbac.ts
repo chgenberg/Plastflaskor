@@ -18,7 +18,7 @@ export async function requireRole(roles: string[]) {
           ? "/konto"
           : "/operations";
   if (!user) redirect(`/login?next=${encodeURIComponent(fallback)}`);
-  if (!roles.includes(user.role)) redirect("/login?error=forbidden");
+  if (!roles.includes(user.role)) redirect(homeForRole(user.role));
   return user;
 }
 

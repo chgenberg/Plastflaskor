@@ -54,7 +54,7 @@ const factoryOrder = {
       select: {
         id: true,
         projectName: true,
-        files: { select: { id: true, fileName: true, storageKey: true } },
+        files: { select: { id: true, fileName: true, storageKey: true, mimeType: true } },
       },
     },
     artworkVersions: { where: { isFinal: true }, select: { id: true, title: true, storageKey: true, designId: true } },
@@ -72,10 +72,11 @@ export const FACTORY_EVENTS = [
   "SHIPPED",
 ] as const;
 
-export async function listJobsForFactory(factoryId?: string) {
+export async function listJobsForFactory(factoryId?: string, factoryKind?: "label" | "bottler") {
   return prisma.productionJob.findMany({
     where: {
       ...(factoryId ? { factoryId } : {}),
+      ...(factoryKind ? { factory: { kind: factoryKind } } : {}),
       order: { currentStatus: { in: [...SUPPLIER_STATUSES] } },
     },
     include: { order: factoryOrder, factory: true },
@@ -83,13 +84,14 @@ export async function listJobsForFactory(factoryId?: string) {
   });
 }
 
-export async function getJob(jobId: string, factoryId?: string) {
+export async function getJob(jobId: string, factoryId?: string, factoryKind?: "label" | "bottler") {
   const job = await prisma.productionJob.findUnique({
     where: { id: jobId },
     include: { order: factoryOrder, factory: true },
   });
   if (!job) return null;
   if (factoryId && job.factoryId !== factoryId) return null;
+  if (factoryKind && job.factory.kind !== factoryKind) return null;
   return job;
 }
 
@@ -111,7 +113,14 @@ export async function factoryAdvance(
   factoryId: string,
   action: (typeof FACTORY_EVENTS)[number],
   actorRole: Role = "FACTORY",
-  payload?: { issueNote?: string; readyDate?: string; trackingNo?: string; carrier?: string; shippedDate?: string },
+  payload?: {
+    issueNote?: string;
+    readyDate?: string;
+    trackingNo?: string;
+    carrier?: string;
+    shippedDate?: string;
+    waybillNo?: string;
+  },
 ) {
   const job = await prisma.productionJob.findFirst({
     where: { id: jobId, factoryId },
@@ -120,6 +129,10 @@ export async function factoryAdvance(
   if (!job) throw new Error("Jobb saknas");
   const kind = job.factory.kind;
   const source = kind === "label" ? "labels" : "bottler";
+  const labelActions = ["ACCEPT_DEADLINE", "FLAG_ISSUE", "DISPATCH"] as const;
+  const bottlerActions = ["RECEIVE_LABELS", "ESTIMATE_DATE", "START", "DONE", "SHIPPED"] as const;
+  if (kind === "label" && !(labelActions as readonly string[]).includes(action)) throw new Error("Forbidden");
+  if (kind === "bottler" && !(bottlerActions as readonly string[]).includes(action)) throw new Error("Forbidden");
 
   if (action === "ACCEPT_DEADLINE") {
     await prisma.order.update({
@@ -149,6 +162,7 @@ export async function factoryAdvance(
     const shippedAt = payload?.shippedDate ? new Date(payload.shippedDate) : new Date();
     const trackingNo = payload?.trackingNo || existing?.trackingNo || `LBL-${job.order.orderNo}`;
     const carrier = payload?.carrier || existing?.carrier || "PostNord";
+    const waybillNo = payload?.waybillNo || existing?.waybillNo || undefined;
     if (!existing) {
       await prisma.shipment.create({
         data: {
@@ -156,6 +170,7 @@ export async function factoryAdvance(
           type: "LABELS_TO_FACTORY",
           carrier,
           trackingNo,
+          waybillNo,
           status: "IN_TRANSIT",
           shippedAt,
         },
@@ -163,11 +178,14 @@ export async function factoryAdvance(
     } else {
       await prisma.shipment.update({
         where: { id: existing.id },
-        data: { trackingNo, carrier, status: "IN_TRANSIT", shippedAt },
+        data: { trackingNo, carrier, waybillNo, status: "IN_TRANSIT", shippedAt },
       });
     }
     await prisma.productionJob.update({ where: { id: jobId }, data: { status: "DONE", completedAt: new Date() } });
-    if (job.order.currentStatus === "LABEL_PRODUCTION") {
+    if (job.order.currentStatus === "CONFIRMED") {
+      await advanceOrder(job.orderId, "LABEL_PRODUCTION", actorRole, source);
+      await advanceOrder(job.orderId, "LABELS_DISPATCHED", actorRole, source);
+    } else if (job.order.currentStatus === "LABEL_PRODUCTION") {
       await advanceOrder(job.orderId, "LABELS_DISPATCHED", actorRole, source);
     }
     return;
@@ -220,12 +238,42 @@ export async function factoryAdvance(
     return;
   }
   if (action === "SHIPPED") {
-    await prisma.shipment.updateMany({
+    if (job.order.currentStatus === "SHIPPED") return;
+    const existing = await prisma.shipment.findFirst({
       where: { orderId: job.orderId, type: "GOODS_TO_CUSTOMER" },
-      data: { status: "PICKED_UP", shippedAt: new Date() },
     });
-    if (job.order.currentStatus === "READY_TO_SHIP") {
-      await advanceOrder(job.orderId, "SHIPPED", actorRole, source);
+    const shippedAt = payload?.shippedDate ? new Date(payload.shippedDate) : new Date();
+    if (!existing) {
+      await prisma.shipment.create({
+        data: {
+          orderId: job.orderId,
+          type: "GOODS_TO_CUSTOMER",
+          carrier: payload?.carrier || "Bring (mock)",
+          trackingNo: payload?.trackingNo || `MOCK-${job.order.orderNo}`,
+          waybillNo: payload?.waybillNo || `WB-${job.order.orderNo}`,
+          packages: 1,
+          weightKg: 0,
+          status: "PICKED_UP",
+          shippedAt,
+        },
+      });
+    } else {
+      await prisma.shipment.update({
+        where: { id: existing.id },
+        data: { status: "PICKED_UP", shippedAt },
+      });
+    }
+    let from: string = job.order.currentStatus;
+    const next: Record<string, "IN_PRODUCTION" | "READY_TO_SHIP" | "SHIPPED"> = {
+      PRODUCTION_SCHEDULED: "IN_PRODUCTION",
+      IN_PRODUCTION: "READY_TO_SHIP",
+      READY_TO_SHIP: "SHIPPED",
+    };
+    while (from !== "SHIPPED" && next[from]) {
+      await advanceOrder(job.orderId, next[from], actorRole, source);
+      from = next[from];
+    }
+    if (from === "SHIPPED") {
       await getIntegrations().email.sendDeliveryNotice(job.orderId);
     }
   }

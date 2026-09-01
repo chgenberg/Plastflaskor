@@ -62,9 +62,17 @@ type SessionLike = {
 };
 
 export async function getAuthorizedDocument(id: string, user: SessionLike) {
+  const factoryRole = user.role === "FACTORY" || user.role === "LABEL" || user.role === "BOTTLER";
   const doc = await prisma.document.findUnique({
     where: { id },
-    include: { order: { include: { customer: true, invoice: true } } },
+    include: {
+      order: {
+        include: {
+          customer: true,
+          ...(factoryRole ? {} : { invoice: true }),
+        },
+      },
+    },
   });
   if (!doc) return null;
   if (user.role === "CUSTOMER") {
@@ -74,7 +82,9 @@ export async function getAuthorizedDocument(id: string, user: SessionLike) {
   if (user.role === "RESELLER") return null;
   if (user.role === "FACTORY" || user.role === "LABEL" || user.role === "BOTTLER") {
     if (!(FACTORY_DOC_KINDS as readonly string[]).includes(doc.kind)) return null;
-    if (user.factoryId && doc.order?.factoryId !== user.factoryId) {
+    if (user.role === "LABEL" && doc.entityType === "BOTTLER_INVOICE") return null;
+    if (!user.factoryId) return null;
+    if (doc.order?.factoryId !== user.factoryId) {
       const job = await prisma.productionJob.findFirst({
         where: { orderId: doc.orderId ?? undefined, factoryId: user.factoryId },
       });
@@ -101,6 +111,7 @@ export async function getAuthorizedArtworkFile(id: string, user: SessionLike) {
   if (user.role === "RESELLER") return null;
   if (user.role === "FACTORY" || user.role === "LABEL" || user.role === "BOTTLER") {
     if (!file.design.orderId) return null;
+    if (!user.factoryId) return null;
     if (user.factoryId && file.design.order && file.design.order.factoryId !== user.factoryId) {
       const job = await prisma.productionJob.findFirst({
         where: { orderId: file.design.orderId, factoryId: user.factoryId },

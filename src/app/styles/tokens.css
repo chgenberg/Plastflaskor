@@ -103,6 +103,24 @@
   font-size: 13px;
 }
 
+.av-table button.av-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.av-table button.av-sort:hover {
+  color: var(--av-text);
+}
+
 .av-table th {
   position: sticky;
   top: 0;
@@ -158,9 +176,28 @@
   background: #faf9f6;
 }
 
+.av-table tbody tr.av-row-link {
+  cursor: pointer;
+}
+
 .av-table tbody tr:hover td,
 .av-table tbody tr:hover td:first-child {
   background: var(--av-bg);
+}
+
+.av-table tbody tr.av-row-shipped td,
+.av-table tbody tr.av-row-shipped td:first-child {
+  background: var(--av-status-done-bg);
+  color: var(--av-status-done-fg);
+}
+
+.av-table tbody tr.av-row-shipped:hover td,
+.av-table tbody tr.av-row-shipped:hover td:first-child {
+  background: var(--av-status-done-bg);
+}
+
+.av-table tbody tr.av-row-shipped-active td {
+  box-shadow: inset 3px 0 0 var(--av-status-done-fg), 0 1px 0 var(--av-border);
 }
 
 .av-mono {

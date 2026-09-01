@@ -15,8 +15,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
     <main className="mx-auto flex max-w-md flex-col justify-center px-4 pb-24 pt-16">
       <div className="mb-8 text-center">
         <Image src="/brand/aqua-visibility-logo.png" alt="aqua visibility" width={140} height={46} className="mx-auto h-9 w-auto" />
-        <h1 className="mt-8 text-[28px] font-semibold tracking-tight">Kundportal</h1>
-        <p className="mt-2 text-sm text-[var(--av-text-muted)]">Priser, ordrar och fakturor efter inloggning.</p>
+        <h1 className="mt-8 text-[28px] font-semibold tracking-tight">Logga in</h1>
+        <p className="mt-2 text-sm text-[var(--av-text-muted)]">Master, kund, etikett eller bottler — välj rätt konto nedan.</p>
       </div>
       <div className="av-card p-8">
         {error ? <p className="mb-4 text-sm text-[var(--av-status-blocked-fg)]">Fel e-post, lösenord eller behörighet.</p> : null}

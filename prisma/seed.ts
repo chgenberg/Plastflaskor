@@ -819,6 +819,7 @@ async function main() {
       waterType: opt.waterType?.includes("kolsyr") ? "KOLSYRAT" : "STILLA",
       bottleColor: "TRANSPARENT FLASKA",
       cap: opt.cap === "white" ? "VIT KAPSYL" : "SVART KAPSYL",
+      labelMaterial: i % 3 === 0 ? "Transparent" : "Vit",
     };
     const idx = STATUSES.indexOf(status);
     const locked = idx >= 4;

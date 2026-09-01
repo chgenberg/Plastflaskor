@@ -27,10 +27,21 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
+  const homeFor =
+    role === "CUSTOMER"
+      ? "/konto"
+      : role === "LABEL"
+        ? "/labels"
+        : role === "BOTTLER" || role === "FACTORY"
+          ? "/bottler"
+          : isAquaAdmin(role)
+            ? "/operations"
+            : "/login?error=forbidden";
+
   const needs = (prefix: string, roles: string[]) => {
     if (!pathname.startsWith(prefix)) return null;
     if (!token) return NextResponse.redirect(new URL(`/login?next=${pathname}`, req.url));
-    if (!roles.includes(role ?? "")) return NextResponse.redirect(new URL("/login?error=forbidden", req.url));
+    if (!roles.includes(role ?? "")) return NextResponse.redirect(new URL(homeFor, req.url));
     return NextResponse.next();
   };
 

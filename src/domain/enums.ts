@@ -57,22 +57,31 @@ export const BUYER_STATUS: Record<string, string> = {
   PAID: "Fakturerad",
 };
 
-export const PIPELINE_PHASES = [
+export const PIPELINE_PHASES: readonly {
+  id: string;
+  label: string;
+  hint?: string;
+  statuses: readonly OrderStatusCode[];
+}[] = [
   { id: "new", label: "Ny order", statuses: ["SUBMITTED"] },
-  { id: "review", label: "Aqua granskar", statuses: ["AQUA_REVIEW"] },
-  { id: "artwork", label: "Artwork", statuses: ["ARTWORK_AQUA_REVIEW"] },
-  { id: "approval", label: "Kundgodkännande", statuses: ["ARTWORK_CUSTOMER_APPROVAL"] },
-  { id: "confirmed", label: "Orderbekräftad", statuses: ["CONFIRMED"] },
-  { id: "labels", label: "Etiketter", statuses: ["LABEL_PRODUCTION"] },
-  { id: "labels_out", label: "Etiketter skickade", statuses: ["LABELS_DISPATCHED"] },
-  { id: "bottler", label: "Bottler", statuses: ["LABELS_RECEIVED", "PRODUCTION_SCHEDULED"] },
-  { id: "production", label: "Produktion", statuses: ["IN_PRODUCTION"] },
-  { id: "ready_ship", label: "Klar för leverans", statuses: ["READY_TO_SHIP"] },
-  { id: "shipped", label: "Skickad", statuses: ["SHIPPED"] },
-  { id: "delivered", label: "Levererad", statuses: ["DELIVERED"] },
+  {
+    id: "awaiting_ok",
+    label: "Inväntar OK på order o artwork",
+    statuses: ["AQUA_REVIEW", "ARTWORK_AQUA_REVIEW", "ARTWORK_CUSTOMER_APPROVAL"],
+  },
+  { id: "approved", label: "Kund godkänt", statuses: ["CONFIRMED"] },
+  { id: "labels", label: "Etiketter som ska printas", statuses: ["LABEL_PRODUCTION"] },
+  { id: "labels_sent", label: "Etiketter som har skickats", statuses: ["LABELS_DISPATCHED"] },
+  {
+    id: "bottler_ready",
+    label: "Order som är klar för bottler att producera",
+    statuses: ["LABELS_RECEIVED", "PRODUCTION_SCHEDULED", "IN_PRODUCTION"],
+  },
+  { id: "bottler_done", label: "Order som är klar hos bottler", statuses: ["READY_TO_SHIP"] },
+  { id: "shipped", label: "Skickad", hint: "Bottler markerar", statuses: ["SHIPPED"] },
+  { id: "delivered", label: "Levererad", hint: "Master markerar", statuses: ["DELIVERED"] },
   { id: "ready_invoice", label: "Redo att fakturera", statuses: ["READY_TO_INVOICE"] },
-  { id: "invoiced", label: "Fakturerad", statuses: ["INVOICED", "PAID"] },
-] as const;
+];
 
 /** Grova filterflikar för ordermottagning — samma idé som husets lista. */
 export const ORDER_LIST_LANES = [
@@ -198,7 +207,7 @@ export function statusTone(status: string, requestedDate?: string | null): "done
       !["DELIVERED", "INVOICED", "PAID", "READY_TO_INVOICE", "DONE"].includes(status),
   );
   if (overdue || status === "ISSUE_FLAGGED") return "blocked";
-  if (["PAID", "DELIVERED", "INVOICED", "CONFIRMED", "DONE"].includes(status)) return "done";
+  if (["PAID", "DELIVERED", "INVOICED", "CONFIRMED", "DONE", "SHIPPED"].includes(status)) return "done";
   if (
     [
       "READY_TO_INVOICE",

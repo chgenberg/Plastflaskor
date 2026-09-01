@@ -26,10 +26,15 @@ export function KanbanBoard({ orders }: { orders: KanbanOrder[] }) {
         {PIPELINE_PHASES.map((phase) => {
           const cards = orders.filter((o) => (phase.statuses as readonly string[]).includes(o.currentStatus));
           return (
-            <section key={phase.id} className="av-card flex w-[240px] shrink-0 flex-col">
-              <header className="flex items-center justify-between gap-2 border-b border-[var(--av-border)] px-3 py-2">
-                <h2 className="text-[13px] font-medium text-[var(--av-text)]">{phase.label}</h2>
-                <span className="rounded-md bg-[var(--av-accent-soft)] px-2 py-0.5 text-[11px] font-semibold tabular-nums text-[var(--av-accent)]">
+            <section key={phase.id} className="av-card flex w-[220px] shrink-0 flex-col">
+              <header className="flex items-start justify-between gap-2 border-b border-[var(--av-border)] px-3 py-2">
+                <div className="min-w-0">
+                  <h2 className="text-[13px] font-medium leading-snug text-[var(--av-text)]">{phase.label}</h2>
+                  {phase.hint ? (
+                    <p className="mt-0.5 text-[11px] leading-snug text-[var(--av-text-muted)]">{phase.hint}</p>
+                  ) : null}
+                </div>
+                <span className="shrink-0 rounded-md bg-[var(--av-accent-soft)] px-2 py-0.5 text-[11px] font-semibold tabular-nums text-[var(--av-accent)]">
                   {cards.length}
                 </span>
               </header>

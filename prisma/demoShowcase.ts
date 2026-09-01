@@ -8,6 +8,8 @@ import {
   type ProductVariant,
 } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { renderSimplePdf } from "../src/server/pdf/simplePdf";
+import { putLocalFile } from "../src/server/storage/local";
 
 const DEMO_PASSWORD = "AquaDemo26!";
 
@@ -75,6 +77,7 @@ function visual(name: string, qty: number, volumeMl: number | null, waterType: s
     waterType: waterType.includes("kolsyr") ? "KOLSYRAT" : "STILLA",
     bottleColor: "TRANSPARENT FLASKA",
     cap: "SVART KAPSYL",
+    labelMaterial: qty >= 2500 ? "Transparent" : "Vit",
   };
 }
 
@@ -119,6 +122,7 @@ export async function ensureDemoShowcase(prisma: PrismaClient) {
   }
 
   await enrichSupplierFacing(prisma, ctx);
+  await ensureSupplierReports(prisma, ctx);
   await ensureCustomerDesigns(prisma, ctx);
   await ensureQuoteInbox(prisma, ctx);
   await ensureStaffPings(prisma, ctx);
@@ -728,6 +732,105 @@ async function enrichSupplierFacing(prisma: PrismaClient, ctx: DemoCtx) {
       ctx,
     );
     await ensureJobs(prisma, order.id, ctx, idx(order.currentStatus));
+  }
+}
+
+async function ensureSupplierReports(prisma: PrismaClient, _ctx: DemoCtx) {
+  const dispatched = await prisma.order.findFirst({
+    where: { orderNo: "AV-SHOW-07" },
+    include: {
+      customer: { select: { name: true } },
+      items: { include: { variant: { include: { product: true } } } },
+      jobs: { include: { factory: true } },
+    },
+  });
+  const labelJob = dispatched?.jobs.find((j) => j.factory.kind === "label");
+  if (dispatched && labelJob && !(await prisma.labelDispatch.findFirst({ where: { reportNo: "LR-2026-0001" } }))) {
+    const qty = dispatched.items.reduce((sum, item) => sum + item.qty, 0);
+    const dispatch = await prisma.labelDispatch.create({
+      data: {
+        reportNo: "LR-2026-0001",
+        factoryId: labelJob.factoryId,
+        trackingNo: "JJFI123456789SE",
+        notes: "Demo — etiketter till Tollagården.",
+        lines: { create: [{ jobId: labelJob.id, orderId: dispatched.id, qty }] },
+      },
+    });
+    const pdf = renderSimplePdf(`Leveransrapport ${dispatch.reportNo}`, [
+      "Fakturaunderlag för etikettleverans till bottler.",
+      `Datum: ${new Date().toLocaleDateString("sv-SE")}`,
+      "Tracking: JJFI123456789SE",
+      `Anteckning: Demo — etiketter till Tollagården.`,
+      "",
+      `${dispatched.orderNo}  ${dispatched.customer.name}  ${qty} st`,
+      "",
+      "Ingen pris- eller fakturainformation.",
+    ]);
+    const storageKey = `label-dispatches/${dispatch.reportNo}.pdf`;
+    await putLocalFile(storageKey, pdf);
+    await prisma.document.create({
+      data: {
+        orderId: dispatched.id,
+        entityType: "LABEL_DISPATCH",
+        entityId: dispatch.id,
+        kind: "LOGISTICS",
+        title: `Leveransrapport ${dispatch.reportNo}`,
+        storageKey,
+      },
+    });
+  }
+
+  const shipped = await prisma.order.findFirst({
+    where: { orderNo: "AV-SHOW-10" },
+    include: {
+      customer: { select: { name: true } },
+      items: { include: { variant: { include: { product: true } } } },
+      jobs: { include: { factory: true } },
+      shipments: true,
+    },
+  });
+  const bottlerJob = shipped?.jobs.find((j) => j.factory.kind === "bottler");
+  if (shipped && bottlerJob && !(await prisma.bottlerInvoiceReport.findFirst({ where: { reportNo: "BF-2026-0001" } }))) {
+    const qty = shipped.items.reduce((sum, item) => sum + item.qty, 0);
+    const report = await prisma.bottlerInvoiceReport.create({
+      data: {
+        reportNo: "BF-2026-0001",
+        factoryId: bottlerJob.factoryId,
+        notes: "Demo — tappning skickad.",
+        lines: {
+          create: [
+            {
+              jobId: bottlerJob.id,
+              orderId: shipped.id,
+              qty,
+              size: "33 cl",
+              water: "Stilla",
+              cap: "Svart",
+              trackingNo: shipped.shipments.find((s) => s.type === "GOODS_TO_CUSTOMER")?.trackingNo ?? "DEMO-SHIP-10",
+            },
+          ],
+        },
+      },
+    });
+    const pdf = renderSimplePdf(`Fakturaunderlag ${report.reportNo}`, [
+      "Underlag för bottler att fakturera tappning. Inga priser.",
+      `Datum: ${new Date().toLocaleDateString("sv-SE")}`,
+      `${shipped.orderNo}  ${shipped.customer.name}  ${qty} st`,
+      "",
+      "Ingen pris- eller fakturainformation.",
+    ]);
+    const storageKey = `bottler-invoices/${report.reportNo}.pdf`;
+    await putLocalFile(storageKey, pdf);
+    await prisma.document.create({
+      data: {
+        orderId: shipped.id,
+        entityType: "BOTTLER_INVOICE",
+        entityId: report.id,
+        kind: "LOGISTICS",
+        title: `Fakturaunderlag ${report.reportNo}`,
+        storageKey,
+      },
+    });
   }
 }
 

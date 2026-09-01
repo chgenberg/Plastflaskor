@@ -16,11 +16,16 @@ import {
 import { approveArtwork, confirmDelivery, customerApproveProof, uploadArtworkForOrder } from "@/server/services/artwork.service";
 import { addressSchema, buyerOrderSchema, extraLineSchema, quoteSchema, repeatSchema } from "@/domain/schemas";
 import { FACTORY_EVENTS, factoryAdvance, approveFactoryDate, setFactoryDeadline } from "@/server/services/production.service";
+import { createLabelDispatch, receiveLabelDispatch } from "@/server/services/labelDispatch.service";
+import { createBottlerInvoice } from "@/server/services/bottlerInvoice.service";
+import { scopedFactoryId } from "@/server/supplierAccess";
 import { markLeadConverted, remindLead, updateLead } from "@/server/services/lead.service";
 import { setPrintRequirementRequired } from "@/server/services/catalog.service";
 import { getIntegrations } from "@/server/integrations/composition";
 import { notifyQuoteInquiry } from "@/server/services/notify";
 import { prisma } from "@/server/db";
+import { createDirectCustomer } from "@/server/services/customer.service";
+import { saveUploadedDocument } from "@/server/services/document.service";
 import { OrderStatus, RepeatLeadStatus } from "@prisma/client";
 import { safeInternalPath } from "@/domain/safePath";
 import type { ExtraLine } from "@/domain/extras";
@@ -122,6 +127,81 @@ export async function placeBuyerOrderAction(formData: FormData) {
     redirect(`/konto/ordrar/${order.orderNo}`);
   }
   throw new Error("Forbidden");
+}
+
+export async function createManualOrderAction(formData: FormData) {
+  const user = await getSessionUser();
+  if (!user || !isAquaAdmin(user.role)) throw new Error("Forbidden");
+
+  let customerId = String(formData.get("customerId") || "").trim();
+  if (!customerId) {
+    const name = String(formData.get("newName") || "").trim();
+    if (!name) throw new Error("Välj kund eller ange namn för ny kund");
+    const created = await createDirectCustomer({
+      name,
+      orgNr: String(formData.get("newOrgNr") || "") || undefined,
+      email: String(formData.get("newEmail") || "") || undefined,
+      phone: String(formData.get("newPhone") || "") || undefined,
+      priceListId: String(formData.get("newPriceListId") || "") || undefined,
+    });
+    customerId = created.id;
+  }
+
+  const parsed = buyerOrderSchema.safeParse({
+    variantId: String(formData.get("variantId") ?? ""),
+    qty: Number(formData.get("qty")),
+    addressId: String(formData.get("addressId") || "") || undefined,
+    line1: String(formData.get("line1") || "") || undefined,
+    postalCode: String(formData.get("postalCode") || "") || undefined,
+    city: String(formData.get("city") || "") || undefined,
+    invoiceRef: String(formData.get("invoiceRef") || "") || undefined,
+    requestedDate: String(formData.get("requestedDate") || "") || undefined,
+    deliveryRequirement: String(formData.get("deliveryRequirement") || "") || undefined,
+    notes: String(formData.get("notes") || "") || undefined,
+    waterType: String(formData.get("waterType") || "") || undefined,
+    cap: String(formData.get("cap") || "") || undefined,
+    color: String(formData.get("color") || "") || undefined,
+    customerId,
+  });
+  if (!parsed.success) throw new Error("Ogiltig order");
+
+  const order = await createBuyerOrder({
+    ...parsed.data,
+    buyerType: "CUSTOMER",
+    customerId,
+    actorRole: user.role,
+    source: "email_po",
+  });
+
+  const artwork = formData.get("artwork");
+  const artworkFile = artwork instanceof File && artwork.size > 0 ? artwork : null;
+  if (artworkFile) {
+    await uploadArtworkForOrder({
+      orderId: order.id,
+      userId: user.id,
+      role: user.role,
+      customerId,
+      fileName: artworkFile.name,
+      mimeType: artworkFile.type,
+      bytes: Buffer.from(await artworkFile.arrayBuffer()),
+    });
+  }
+
+  const po = formData.get("purchaseOrder");
+  const poFile = po instanceof File && po.size > 0 ? po : null;
+  if (poFile) {
+    await saveUploadedDocument({
+      orderId: order.id,
+      title: "Inköpsorder",
+      kind: "ORDER",
+      fileName: poFile.name,
+      mimeType: poFile.type || "application/octet-stream",
+      bytes: Buffer.from(await poFile.arrayBuffer()),
+    });
+  }
+
+  revalidatePath("/operations/ordrar");
+  redirect(`/operations/ordrar/${order.orderNo}`);
 }
 
 export async function repeatOrderAction(formData: FormData) {
@@ -247,7 +327,59 @@ export async function factoryAction(formData: FormData) {
   revalidatePath("/labels");
   revalidatePath(`/labels/jobb/${jobId}`);
   revalidatePath("/bottler");
+  revalidatePath("/bottler/skickat");
   revalidatePath(`/bottler/jobb/${jobId}`);
+  if (action === "SHIPPED") redirect("/bottler/skickat");
+}
+
+export async function createLabelDispatchAction(formData: FormData) {
+  const user = await getSessionUser();
+  if (!user || (user.role !== "LABEL" && !isAquaAdmin(user.role))) throw new Error("Forbidden");
+  const report = await createLabelDispatch({
+    jobIds: formData.getAll("jobIds").map(String),
+    trackingNo: String(formData.get("trackingNo") || ""),
+    notes: String(formData.get("notes") || ""),
+    actorRole: user.role as "LABEL" | "AQUA_STAFF" | "AQUA_ADMIN",
+    scopedFactoryId: scopedFactoryId(user),
+  });
+  revalidatePath("/labels");
+  revalidatePath("/labels/dokument");
+  revalidatePath("/bottler");
+  redirect(`/labels?rapport=${encodeURIComponent(report.reportNo)}`);
+}
+
+export async function receiveLabelDispatchAction(formData: FormData) {
+  const user = await getSessionUser();
+  if (!user || (user.role !== "BOTTLER" && user.role !== "FACTORY" && !isAquaAdmin(user.role))) {
+    throw new Error("Forbidden");
+  }
+  const reportNo = String(formData.get("reportNo") || "");
+  await receiveLabelDispatch({
+    reportNo,
+    lineIds: formData.getAll("lineIds").map(String),
+    deviationNote: String(formData.get("deviationNote") || ""),
+    actorRole: user.role as "BOTTLER" | "FACTORY" | "AQUA_STAFF" | "AQUA_ADMIN",
+    scopedFactoryId: scopedFactoryId(user),
+  });
+  revalidatePath("/bottler");
+  revalidatePath("/labels");
+  redirect(`/bottler?inleverans=${encodeURIComponent(reportNo)}`);
+}
+
+export async function createBottlerInvoiceAction(formData: FormData) {
+  const user = await getSessionUser();
+  if (!user || (user.role !== "BOTTLER" && user.role !== "FACTORY" && !isAquaAdmin(user.role))) {
+    throw new Error("Forbidden");
+  }
+  const report = await createBottlerInvoice({
+    jobIds: formData.getAll("jobIds").map(String),
+    notes: String(formData.get("notes") || ""),
+    scopedFactoryId: scopedFactoryId(user),
+  });
+  revalidatePath("/bottler");
+  revalidatePath("/bottler/skickat");
+  revalidatePath("/bottler/dokument");
+  redirect(`/bottler/dokument?underlag=${encodeURIComponent(report.reportNo)}`);
 }
 
 export async function createWaybillAction(formData: FormData) {

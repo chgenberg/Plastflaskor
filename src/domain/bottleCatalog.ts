@@ -55,6 +55,27 @@ export function labelSpecForVolume(volumeMl?: number | null) {
   };
 }
 
+/** Vit eller transparent etikett. Standard är vit om inget annat är satt. */
+export function labelStockLabel(input: { visualSpecJson?: string | null; optionsJson?: string | null }) {
+  const raw = readLabelStock(input.visualSpecJson) ?? readLabelStock(input.optionsJson);
+  if (!raw) return "Vit";
+  const s = raw.toLowerCase();
+  if (s.includes("transp")) return "Transparent";
+  if (s.includes("vit") || s.includes("white") || s.includes("papper") || s.includes("paper")) return "Vit";
+  return "Vit";
+}
+
+function readLabelStock(json?: string | null) {
+  if (!json) return null;
+  try {
+    const v = JSON.parse(json) as Record<string, unknown>;
+    const raw = v.labelMaterial ?? v.labelKind ?? v.labelStock;
+    return typeof raw === "string" ? raw : null;
+  } catch {
+    return null;
+  }
+}
+
 export function formatShipAddress(addr?: { line1: string; postalCode: string; city: string } | null) {
   if (!addr) return null;
   return `${addr.line1}, ${addr.postalCode} ${addr.city}`;

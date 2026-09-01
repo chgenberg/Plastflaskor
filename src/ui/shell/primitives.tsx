@@ -49,16 +49,19 @@ export function ActionCard({
   label,
   value,
   tone,
+  detail,
 }: {
   href: string;
   label: string;
   value: number | string;
   tone: keyof typeof ACTION_TONE;
+  detail?: string;
 }) {
   return (
     <Link href={href} className={`av-card block px-4 py-3 transition hover:border-[var(--av-border-strong)] ${ACTION_TONE[tone]}`}>
       <p className="text-[12px] font-medium opacity-80">{label}</p>
       <p className="mt-1 text-[22px] font-semibold tabular-nums tracking-tight">{value}</p>
+      {detail ? <p className="mt-1 text-[12px] font-medium opacity-80">{detail}</p> : null}
     </Link>
   );
 }

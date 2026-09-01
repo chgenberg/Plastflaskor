@@ -38,7 +38,14 @@ export default async function KontoHome() {
         <KpiCard label="Fakturor" value={invoices} href="/konto/fakturor" />
       </div>
       {orders.length === 0 ? (
-        <EmptyState title="Inga ordrar ännu" body="Skapa en ny order eller beställ igen från en tidigare order." />
+        <EmptyState
+          title={user.customerId ? "Inga ordrar ännu" : "Det här är kundportalen"}
+          body={
+            user.customerId
+              ? "Skapa en ny order eller beställ igen från en tidigare order."
+              : "Du är inloggad som admin. Logga ut och använd kund@demo.aqua för att visa kundens yta."
+          }
+        />
       ) : (
         <BuyerOrderTable
           rows={orders.slice(0, 6).map((o) => {

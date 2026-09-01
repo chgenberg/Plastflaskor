@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { requireSupplier, scopedFactoryId } from "@/server/supplierAccess";
 import { getJob } from "@/server/services/production.service";
 import { factoryAction } from "@/actions";
-import { FACTORY_JOB_LABELS } from "@/domain/enums";
+import { bottlerDeskStatus } from "@/domain/bottlerDesk";
 import { formatShipAddress } from "@/domain/bottleCatalog";
 import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
@@ -12,7 +12,7 @@ import { Button, FileLink, LinkButton, PageHeader, Panel, StatusChip, controlCla
 export default async function BottlerJobPage({ params }: { params: Promise<{ jobId: string }> }) {
   const { jobId } = await params;
   const user = await requireSupplier("bottler");
-  const job = await getJob(jobId, scopedFactoryId(user));
+  const job = await getJob(jobId, scopedFactoryId(user), "bottler");
   if (!job) notFound();
   const item = job.order.items[0];
   const spec = specFromOrderItem({
@@ -21,7 +21,6 @@ export default async function BottlerJobPage({ params }: { params: Promise<{ job
     imageSrc: item ? imageForProduct(item.variant.product.slug) : null,
   });
   const addr = job.order.shippingAddress;
-  const waybill = job.order.shipments.find((s) => s.type === "GOODS_TO_CUSTOMER");
   const labelShip = job.order.shipments.find((s) => s.type === "LABELS_TO_FACTORY");
   const canReceive = job.order.currentStatus === "LABELS_DISPATCHED";
   const canEstimate =
@@ -29,7 +28,10 @@ export default async function BottlerJobPage({ params }: { params: Promise<{ job
     !job.order.aquaApprovedDelivery;
   const canStart = job.order.currentStatus === "LABELS_RECEIVED" || job.order.currentStatus === "PRODUCTION_SCHEDULED";
   const canFinish = (job.status === "STARTED" || job.order.currentStatus === "IN_PRODUCTION") && job.status !== "DONE";
-  const canShip = job.order.currentStatus === "READY_TO_SHIP" && Boolean(waybill);
+  const canShip =
+    job.order.currentStatus !== "SHIPPED" &&
+    (job.status === "DONE" || job.order.currentStatus === "READY_TO_SHIP");
+  const lane = bottlerDeskStatus({ jobStatus: job.status, orderStatus: job.order.currentStatus });
 
   return (
     <div className="mx-auto max-w-lg space-y-5">
@@ -39,7 +41,7 @@ export default async function BottlerJobPage({ params }: { params: Promise<{ job
       />
       {spec ? <VisualSpecCard spec={spec} hero /> : null}
       <Panel>
-        <StatusChip status={job.status} label={FACTORY_JOB_LABELS[job.status] ?? job.status} />
+        <StatusChip status={lane.status} label={lane.statusLabel} />
         <dl className="mt-4 space-y-2 text-sm">
           <p>
             Antal: <span className="font-semibold tabular-nums">{item?.qty?.toLocaleString("sv-SE") ?? "–"} st</span>
@@ -106,13 +108,9 @@ export default async function BottlerJobPage({ params }: { params: Promise<{ job
               </Button>
             </form>
           ) : null}
-          {waybill ? (
-            <LinkButton href={`/bottler/jobb/${job.id}/fraktsedel`} size="lg" className="w-full">
-              Ladda ner fraktsedel
-            </LinkButton>
-          ) : job.order.currentStatus === "READY_TO_SHIP" ? (
-            <p className="text-sm text-[var(--av-text-muted)]">Väntar på att Aqua skapar fraktsedel.</p>
-          ) : null}
+          <LinkButton href={`/api/bottler/waybill?jobId=${job.id}`} size="lg" className="w-full">
+            Printa fraktsedel
+          </LinkButton>
           {canShip ? (
             <form action={factoryAction}>
               <input type="hidden" name="jobId" value={job.id} />

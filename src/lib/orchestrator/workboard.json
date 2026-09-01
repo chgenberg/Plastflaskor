@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-01T13:25:00.000Z",
+  "updatedAt": "2026-09-01T16:42:00.000Z",
   "cards": [
     {
       "id": "wb-agent-os-v1",
@@ -65,6 +65,234 @@
       "source": "cursor",
       "createdAt": "2026-09-01T13:25:00.000Z",
       "updatedAt": "2026-09-01T13:25:00.000Z"
+    },
+    {
+      "id": "wb-label-next-ship",
+      "title": "Etikett: nästa skickdatum = kortaste deadline",
+      "body": "KPI visar datum, inte antal. Allt som är klart skickas i samma sändning.",
+      "status": "done",
+      "domainId": "labels",
+      "playbook": "new-order",
+      "files": ["src/ui/supplier/SupplierDesk.tsx"],
+      "gate": "none",
+      "source": "cursor",
+      "createdAt": "2026-09-01T13:35:00.000Z",
+      "updatedAt": "2026-09-01T13:35:00.000Z"
+    },
+    {
+      "id": "wb-label-sort-table",
+      "title": "Etikett-lista: ordernr namn material deadline",
+      "body": "Sorterbara kolumner. Klara att skicka = ACCEPT_DEADLINE. Inga kr.",
+      "status": "done",
+      "domainId": "labels",
+      "playbook": "new-order",
+      "files": ["src/ui/supplier/LabelJobsTable.tsx", "src/ui/supplier/SupplierDesk.tsx"],
+      "gate": "none",
+      "source": "cursor",
+      "createdAt": "2026-09-01T13:38:00.000Z",
+      "updatedAt": "2026-09-01T13:38:00.000Z"
+    },
+    {
+      "id": "wb-label-dispatch-report",
+      "title": "Etikett: leveransrapport med nummer",
+      "body": "Kort + kryssrutor, fritext, tracking, summering utan kr. Grön grupp + LR-år-löpnr som fakturaunderlag.",
+      "status": "done",
+      "domainId": "labels",
+      "playbook": "new-order",
+      "files": [
+        "src/ui/supplier/LabelJobsTable.tsx",
+        "src/ui/supplier/SupplierDesk.tsx",
+        "src/server/services/labelDispatch.service.ts"
+      ],
+      "gate": "none",
+      "source": "cursor",
+      "createdAt": "2026-09-01T13:40:00.000Z",
+      "updatedAt": "2026-09-01T13:45:00.000Z"
+    },
+    {
+      "id": "wb-label-open-printer",
+      "title": "Etikett Öppna: artwork material antal printer",
+      "body": "Öppna-knappen kvar i listan. Jobsida visar artwork, vit/transparent, antal och mock Skicka till printer. Inga kr.",
+      "status": "done",
+      "domainId": "labels",
+      "playbook": "new-order",
+      "files": [
+        "src/ui/supplier/LabelJobsTable.tsx",
+        "src/app/(labels)/labels/jobb/[jobId]/page.tsx",
+        "src/ui/supplier/SendToPrinterButton.tsx"
+      ],
+      "gate": "none",
+      "source": "cursor",
+      "createdAt": "2026-09-01T13:48:00.000Z",
+      "updatedAt": "2026-09-01T13:50:00.000Z"
+    },
+    {
+      "id": "wb-label-persona-fix",
+      "title": "Personarunda etikett: C/H/M rättade",
+      "body": "Admin filtreras på factory.kind. Fel yta → rätt hem. Rapport efter DISPATCH. Invoice-include bort från etikett/bottler.",
+      "status": "done",
+      "domainId": "labels",
+      "playbook": "new-order",
+      "files": [
+        "src/server/supplierAccess.ts",
+        "src/server/services/production.service.ts",
+        "src/server/services/labelDispatch.service.ts",
+        "src/server/services/document.service.ts",
+        "src/middleware.ts"
+      ],
+      "gate": "none",
+      "source": "cursor",
+      "createdAt": "2026-09-01T13:55:00.000Z",
+      "updatedAt": "2026-09-01T13:58:00.000Z"
+    },
+    {
+      "id": "wb-bottler-receive-report",
+      "title": "Bottler: inleverans mot leveransrapport",
+      "body": "Kort visar ordrar/etiketter/datum. Klick öppnar rapport, kryss per order, godkänn inleverans + avvikelse. Inga kr.",
+      "status": "done",
+      "domainId": "bottler",
+      "playbook": "new-order",
+      "files": [
+        "src/server/services/labelDispatch.service.ts",
+        "src/ui/supplier/SupplierDesk.tsx",
+        "src/app/(bottler)/bottler/inleverans/[reportNo]/page.tsx"
+      ],
+      "gate": "none",
+      "source": "cursor",
+      "createdAt": "2026-09-01T14:00:00.000Z",
+      "updatedAt": "2026-09-01T14:05:00.000Z"
+    },
+    {
+      "id": "wb-bottler-plan-print",
+      "title": "Bottler: filter + Print all-plan",
+      "body": "Dropdown Storlek/Vatten/Kork ovanför tabellen. Print all = PDF, en sida per filtrerad order, etikett + flaska med rätt kork. Inga kr.",
+      "status": "done",
+      "domainId": "bottler",
+      "playbook": "new-order",
+      "files": [
+        "src/ui/supplier/BottlerJobsTable.tsx",
+        "src/server/pdf/bottlerPlanPdf.tsx",
+        "src/app/api/bottler/print-plan/route.ts"
+      ],
+      "gate": "none",
+      "source": "cursor",
+      "createdAt": "2026-09-01T14:08:00.000Z",
+      "updatedAt": "2026-09-01T14:20:00.000Z"
+    },
+    {
+      "id": "wb-bottler-row-waybill",
+      "title": "Bottler: klickbar rad + mock-fraktsedel",
+      "body": "Inga listknappar. Rad öppnar order. Status etikett mottagen/klar/skickad. Printa fraktsedel via mock-API. Inga kr.",
+      "status": "done",
+      "domainId": "bottler",
+      "playbook": "new-order",
+      "files": [
+        "src/ui/supplier/BottlerJobsTable.tsx",
+        "src/app/(bottler)/bottler/jobb/[jobId]/page.tsx",
+        "src/app/api/bottler/waybill/route.ts"
+      ],
+      "gate": "none",
+      "source": "cursor",
+      "createdAt": "2026-09-01T14:25:00.000Z",
+      "updatedAt": "2026-09-01T14:30:00.000Z"
+    },
+    {
+      "id": "wb-bottler-move-shipped",
+      "title": "Bottler: skickad order flyttas till Skickat",
+      "body": "Markera skickad sätter SHIPPED, skapar mock-sändning vid behov och redirectar till /bottler/skickat med hela ordern.",
+      "status": "done",
+      "domainId": "bottler",
+      "playbook": "new-order",
+      "files": [
+        "src/server/services/production.service.ts",
+        "src/app/(bottler)/bottler/skickat/page.tsx",
+        "src/actions/index.ts"
+      ],
+      "gate": "none",
+      "source": "cursor",
+      "createdAt": "2026-09-01T14:32:00.000Z",
+      "updatedAt": "2026-09-01T14:35:00.000Z"
+    },
+    {
+      "id": "wb-bottler-invoice-basis",
+      "title": "Bottler Dokument: fakturaunderlag",
+      "body": "Skickade ordrar kryssas till BF-år-löpnr. PDF utan kr som underlag mot Aqua. Inga fakturor på ytan.",
+      "status": "done",
+      "domainId": "bottler",
+      "playbook": "new-order",
+      "files": [
+        "src/server/services/bottlerInvoice.service.ts",
+        "src/app/(bottler)/bottler/dokument/page.tsx",
+        "src/ui/supplier/BottlerInvoiceForm.tsx"
+      ],
+      "gate": "none",
+      "source": "cursor",
+      "createdAt": "2026-09-01T14:38:00.000Z",
+      "updatedAt": "2026-09-01T14:40:00.000Z"
+    },
+    {
+      "id": "wb-master-dashboard",
+      "title": "Master Dashboard: hus-KPI + leverantörsunderlag",
+      "body": "/operations är navet. Etiketter/Bottler/Frakt/Faktura. Dokument listar LR och BF. Ingen fondyta.",
+      "status": "done",
+      "domainId": "operations",
+      "playbook": "new-order",
+      "files": [
+        "src/app/(operations)/operations/page.tsx",
+        "src/app/(operations)/operations/dokument/page.tsx",
+        "src/app/(operations)/operations/layout.tsx"
+      ],
+      "gate": "none",
+      "source": "cursor",
+      "createdAt": "2026-09-01T14:45:00.000Z",
+      "updatedAt": "2026-09-01T14:50:00.000Z"
+    },
+    {
+      "id": "wb-manual-order-from-po",
+      "title": "Master: manuell order från inköpsorder",
+      "body": "Admin registrerar order från mejl-PO på /operations/ordrar/ny. Kundens prislista, serverpris, source email_po. Kr bara i Master.",
+      "status": "done",
+      "domainId": "operations",
+      "playbook": "new-order",
+      "files": [
+        "src/app/(operations)/operations/ordrar/ny/page.tsx",
+        "src/ui/order/ManualOrderForm.tsx",
+        "src/actions/index.ts"
+      ],
+      "gate": "none",
+      "source": "cursor",
+      "createdAt": "2026-09-01T16:22:00.000Z",
+      "updatedAt": "2026-09-01T16:28:00.000Z"
+    },
+    {
+      "id": "wb-pipeline-house-columns",
+      "title": "Pipeline: husets tio kolumner",
+      "body": "Ny order → OK artwork → kund godkänt → etikett print/skickad → bottler producera/klar → skickad → levererad → fakturera. Fakturerad-kolumn bort.",
+      "status": "done",
+      "domainId": "operations",
+      "playbook": "new-order",
+      "files": ["src/domain/enums.ts", "src/ui/ops/KanbanBoard.tsx"],
+      "gate": "none",
+      "source": "cursor",
+      "createdAt": "2026-09-01T16:30:00.000Z",
+      "updatedAt": "2026-09-01T16:32:00.000Z"
+    },
+    {
+      "id": "wb-persona-demo-pass",
+      "title": "Personarunda: 500:or och demo-hål",
+      "body": "Prisma-klient omstartad. KPI/produktion/etikett-kö/fas-filter rättade. LR+BF i demo. Login-rubrik. Fel roll går hem.",
+      "status": "done",
+      "domainId": "operations",
+      "playbook": "new-order",
+      "files": [
+        "src/app/(operations)/operations/page.tsx",
+        "src/app/(operations)/operations/produktion/page.tsx",
+        "prisma/demoShowcase.ts"
+      ],
+      "gate": "none",
+      "source": "cursor",
+      "createdAt": "2026-09-01T16:35:00.000Z",
+      "updatedAt": "2026-09-01T16:42:00.000Z"
     }
   ]
 }

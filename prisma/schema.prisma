@@ -210,8 +210,10 @@ model Factory {
   company   Company         @relation(fields: [companyId], references: [id])
   address   Address?        @relation(fields: [addressId], references: [id])
   users     User[]
-  jobs      ProductionJob[]
-  orders    Order[]
+  jobs            ProductionJob[]
+  orders          Order[]
+  labelDispatches LabelDispatch[]
+  bottlerInvoices BottlerInvoiceReport[]
 }
 
 model Supplier {
@@ -415,6 +417,58 @@ model ProductionJob {
   operatorNote String?
   order        Order            @relation(fields: [orderId], references: [id])
   factory      Factory          @relation(fields: [factoryId], references: [id])
+}
+
+model LabelDispatch {
+  id            String               @id @default(uuid())
+  reportNo      String               @unique
+  factoryId     String
+  trackingNo    String
+  notes         String               @default("")
+  receivedAt    DateTime?
+  deviationNote String               @default("")
+  createdAt     DateTime             @default(now())
+  factory       Factory              @relation(fields: [factoryId], references: [id])
+  lines         LabelDispatchLine[]
+}
+
+model LabelDispatchLine {
+  id         String        @id @default(uuid())
+  dispatchId String
+  jobId      String
+  orderId    String
+  qty        Int
+  received   Boolean       @default(false)
+  dispatch   LabelDispatch @relation(fields: [dispatchId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+  @@index([dispatchId])
+}
+
+model BottlerInvoiceReport {
+  id        String                 @id @default(uuid())
+  reportNo  String                 @unique
+  factoryId String
+  notes     String                 @default("")
+  createdAt DateTime               @default(now())
+  factory   Factory                @relation(fields: [factoryId], references: [id])
+  lines     BottlerInvoiceLine[]
+}
+
+model BottlerInvoiceLine {
+  id         String               @id @default(uuid())
+  reportId   String
+  jobId      String
+  orderId    String
+  qty        Int
+  size       String
+  water      String
+  cap        String
+  trackingNo String               @default("")
+  report     BottlerInvoiceReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+  @@index([reportId])
 }
 
 model Shipment {

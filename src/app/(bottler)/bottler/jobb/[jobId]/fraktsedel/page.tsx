@@ -14,7 +14,7 @@ export default async function BottlerWaybillPage({
   const { jobId } = await params;
   const { tracking } = await searchParams;
   const user = await requireSupplier("bottler");
-  const job = await getJob(jobId, scopedFactoryId(user));
+  const job = await getJob(jobId, scopedFactoryId(user), "bottler");
   if (!job) notFound();
   const addr = job.order.shippingAddress;
   const item = job.order.items[0];

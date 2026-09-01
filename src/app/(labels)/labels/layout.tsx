@@ -20,7 +20,7 @@ export default async function LabelsLayout({ children }: { children: React.React
         {
           id: "underlag",
           label: "Underlag",
-          children: [{ href: "/labels/dokument", label: "Dokument" }],
+          children: [{ href: "/labels/dokument", label: "Leveransrapport" }],
         },
       ]}
     >

@@ -39,6 +39,7 @@ export default async function ProductionBoard({ searchParams }: { searchParams: 
   const raw = (await searchParams).group ?? "date";
   const group = GROUPS.some((g) => g.id === raw) ? raw : "date";
   const jobs = await prisma.productionJob.findMany({
+    where: { factory: { kind: "bottler" } },
     include: {
       order: {
         include: {
