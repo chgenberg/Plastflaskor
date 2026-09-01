@@ -293,6 +293,19 @@
       "source": "cursor",
       "createdAt": "2026-09-01T16:35:00.000Z",
       "updatedAt": "2026-09-01T16:42:00.000Z"
+    },
+    {
+      "id": "wb-nordic-dash-nav",
+      "title": "Nordisk dashboard-meny",
+      "body": "Alltid synliga länkar, linen-sidebar, streckaccent. Sök tillbaka på Master. Inga accordion-mödrar.",
+      "status": "done",
+      "domainId": "operations",
+      "playbook": "new-order",
+      "files": ["src/ui/shell/AppShell.tsx", "src/app/styles/tokens.css"],
+      "gate": "none",
+      "source": "cursor",
+      "createdAt": "2026-09-01T16:59:00.000Z",
+      "updatedAt": "2026-09-01T17:01:00.000Z"
     }
   ]
 }
