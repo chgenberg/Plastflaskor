@@ -78,6 +78,7 @@ export function BuyerOrderDetail({ order, role, repeatHref }: { order: Order; ro
   return (
     <div className="space-y-6">
       <PageHeader title={order.orderNo} subtitle={item?.variant.product.name} />
+      <p className="text-[12px] text-[var(--av-text-muted)]">Agenten bevakar kedjan. Ni behöver inte mejla oss för status.</p>
       <StatusChip status={order.currentStatus} label={BUYER_STATUS[order.currentStatus]} requestedDate={order.requestedDate} />
       {order.currentStatus === "SUBMITTED" || order.currentStatus === "AQUA_REVIEW" ? (
         <NextStep

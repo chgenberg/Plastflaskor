@@ -510,3 +510,35 @@ model PageCopy {
   title String
   body  String
 }
+
+model OrchestratorCard {
+  id         String    @id @default(cuid())
+  key        String    @unique
+  title      String
+  body       String    @default("")
+  status     String    @default("inbox")
+  domainId   String
+  playbook   String    @default("")
+  gate       String    @default("none")
+  filesJson  String    @default("[]")
+  source     String    @default("heartbeat")
+  approvedAt DateTime?
+  rejectedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([status, updatedAt])
+  @@index([gate, status])
+}
+
+model OrchestratorRun {
+  id        String    @id @default(cuid())
+  kind      String
+  status    String
+  summary   String    @default("")
+  findings  Int       @default(0)
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+
+  @@index([kind, startedAt])
+}

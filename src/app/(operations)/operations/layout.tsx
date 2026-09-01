@@ -12,6 +12,7 @@ export default async function OpsLayout({ children }: { children: React.ReactNod
       role={user.role}
       nav={[
         { href: "/operations", label: "Dashboard" },
+        { href: "/operations/agenten", label: "Agenten" },
         { href: "/operations/ordrar", label: "Ordrar" },
         { href: "/operations/pipeline", label: "Pipeline" },
         { href: "/operations/leads", label: "Leads" },

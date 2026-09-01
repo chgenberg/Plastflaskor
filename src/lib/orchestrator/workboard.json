@@ -1,0 +1,18 @@
+{
+  "updatedAt": "2026-09-01T00:00:00.000Z",
+  "cards": [
+    {
+      "id": "wb-agent-os-v1",
+      "title": "Agenten synkad mot Aqua-kedjan",
+      "body": "Karta, puls och Drift-yta på plats. Hands nudgar personal. Fakturera/OB är irreversible.",
+      "status": "done",
+      "domainId": "operations",
+      "playbook": "new-order",
+      "files": ["src/lib/orchestrator/graph.ts", "src/app/(operations)/operations/agenten/page.tsx"],
+      "gate": "none",
+      "source": "cursor",
+      "createdAt": "2026-09-01T00:00:00.000Z",
+      "updatedAt": "2026-09-01T00:00:00.000Z"
+    }
+  ]
+}

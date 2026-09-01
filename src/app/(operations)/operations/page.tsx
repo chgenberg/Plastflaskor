@@ -3,6 +3,7 @@ import { activateDueLeads, listLeads } from "@/server/services/lead.service";
 import { listUnreadQuoteInquiries } from "@/server/services/notify";
 import { exceptionSummary, exceptionsFor } from "@/domain/exceptions";
 import { ActionCard, LinkButton, PageHeader, Panel } from "@/ui/shell/primitives";
+import { loadOrchestratorBoard, runAquaHeartbeatIfStale } from "@/server/orchestrator";
 
 export default async function OpsHome() {
   const orders = await listAllOrders();
@@ -10,6 +11,13 @@ export default async function OpsHome() {
   const { buckets } = await listLeads();
   const quotes = await listUnreadQuoteInquiries();
   const tasks = exceptionSummary(exceptionsFor(orders));
+  let agentOpen = 0;
+  try {
+    await runAquaHeartbeatIfStale();
+    agentOpen = (await loadOrchestratorBoard()).filter((c) => c.status !== "done").length;
+  } catch {
+    agentOpen = 0;
+  }
 
   return (
     <div className="space-y-7">
@@ -18,6 +26,12 @@ export default async function OpsHome() {
         subtitle="Kräver åtgärd"
         action={<LinkButton href="/operations/pipeline">Öppna pipeline</LinkButton>}
       />
+      <p className="text-sm text-[var(--av-text-muted)]">
+        Agenten bevakar samma kö.{" "}
+        <a href="/operations/agenten" className="font-medium text-[var(--av-accent)]">
+          {agentOpen > 0 ? `${agentOpen} öppna kort →` : "Öppna agenten →"}
+        </a>
+      </p>
       <section className="space-y-3">
         <h2 className="text-[15px] font-semibold tracking-tight">Kräver åtgärd</h2>
         {tasks.length === 0 && buckets.week === 0 && quotes.length === 0 ? (
