@@ -6,12 +6,14 @@ export function StatusChip({
   status,
   label,
   requestedDate,
+  hint,
 }: {
   status: string;
   label?: string;
   requestedDate?: string | null;
+  hint?: { label: string; tone: "done" | "next" | "blocked" | "idle" };
 }) {
-  const tone = statusTone(status, requestedDate);
+  const tone = hint?.tone ?? statusTone(status, requestedDate);
   const cls =
     tone === "done"
       ? "bg-[var(--av-status-done-bg)] text-[var(--av-status-done-fg)]"
@@ -22,7 +24,7 @@ export function StatusChip({
           : "bg-[var(--av-status-idle-bg)] text-[var(--av-status-idle-fg)]";
   return (
     <span className={`inline-flex items-center rounded-full px-1.5 py-px text-[11px] font-medium leading-5 ${cls}`}>
-      {label ?? eventLabel(status)}
+      {hint?.label ?? label ?? eventLabel(status)}
     </span>
   );
 }
@@ -47,11 +49,22 @@ export function KpiStrip({ children, cols }: { children: ReactNode; cols?: 2 | 3
   );
 }
 
-export function KpiCard({ label, value, href }: { label: string; value: number | string; href?: string }) {
+export function KpiCard({
+  label,
+  value,
+  href,
+  hint,
+}: {
+  label: string;
+  value: number | string;
+  href?: string;
+  hint?: string;
+}) {
   const inner = (
     <>
       <p className="av-label">{label}</p>
       <p className="av-kpi-value">{value}</p>
+      {hint ? <p className="av-kpi-hint">{hint}</p> : null}
     </>
   );
   return href ? (
@@ -62,6 +75,8 @@ export function KpiCard({ label, value, href }: { label: string; value: number |
     <div className="av-kpi-item">{inner}</div>
   );
 }
+
+export const StatCard = KpiCard;
 
 export function ActionList({ children }: { children: ReactNode }) {
   return <div className="av-action-list">{children}</div>;
@@ -142,10 +157,12 @@ export function PageHeader({
   title,
   subtitle,
   action,
+  actions,
 }: {
-  title: string;
+  title: ReactNode;
   subtitle?: string;
   action?: ReactNode;
+  actions?: ReactNode;
 }) {
   return (
     <div className="av-page-header">
@@ -153,8 +170,109 @@ export function PageHeader({
         <h1>{title}</h1>
         {subtitle ? <p>{subtitle}</p> : null}
       </div>
-      {action}
+      {actions ?? action}
     </div>
+  );
+}
+
+export function NeedsAttention({
+  title = "Kräver åtgärd",
+  items,
+}: {
+  title?: string;
+  items: { key: string; href: string; label: string; detail?: string }[];
+}) {
+  if (!items.length) return null;
+  return (
+    <section className="av-attention">
+      <p className="av-label">{title}</p>
+      <ul>
+        {items.map((item) => (
+          <li key={item.key}>
+            <Link href={item.href} className="av-attention-row">
+              <span>
+                <strong>{item.label}</strong>
+                {item.detail ? <span className="av-attention-detail">{item.detail}</span> : null}
+              </span>
+              <span aria-hidden>→</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+export function StatusInfo({
+  title,
+  items,
+}: {
+  title: string;
+  items: { key: string; href?: string; label: string; detail?: string }[];
+}) {
+  if (!items.length) return null;
+  return (
+    <section className="av-status-info">
+      <p className="av-label">{title}</p>
+      <ul>
+        {items.map((item) => (
+          <li key={item.key}>
+            {item.href ? (
+              <Link href={item.href} className="av-attention-row">
+                <span>
+                  <strong>{item.label}</strong>
+                  {item.detail ? <span className="av-attention-detail">{item.detail}</span> : null}
+                </span>
+              </Link>
+            ) : (
+              <div className="av-attention-row">
+                <span>
+                  <strong>{item.label}</strong>
+                  {item.detail ? <span className="av-attention-detail">{item.detail}</span> : null}
+                </span>
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+export function QuickLinks({ links }: { links: { href: string; label: string }[] }) {
+  if (!links.length) return null;
+  return (
+    <nav className="av-quicklinks" aria-label="Snabblänkar">
+      {links.map((link) => (
+        <Link key={link.href} href={link.href} className="av-quicklink">
+          <span>{link.label}</span>
+          <span aria-hidden>→</span>
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+export function StepIndicator({
+  steps,
+  current,
+}: {
+  steps: { id: string; label: string }[];
+  current: string;
+}) {
+  const idx = Math.max(0, steps.findIndex((s) => s.id === current));
+  return (
+    <ol className="av-steps">
+      {steps.map((step, i) => {
+        const state = i < idx ? "done" : i === idx ? "current" : "todo";
+        return (
+          <li key={step.id} className={`av-step is-${state}`} aria-current={state === "current" ? "step" : undefined}>
+            <span className="av-step-dot">{i + 1}</span>
+            <span className="av-step-label">{step.label}</span>
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 
@@ -341,10 +459,10 @@ export function TableActions({ children }: { children: ReactNode }) {
 }
 
 export const controlClass =
-  "h-11 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] bg-[var(--av-surface)] px-3 text-[14px] outline-none focus:border-[var(--av-accent)]/40";
+  "av-soft-focus h-11 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] bg-[var(--av-surface)] px-3 text-[14px] outline-none";
 
 export const controlCompact =
-  "h-9 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] bg-[var(--av-surface)] px-2.5 text-[13px] outline-none focus:border-[var(--av-accent)]/40";
+  "av-soft-focus h-9 w-full rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] bg-[var(--av-surface)] px-2.5 text-[13px] outline-none";
 
 export function SectionTitle({ children }: { children: ReactNode }) {
   return <h2 className="av-section-title">{children}</h2>;
@@ -358,23 +476,28 @@ export function FileLink({ href, children }: { href: string; children: ReactNode
   );
 }
 
-const btnBase = "av-btn inline-flex items-center justify-center font-semibold disabled:opacity-40";
+const btnBase = "av-btn av-soft-focus inline-flex items-center justify-center font-semibold disabled:opacity-40";
 const btnH = {
   sm: "h-8 px-3.5 text-[13px] font-medium",
   md: "h-10 px-4 text-[13px]",
   lg: "min-h-12 h-12 px-5 text-[15px]",
 } as const;
 const btnVariant = {
-  primary: "rounded-[var(--av-radius-md)] bg-[var(--av-accent)] text-white hover:bg-[var(--av-accent-hover)]",
-  secondary: "rounded-[var(--av-radius-md)] border border-[var(--av-border-strong)] bg-[var(--av-surface)] text-[var(--av-text)] hover:bg-[var(--av-bg)]",
-  ghost: "rounded-[var(--av-radius-md)] text-[var(--av-text-muted)] hover:text-[var(--av-text)]",
+  primary: "bg-[var(--av-accent)] text-white hover:bg-[var(--av-accent-hover)]",
+  secondary: "border border-[var(--av-border-strong)] bg-[var(--av-surface)] text-[var(--av-text)] hover:bg-[var(--av-bg)]",
+  ghost: "text-[var(--av-text-muted)] hover:text-[var(--av-text)]",
+} as const;
+const btnShape = {
+  soft: "rounded-[var(--av-radius-md)]",
+  pill: "rounded-full",
 } as const;
 
 type BtnVariant = keyof typeof btnVariant;
 type BtnSize = keyof typeof btnH;
+type BtnShape = keyof typeof btnShape;
 
-function btnClass(variant: BtnVariant, size: BtnSize, className: string) {
-  return `${btnBase} ${btnH[size]} ${btnVariant[variant]} ${className}`;
+function btnClass(variant: BtnVariant, size: BtnSize, shape: BtnShape, className: string) {
+  return `${btnBase} ${btnH[size]} ${btnShape[shape]} ${btnVariant[variant]} ${className}`;
 }
 
 export function LinkButton({
@@ -382,6 +505,7 @@ export function LinkButton({
   children,
   variant = "primary",
   size = "md",
+  shape = "soft",
   className = "",
   onClick,
 }: {
@@ -389,10 +513,11 @@ export function LinkButton({
   children: ReactNode;
   variant?: "primary" | "secondary" | "ghost";
   size?: BtnSize;
+  shape?: BtnShape;
   className?: string;
   onClick?: () => void;
 }) {
-  const cls = btnClass(variant, size, className);
+  const cls = btnClass(variant, size, shape, className);
   if (isFileHref(href)) {
     return (
       <a href={href} className={cls} onClick={onClick}>
@@ -411,13 +536,33 @@ export function Button({
   children,
   variant = "primary",
   size = "md",
+  shape = "soft",
   className = "",
+  type = "button",
   ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: BtnVariant; size?: BtnSize }) {
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: BtnVariant; size?: BtnSize; shape?: BtnShape }) {
   return (
-    <button className={btnClass(variant, size, className)} {...props}>
+    <button type={type} className={btnClass(variant, size, shape, className)} {...props}>
       {children}
     </button>
+  );
+}
+
+export function FeatureChip({
+  children,
+  float,
+  className = "",
+}: {
+  children: ReactNode;
+  float?: boolean;
+  className?: string;
+}) {
+  return (
+    <span
+      className={`inline-flex h-7 items-center gap-1.5 rounded-full border border-[var(--av-border-strong)] bg-[var(--av-surface)] px-3 text-[12px] font-medium text-[var(--av-text-secondary)] ${float ? "av-animate-float" : ""} ${className}`}
+    >
+      {children}
+    </span>
   );
 }
 

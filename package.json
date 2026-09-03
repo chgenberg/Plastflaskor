@@ -12,6 +12,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:demo": "tsx prisma/demoShowcase.ts",
     "db:reset": "prisma db push --force-reset && tsx prisma/seed.ts",
+    "test": "node --import tsx --test $(find src -name '*.test.ts')",
+    "qa:no-kr": "tsx scripts/qa/no-kr-public.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {

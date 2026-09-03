@@ -1,0 +1,9 @@
+---
+description: Användarvänd text säger agenten, aldrig AI eller modellnamn
+alwaysApply: true
+---
+# Agenten i användartext
+
+I copy, mejl, bekräftelser och dashboard-text: **agenten**. Aldrig AI, modellnamn
+eller "assistenten". Kod- och API-namn (`src/lib/orchestrator`, `designAIService`)
+är undantagna.

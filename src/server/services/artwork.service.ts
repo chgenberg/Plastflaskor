@@ -107,6 +107,17 @@ export async function approveArtwork(orderId: string, role: Role) {
   return sendProof(orderId, role);
 }
 
+export async function rejectArtwork(orderId: string, role: Role, note: string) {
+  const text = note.trim();
+  if (!text) throw new Error("Notering krävs");
+  const order = await prisma.order.findUnique({ where: { id: orderId } });
+  if (!order) throw new Error("Order saknas");
+  await prisma.artworkApproval.create({
+    data: { orderId, kind: "AQUA_REJECTED", actorRole: role, note: text },
+  });
+  await getIntegrations().email.sendArtworkRejected(orderId);
+}
+
 export async function customerApproveProof(orderId: string, role: Role) {
   const order = await prisma.order.findUnique({
     where: { id: orderId },

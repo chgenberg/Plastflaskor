@@ -1,0 +1,11 @@
+---
+description: Publik katalog och kassa visar aldrig kr för anonym
+alwaysApply: true
+---
+# Inga publika priser
+
+`src/app/(public)/**` renderar aldrig ` kr`, `unitPriceExVat`, `minQty` eller
+prislistnamn utan inloggad CUSTOMER/Aqua. Grinden är `canSeePrices` i
+`src/domain/policies/priceVisibility.ts` — i sidan OCH i server-actionen.
+Publika DTO:er går via `publicProductDto`. Anonym ser "Pris visas när du skapar konto".
+Kontroll: `scripts/qa/no-kr-public.ts` mot utloggad HTML.

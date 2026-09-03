@@ -24,7 +24,7 @@ export function PageIntro({
   return (
     <header className={align === "center" ? "text-center" : ""}>
       {badge ? <Badge>{badge}</Badge> : null}
-      <h1 className={`av-serif text-4xl leading-[1.08] tracking-[-0.02em] text-[var(--av-text)] md:text-[52px] ${badge ? "mt-5" : ""}`}>
+      <h1 className={`av-display text-4xl text-[var(--av-text)] md:text-[52px] ${badge ? "mt-5" : ""}`}>
         {title}
       </h1>
       {children}
@@ -42,7 +42,7 @@ export function PillLink({
   variant?: "ink" | "ghost";
 }) {
   return (
-    <LinkButton href={href} size="lg" variant={variant === "ink" ? "primary" : "secondary"}>
+    <LinkButton href={href} size="lg" shape="pill" variant={variant === "ink" ? "primary" : "secondary"}>
       {children}
     </LinkButton>
   );
@@ -60,6 +60,15 @@ export function EditorialShot({ src, alt, className = "mt-8 aspect-[16/10]" }: {
   );
 }
 
-export function PublicPage({ children, narrow }: { children: ReactNode; narrow?: boolean }) {
-  return <main className={narrow ? "av-public-page av-public-page--narrow" : "av-public-page"}>{children}</main>;
+export function PublicPage({
+  children,
+  narrow,
+  className = "",
+}: {
+  children: ReactNode;
+  narrow?: boolean;
+  className?: string;
+}) {
+  const base = narrow ? "av-public-page av-public-page--narrow" : "av-public-page";
+  return <main className={`${base} ${className}`.trim()}>{children}</main>;
 }

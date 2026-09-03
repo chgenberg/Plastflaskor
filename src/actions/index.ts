@@ -13,7 +13,7 @@ import {
   saveExtras,
   sendOrderConfirmation,
 } from "@/server/services/order.service";
-import { approveArtwork, confirmDelivery, customerApproveProof, uploadArtworkForOrder } from "@/server/services/artwork.service";
+import { approveArtwork, confirmDelivery, customerApproveProof, rejectArtwork, uploadArtworkForOrder } from "@/server/services/artwork.service";
 import { addressSchema, buyerOrderSchema, extraLineSchema, quoteSchema, repeatSchema } from "@/domain/schemas";
 import { FACTORY_EVENTS, factoryAdvance, approveFactoryDate, setFactoryDeadline } from "@/server/services/production.service";
 import { createLabelDispatch, receiveLabelDispatch } from "@/server/services/labelDispatch.service";
@@ -512,6 +512,18 @@ export async function approveArtworkAction(formData: FormData) {
   const order = await getOrderByNo(orderNo);
   if (!order) throw new Error("Order saknas");
   await approveArtwork(order.id, user.role as "AQUA_STAFF");
+  revalidatePath(`/operations/ordrar/${orderNo}`);
+  revalidatePath("/operations");
+}
+
+export async function rejectArtworkAction(formData: FormData) {
+  const user = await getSessionUser();
+  if (!isAquaAdmin(user?.role)) throw new Error("Forbidden");
+  const orderNo = String(formData.get("orderNo"));
+  const note = String(formData.get("note") ?? "");
+  const order = await getOrderByNo(orderNo);
+  if (!order) throw new Error("Order saknas");
+  await rejectArtwork(order.id, user.role as "AQUA_STAFF", note);
   revalidatePath(`/operations/ordrar/${orderNo}`);
   revalidatePath("/operations");
 }

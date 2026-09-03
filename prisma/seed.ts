@@ -694,6 +694,8 @@ async function main() {
         name: CUSTOMERS[i],
         orgNr: i < 20 ? `5599${String(100000 + i).slice(1)}` : undefined,
         email: `kontakt@kund${i + 1}.se`,
+        source: "staff",
+        verifiedAt: new Date(),
       },
     });
     const addr = await prisma.address.create({
@@ -756,6 +758,8 @@ async function main() {
       name: "Fikastunden Direkt AB",
       orgNr: "559888-0101",
       email: "kund@demo.aqua",
+      source: "staff",
+      verifiedAt: new Date(),
     },
   });
   const directAddr = await prisma.address.create({

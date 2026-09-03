@@ -11,6 +11,7 @@ const DOMAIN_FOR_KIND: Record<string, DomainId> = {
   review: "order",
   artwork_aqua: "artwork",
   artwork_customer: "customer",
+  artwork_rejected: "artwork",
   overdue_proof: "customer",
   deadline_unaccepted: "labels",
   deadline_issue: "labels",

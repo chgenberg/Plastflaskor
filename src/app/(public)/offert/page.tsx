@@ -11,13 +11,14 @@ export default async function QuotePage({ searchParams }: { searchParams: Promis
   const products = await listWaterProducts();
   return (
     <PublicPage narrow>
-      <Reveal>
+      <Reveal variant="public">
       <PageIntro badge="Kontakt" title="Begär offert" />
       {error ? <p className="mt-3 text-sm text-[var(--av-status-blocked-fg)]">Kontrollera e-post, företag och antal och försök igen.</p> : null}
       <p className="mt-3 text-sm text-[var(--av-text-secondary)]">
-        Offert är för nya förfrågningar. Har ni redan konto?{" "}
-        <Link href="/login" className="font-medium text-[var(--av-accent)]">
-          Logga in till kundportalen
+        Offert är för stora volymer, specialformat eller frågor. Standardsortimentet
+        beställer du direkt på{" "}
+        <Link href="/produkter/profilvatten" className="font-medium text-[var(--av-accent)]">
+          produktsidan
         </Link>
         .
       </p>

@@ -5,10 +5,10 @@ import { EditorialShot, PageIntro, PublicPage } from "@/ui/public/PageIntro";
 export default function NewsPage() {
   return (
     <PublicPage narrow>
-      <Reveal>
+      <Reveal variant="public">
         <PageIntro badge="Aktuellt" title="Nyheter" />
       </Reveal>
-      <article className="av-card av-lift mt-10 overflow-hidden">
+      <article className="av-card av-card-lift mt-10 overflow-hidden">
         <EditorialShot src={PAGE_IMAGES.nyheterEco} alt="ECO-pappersmugg" className="aspect-[16/10] rounded-none" />
         <div className="p-7">
           <p className="av-label">19 nov</p>
@@ -18,7 +18,7 @@ export default function NewsPage() {
           </p>
         </div>
       </article>
-      <article className="av-card av-lift mt-4 overflow-hidden">
+      <article className="av-card av-card-lift mt-4 overflow-hidden">
         <EditorialShot src={PAGE_IMAGES.nyheterBurk} alt="Energidryck med egen etikett" className="aspect-[16/10] rounded-none" />
         <div className="p-7">
           <p className="av-label">13 okt</p>

@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/server/db";
+import { listPriceLists } from "@/server/services/catalog.service";
 import { getCustomerMaster } from "@/server/services/customer.service";
 import { orderValue } from "@/server/services/order.service";
-import { updateCustomerAction } from "@/actions/opsMasters";
+import { updateCustomerAction, verifyCustomerAction } from "@/actions/opsMasters";
 import { LEAD_STATUS_LABELS, ORDER_STEP_LABELS } from "@/domain/enums";
 import { priceListDisplayName } from "@/domain/priceLists";
 import { Button, DashPage, DataRow, DataTable, EmptyState, FileLink, LinkButton, PageHeader, Panel, RowHit, StatusChip, controlClass } from "@/ui/shell/primitives";
@@ -31,7 +31,7 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
   const { id } = await params;
   const [customer, priceLists] = await Promise.all([
     getCustomerMaster(id),
-    prisma.priceList.findMany({ orderBy: { name: "asc" } }),
+    listPriceLists(),
   ]);
   if (!customer) notFound();
 
@@ -97,6 +97,27 @@ export default async function CustomerCardPage({ params }: { params: Promise<{ i
         subtitle={`Kund · ${priceListName}`}
         action={<LinkButton href="/operations/kunder" variant="secondary">Alla kunder</LinkButton>}
       />
+      {customer.verifiedAt ? null : (
+        <Panel title="Verifiera kund">
+          <form action={verifyCustomerAction} className="grid gap-3 sm:grid-cols-[1fr_auto]">
+            <input type="hidden" name="id" value={customer.id} />
+            <label className="text-sm text-[var(--av-text-muted)]">
+              Prislista
+              <select name="priceListId" required defaultValue={customer.priceListId ?? ""} className={`${FIELD} mt-1 text-[var(--av-text)]`}>
+                <option value="">Välj prislista</option>
+                {priceLists.map((list) => (
+                  <option key={list.id} value={list.id}>
+                    {priceListDisplayName(list.name)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="self-end">
+              <Button type="submit">Verifiera</Button>
+            </div>
+          </form>
+        </Panel>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel title="Fakturauppgifter">

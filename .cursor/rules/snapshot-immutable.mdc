@@ -1,0 +1,10 @@
+---
+description: priceSnapshotJson och lockedAt sätts en gång i sendOrderConfirmation
+alwaysApply: true
+---
+# Snapshot är låst
+
+`sendOrderConfirmation` i `src/server/services/order.service.ts` bygger
+`priceSnapshotJson` och sätter `lockedAt`. Efter det: inga writes till items,
+extras, pris eller snapshot. Faktura, PDF och "Beställ igen" läser snapshoten.
+Slutlig OB klickas av Aqua, aldrig av en Hand.

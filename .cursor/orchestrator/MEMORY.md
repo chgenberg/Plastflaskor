@@ -10,3 +10,4 @@
 - Mejlpaus-env: EMAIL_PAUSED.
 - Demo: kund@ / staff@ / admin@ / labels@ / bottler@demo.aqua · AquaDemo26!
 - Aqua intern roll är Admin. AQUA_STAFF är alias med samma befogenheter.
+- Mapplager som Skylt, en app: `src/app` routes, `src/actions` mutationer, `src/server` Prisma, `src/ui` React, `src/domain` ren TS, `src/lib` isomorft. Regel `folder-boundaries.mdc`.

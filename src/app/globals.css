@@ -48,8 +48,62 @@
   }
 }
 
-.av-marquee {
+.av-marquee-track {
   animation: av-marquee 55s linear infinite;
+  will-change: transform;
+}
+
+.av-marquee:hover .av-marquee-track,
+.av-marquee:focus-within .av-marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes av-float-soft {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--av-float-rot, 0deg));
+  }
+  50% {
+    transform: translateY(-10px) rotate(var(--av-float-rot, 0deg));
+  }
+}
+
+.av-animate-float {
+  animation: av-float-soft 6s ease-in-out infinite;
+  will-change: transform;
+}
+
+.av-animate-float-slow {
+  animation: av-float-soft 8.5s ease-in-out infinite;
+  will-change: transform;
+}
+
+.av-float-delay-1 {
+  animation-delay: -1.6s;
+}
+
+.av-float-delay-2 {
+  animation-delay: -3.2s;
+}
+
+.av-float-delay-3 {
+  animation-delay: -4.8s;
+}
+
+@keyframes av-cue-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+}
+
+.av-animate-cue {
+  animation: av-cue-bounce 2s ease-in-out infinite;
 }
 
 .av-serif {
@@ -57,18 +111,51 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .av-marquee,
+  html {
+    scroll-behavior: auto;
+  }
+
+  [class*="av-animate-"],
+  .av-marquee-track {
+    animation: none !important;
+  }
+
   .av-reveal,
   .av-media img,
   a.av-card,
-  .av-lift,
-  .av-btn {
-    animation: none !important;
+  .av-card-lift,
+  .av-btn,
+  .av-stage-panel,
+  .av-site-header,
+  .av-drawer-panel,
+  .av-tab,
+  .av-topbar {
     transition: none !important;
+  }
+
+  .av-reveal,
+  .av-parallax-media,
+  .av-card-lift:hover,
+  .av-media img {
     transform: none !important;
   }
 
   .av-reveal {
-    opacity: 1;
+    opacity: 1 !important;
+  }
+
+  .av-stage-panel[data-active="false"] {
+    opacity: 0;
+  }
+
+  .av-step-scrub {
+    min-height: 0 !important;
+  }
+}
+
+/* Reserve desktop scrub height before hydrate so pinned mode does not grow the page. */
+@media (min-width: 1024px) {
+  html.js .av-step-scrub {
+    min-height: calc(var(--av-step-count, 4) * 100svh);
   }
 }

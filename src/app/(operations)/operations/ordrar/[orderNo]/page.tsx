@@ -5,7 +5,8 @@ import { orderBrief } from "@/domain/orderBrief";
 import { buildPriceSnapshot, parseExtras, parseSnapshot } from "@/domain/extras";
 import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
-import { approveArtworkAction, approveFactoryDateAction, confirmDeliveryAction, createWaybillAction, opsAdvanceAction, saveExtrasAction, sendObAction, setFactoryDeadlineAction } from "@/actions";
+import { approveFactoryDateAction, confirmDeliveryAction, createWaybillAction, opsAdvanceAction, saveExtrasAction, sendObAction, setFactoryDeadlineAction } from "@/actions";
+import { ArtworkReviewCard } from "@/ui/ops/ArtworkReviewCard";
 import { DocumentUpload } from "@/ui/shell/DocumentUpload";
 import { OrderConfirmationPreview } from "@/ui/order/OrderConfirmationPreview";
 import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
@@ -162,12 +163,7 @@ export default async function OpsOrderDetail({ params }: { params: Promise<{ ord
               </form>
             ) : null}
 
-            {order.currentStatus === "ARTWORK_AQUA_REVIEW" ? (
-              <form action={approveArtworkAction} className="mt-5">
-                <input type="hidden" name="orderNo" value={order.orderNo} />
-                <Button type="submit">Skicka korrektur till kund</Button>
-              </form>
-            ) : null}
+            {order.currentStatus === "ARTWORK_AQUA_REVIEW" ? <ArtworkReviewCard orderNo={order.orderNo} /> : null}
 
             {sendingOb ? (
               <form action={sendObAction} className="mt-5 space-y-3">

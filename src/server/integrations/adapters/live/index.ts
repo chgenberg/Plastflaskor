@@ -30,6 +30,7 @@ export function createLiveIntegrations(): IntegrationRegistry {
     email: {
       sendOrderConfirmation: () => notImplemented("email.sendOrderConfirmation"),
       sendArtworkApproval: () => notImplemented("email.sendArtworkApproval"),
+      sendArtworkRejected: () => notImplemented("email.sendArtworkRejected"),
       sendDeliveryNotice: () => notImplemented("email.sendDeliveryNotice"),
       sendRepeatReminder: () => notImplemented("email.sendRepeatReminder"),
     },
@@ -37,6 +38,9 @@ export function createLiveIntegrations(): IntegrationRegistry {
       publish: () => notImplemented("notifications.publish"),
       listForUser: () => notImplemented("notifications.listForUser"),
       markRead: () => notImplemented("notifications.markRead"),
+    },
+    companyLookup: {
+      lookup: () => notImplemented("companyLookup.lookup"),
     },
   };
 }

@@ -1,28 +1,38 @@
-import { prisma } from "@/server/db";
+import { listPriceLists } from "@/server/services/catalog.service";
 import { listCustomers } from "@/server/services/customer.service";
 import { createCustomerAction } from "@/actions/opsMasters";
 import { priceListDisplayName } from "@/domain/priceLists";
-import { Button, DashPage, DashTable, EmptyState, PageHeader, Panel, RowHit, controlClass, controlCompact } from "@/ui/shell/primitives";
+import { Button, DashPage, DashTable, EmptyState, FilterChip, PageHeader, Panel, RowHit, StatusChip, controlClass, controlCompact } from "@/ui/shell/primitives";
 
 const FIELD = controlClass;
 
 export default async function CustomersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; filter?: string }>;
 }) {
-  const { q } = await searchParams;
+  const { q, filter } = await searchParams;
   const term = q?.trim() ?? "";
+  const onlyNew = filter === "ny";
   const [customers, priceLists] = await Promise.all([
-    listCustomers(term || undefined),
-    prisma.priceList.findMany({ orderBy: { name: "asc" } }),
+    listCustomers(term || undefined, onlyNew ? "ny" : undefined),
+    listPriceLists(),
   ]);
 
   return (
     <DashPage>
       <PageHeader title="Kunder" subtitle="Företag, prislista, ordrar och repeat." />
+      <div className="flex flex-wrap gap-1.5">
+        <FilterChip href="/operations/kunder" active={!onlyNew}>
+          Alla
+        </FilterChip>
+        <FilterChip href="/operations/kunder?filter=ny" active={onlyNew}>
+          Ny, ej verifierad
+        </FilterChip>
+      </div>
 
       <form action="/operations/kunder" method="get" className="av-card grid gap-2 p-3 sm:grid-cols-[1fr_auto]">
+        {onlyNew ? <input type="hidden" name="filter" value="ny" /> : null}
         <input
           name="q"
           defaultValue={term}
@@ -42,6 +52,7 @@ export default async function CustomersPage({
           count={`${customers.length} kund${customers.length === 1 ? "" : "er"}`}
           columns={[
             { label: "Företag" },
+            { label: "Status" },
             { label: "Prislista" },
             { label: "Org.nr" },
             { label: "Ordrar" },
@@ -52,6 +63,13 @@ export default async function CustomersPage({
             <tr key={c.id}>
               <td>
                 <RowHit href={`/operations/kunder/${c.id}`}>{c.name}</RowHit>
+              </td>
+              <td>
+                {c.verifiedAt ? (
+                  <StatusChip status="PAID" label="Verifierad" />
+                ) : (
+                  <StatusChip status="AQUA_REVIEW" label="Ny, ej verifierad" />
+                )}
               </td>
               <td>{priceListDisplayName(c.priceList?.name)}</td>
               <td className="tabular-nums text-[var(--av-text-secondary)]">{c.orgNr ?? "–"}</td>

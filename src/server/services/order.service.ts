@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { BuyerType, InvoiceStatus, OrderStatus, Role } from "@prisma/client";
 import { isAquaAdmin } from "@/domain/policies/roles";
 import { prisma } from "../db";
@@ -11,6 +12,7 @@ import { emptyCupDocument, parseCupDocument } from "@/domain/cupDocument";
 import { parseVisualSpec, visualSpecFromOptions } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
 import { parseBottleOptions } from "@/domain/bottleCatalog";
+import { emailPausedFromEnv } from "@/lib/orchestrator/approvals";
 
 export type OrderListFilters = {
   status?: OrderStatus;
@@ -213,6 +215,7 @@ export async function createBuyerOrder(input: {
   actorRole: Role;
   source?: string;
   sourceOrderId?: string;
+  clientToken?: string;
 }) {
   const variant = await prisma.productVariant.findUnique({
     where: { id: input.variantId },
@@ -284,6 +287,7 @@ export async function createBuyerOrder(input: {
       factoryId: factory?.id,
       source: input.source ?? "customer_order",
       sourceOrderId: input.sourceOrderId,
+      clientToken: input.clientToken,
       notes: input.notes,
       invoiceRef: input.invoiceRef,
       requestedDate: input.requestedDate,
@@ -329,8 +333,49 @@ export async function createBuyerOrder(input: {
     },
   });
   await advanceOrder(order.id, "AQUA_REVIEW", input.actorRole, "system");
-  await getIntegrations().email.sendOrderConfirmation(order.id);
+  try {
+    after(() => sendOrderReceivedOnce(order.id));
+  } catch {
+    void sendOrderReceivedOnce(order.id);
+  }
   return order;
+}
+
+export async function findRecentDuplicateOrder(input: {
+  customerId: string;
+  variantId: string;
+  qty: number;
+  clientToken?: string;
+}) {
+  if (input.clientToken) {
+    const byToken = await prisma.order.findUnique({ where: { clientToken: input.clientToken } });
+    if (byToken) return byToken;
+  }
+  const since = new Date(Date.now() - 10 * 60 * 1000);
+  return prisma.order.findFirst({
+    where: {
+      customerId: input.customerId,
+      source: "checkout",
+      createdAt: { gte: since },
+      items: { some: { variantId: input.variantId, qty: input.qty } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export async function sendOrderReceivedOnce(orderId: string) {
+  if (emailPausedFromEnv()) return;
+  const o = await prisma.order.findUnique({ where: { id: orderId }, select: { receivedMailSentAt: true } });
+  if (!o || o.receivedMailSentAt) return;
+  try {
+    await getIntegrations().email.sendOrderConfirmation(orderId);
+    await prisma.order.updateMany({
+      where: { id: orderId, receivedMailSentAt: null },
+      data: { receivedMailSentAt: new Date() },
+    });
+  } catch (err) {
+    console.error("[order] received-mail failed", orderId, err);
+  }
 }
 
 export async function repeatOrder(input: {

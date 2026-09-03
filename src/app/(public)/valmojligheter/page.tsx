@@ -5,7 +5,7 @@ import { EditorialShot, PageIntro, PublicPage } from "@/ui/public/PageIntro";
 export default function OptionsPage() {
   return (
     <PublicPage narrow>
-      <Reveal>
+      <Reveal variant="public">
         <PageIntro badge="Valmöjligheter" title="Vi erbjuder följande sortiment:" />
         <EditorialShot src={PAGE_IMAGES.valSortiment} alt="Hela sortimentet" />
       </Reveal>
@@ -50,7 +50,7 @@ export default function OptionsPage() {
         <p>
           <strong className="text-[var(--av-text)]">Streckkod och pantsymbol</strong> Alla våra etiketter är försedda med
           pantsymbol och streckkod. Detta för att flaskan efter sin förbrukning skall kunna pantas och skickas tillbaka
-          till Returpack. Panten är 1 kr.
+          till Returpack. Panten är en krona.
         </p>
         <div>
           <p className="font-semibold text-[var(--av-text)]">Beställa. Följande krävs för en komplett order:</p>

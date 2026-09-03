@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { createLabelDispatchAction, factoryAction } from "@/actions";
+import { createLabelDispatchAction } from "@/actions";
 import { Button, LinkButton, RowHit, TableActions, controlClass } from "@/ui/shell/primitives";
 
 export type LabelJobRow = {
@@ -15,6 +15,7 @@ export type LabelJobRow = {
   canMarkReady: boolean;
   canSelect: boolean;
   reportNo: string | null;
+  actionLabel?: string;
 };
 
 type SortKey = "orderNo" | "orderName" | "material" | "deadline";
@@ -126,15 +127,11 @@ export function LabelJobsTable({
                     <td className="whitespace-nowrap font-medium tabular-nums">{r.reportNo ?? "–"}</td>
                   ) : null}
                   <td className="av-actions">
-                    {!compose && r.canMarkReady ? (
+                    {!compose ? (
                       <TableActions>
-                        <form action={factoryAction}>
-                          <input type="hidden" name="jobId" value={r.id} />
-                          <input type="hidden" name="action" value="ACCEPT_DEADLINE" />
-                          <Button type="submit" size="sm">
-                            Klara att skicka
-                          </Button>
-                        </form>
+                        <LinkButton href={r.href} size="sm">
+                          {r.actionLabel ?? "Öppna"}
+                        </LinkButton>
                       </TableActions>
                     ) : null}
                   </td>

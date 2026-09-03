@@ -1,0 +1,10 @@
+---
+description: En order prissätts från exakt en prislista, vald på servern från customerId
+alwaysApply: true
+---
+# Prislistan blandas inte
+
+`PriceListCode` väljs av `getPriceListForBuyer({ customerId })` i
+`src/server/services/catalog.service.ts`. Klienten skickar aldrig pris, tier
+eller listkod. Ny kund utan avtal får STANDARD. Byte av lista sker bara i
+`/operations/kunder/[id]` av Aqua. Checkout repriserar med `resolveUnitPrice`.

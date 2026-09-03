@@ -1,5 +1,8 @@
+import type { CompanyLookupService } from "./ports/companyLookup";
+
 export type PaymentStatus = "unpaid" | "paid" | "partial";
 export type DeliveryStatus = "CREATED" | "PICKED_UP" | "IN_TRANSIT" | "DELIVERED";
+export type { CompanyHit, CompanyLookupService } from "./ports/companyLookup";
 
 export interface FortnoxService {
   createCustomer(input: { name: string; orgNr?: string; email?: string }): Promise<{ fortnoxId: string }>;
@@ -35,6 +38,7 @@ export interface FactoryService {
 export interface EmailService {
   sendOrderConfirmation(orderId: string): Promise<{ id: string }>;
   sendArtworkApproval(orderId: string): Promise<{ id: string }>;
+  sendArtworkRejected(orderId: string): Promise<{ id: string }>;
   sendDeliveryNotice(orderId: string): Promise<{ id: string }>;
   sendRepeatReminder(orderId: string): Promise<{ id: string }>;
 }
@@ -52,4 +56,5 @@ export interface IntegrationRegistry {
   factory: FactoryService;
   email: EmailService;
   notifications: NotificationService;
+  companyLookup: CompanyLookupService;
 }

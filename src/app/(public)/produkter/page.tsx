@@ -28,17 +28,17 @@ export default async function ProductsIndex() {
 
   return (
     <PublicPage>
-      <Reveal>
+      <Reveal variant="public">
         <PageIntro badge="Sortiment" title="Produkter" align="center" />
         <EditorialShot src={PAGE_IMAGES.produkterHero} alt="Vårt sortiment" className="mx-auto mt-10 max-w-4xl aspect-[16/9]" />
       </Reveal>
-      <Reveal>
+      <Reveal variant="public">
         <div className="mt-12 grid gap-5 md:grid-cols-2">
           {slugs.map((slug) => {
             const c = CATEGORY_META[slug];
             if (!c) return null;
             return (
-              <Link key={c.slug} href={`/produkter/${c.slug}`} className="av-card av-lift group overflow-hidden">
+              <Link key={c.slug} href={`/produkter/${c.slug}`} className="av-card av-card-lift group overflow-hidden">
                 {cover[c.slug] ? (
                   <div className="av-media aspect-[16/10] rounded-none">
                     <Image src={cover[c.slug]} alt={c.name} fill className="object-cover" sizes="50vw" />

@@ -5,7 +5,7 @@ import { EditorialShot, PageIntro, PublicPage } from "@/ui/public/PageIntro";
 export default function EnvironmentPage() {
   return (
     <PublicPage narrow>
-      <Reveal>
+      <Reveal variant="public">
         <PageIntro badge="Miljö" title="Vi tar ansvar för miljön - miljövänliga profilerade muggar och flaskor" />
         <EditorialShot src={PAGE_IMAGES.miljoKompost} alt="Komposterbar pappersmugg" />
       </Reveal>

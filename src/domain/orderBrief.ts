@@ -50,7 +50,46 @@ export function addLeadTimeDays(days: number, from = new Date()) {
 
 export type BuyerTimelineStep = { id: string; label: string; done: boolean; current: boolean };
 
-export function buyerTimeline(status: string): BuyerTimelineStep[] {
+export type CustomerAction = "artwork" | "proof" | "invoice";
+
+export type ArtworkRejectFacts = {
+  artworkApprovals?: { kind: string; createdAt?: Date | string }[] | null;
+  artworkVersions?: { createdAt?: Date | string }[] | null;
+};
+
+/** Senaste AQUA_REJECTED utan nyare fil — kunden ska skicka artwork igen. */
+export function needsNewArtworkAfterReject(o: ArtworkRejectFacts): boolean {
+  const rejected = (o.artworkApprovals ?? []).filter((a) => a.kind === "AQUA_REJECTED");
+  if (!rejected.length) return false;
+  const latest = rejected.reduce((acc, a) => {
+    if (!a.createdAt) return acc;
+    if (!acc.createdAt) return a;
+    return new Date(a.createdAt) > new Date(acc.createdAt) ? a : acc;
+  });
+  if (!latest.createdAt) return true;
+  const at = new Date(latest.createdAt);
+  return !(o.artworkVersions ?? []).some((v) => v.createdAt && new Date(v.createdAt) > at);
+}
+
+export function customerActionFor(o: {
+  currentStatus: string;
+  lockedAt: Date | null;
+  designs: { files: { id: string }[] }[];
+  artworkApprovals?: { kind: string; createdAt?: Date | string }[];
+  artworkVersions?: { createdAt?: Date | string }[];
+  invoice?: { status: string } | null;
+}): CustomerAction | null {
+  const hasArtwork = o.designs.some((d) => d.files.length > 0);
+  if (!o.lockedAt && needsNewArtworkAfterReject(o) && o.currentStatus !== "ARTWORK_CUSTOMER_APPROVAL") return "artwork";
+  if (!o.lockedAt && !hasArtwork && o.currentStatus !== "ARTWORK_CUSTOMER_APPROVAL") return "artwork";
+  if (o.currentStatus === "ARTWORK_CUSTOMER_APPROVAL" && !(o.artworkApprovals ?? []).some((a) => a.kind === "CUSTOMER_FINAL")) {
+    return "proof";
+  }
+  if (o.currentStatus === "INVOICED" && o.invoice?.status !== "PAID") return "invoice";
+  return null;
+}
+
+export function buyerTimeline(status: string, action?: CustomerAction | null): BuyerTimelineStep[] {
   const afterConfirm = [
     "CONFIRMED",
     "LABEL_PRODUCTION",
@@ -67,25 +106,34 @@ export function buyerTimeline(status: string): BuyerTimelineStep[] {
   ].includes(status);
   const labelsDone = ["LABELS_RECEIVED", "PRODUCTION_SCHEDULED", "IN_PRODUCTION", "READY_TO_SHIP", "SHIPPED", "DELIVERED", "READY_TO_INVOICE", "INVOICED", "PAID"].includes(status);
   const printing = ["IN_PRODUCTION", "READY_TO_SHIP", "SHIPPED", "DELIVERED", "READY_TO_INVOICE", "INVOICED", "PAID"].includes(status);
-  const packing = ["READY_TO_SHIP", "SHIPPED", "DELIVERED", "READY_TO_INVOICE", "INVOICED", "PAID"].includes(status);
   const shipped = ["SHIPPED", "DELIVERED", "READY_TO_INVOICE", "INVOICED", "PAID"].includes(status);
   const delivered = ["DELIVERED", "READY_TO_INVOICE", "INVOICED", "PAID"].includes(status);
-  const received = !["SUBMITTED", "AQUA_REVIEW", "ARTWORK_AQUA_REVIEW", "ARTWORK_CUSTOMER_APPROVAL"].includes(status);
   const inLabels = ["LABEL_PRODUCTION", "LABELS_DISPATCHED"].includes(status);
+  const artworkDone = afterConfirm || ["ARTWORK_AQUA_REVIEW", "ARTWORK_CUSTOMER_APPROVAL"].includes(status);
+  const proofDone = afterConfirm || (status === "ARTWORK_CUSTOMER_APPROVAL" && action !== "proof");
 
   const steps: BuyerTimelineStep[] = [
-    { id: "received", label: "Order mottagen", done: true, current: !received && !afterConfirm },
-    { id: "confirmed", label: "Order bekräftad", done: afterConfirm, current: status === "CONFIRMED" },
-    { id: "labels", label: "Etiketter produceras", done: labelsDone, current: inLabels },
+    { id: "received", label: "Beställd", done: true, current: false },
+    { id: "artwork", label: "Artwork", done: artworkDone && action !== "artwork", current: action === "artwork" },
+    { id: "proof", label: "Korr", done: proofDone && action !== "proof", current: action === "proof" },
+    { id: "confirmed", label: "OB", done: afterConfirm, current: status === "CONFIRMED" },
+    { id: "labels", label: "Etikett", done: labelsDone, current: inLabels },
     { id: "print", label: "Produktion", done: printing, current: status === "IN_PRODUCTION" || status === "LABELS_RECEIVED" || status === "PRODUCTION_SCHEDULED" },
-    { id: "pack", label: "Förbereds för leverans", done: packing, current: status === "READY_TO_SHIP" },
-    { id: "shipped", label: "Skickad", done: shipped, current: status === "SHIPPED" },
-    { id: "delivered", label: "Levererad", done: delivered, current: delivered && status === "DELIVERED" },
+    { id: "shipped", label: "Skickad", done: shipped, current: status === "SHIPPED" || status === "READY_TO_SHIP" },
+    { id: "delivered", label: "Levererad", done: delivered, current: delivered && (status === "DELIVERED" || status === "READY_TO_INVOICE" || status === "INVOICED" || status === "PAID") },
   ];
-  if (!steps.some((s) => s.current)) {
+  if (action === "artwork") {
+    steps.forEach((s) => {
+      s.current = s.id === "artwork";
+    });
+  } else if (action === "proof") {
+    steps.forEach((s) => {
+      s.current = s.id === "proof";
+    });
+  } else if (!steps.some((s) => s.current)) {
     const next = steps.find((s) => !s.done);
     if (next) next.current = true;
-    else steps[steps.length - 1].current = true;
+    else steps[steps.length - 1]!.current = true;
   }
   return steps;
 }
@@ -109,24 +157,51 @@ export function shipmentTrackingSteps(status: string): BuyerTimelineStep[] {
 }
 
 export function buyerNextAction(
-  orders: { orderNo: string; currentStatus: string; artworkApprovals?: { kind: string }[] }[],
+  orders: {
+    orderNo: string;
+    currentStatus: string;
+    lockedAt?: Date | null;
+    designs?: { files: { id: string }[] }[];
+    artworkApprovals?: { kind: string; createdAt?: Date | string }[];
+    artworkVersions?: { createdAt?: Date | string }[];
+    invoice?: { status: string } | null;
+  }[],
 ) {
-  const proofOrders = orders.filter((o) => o.currentStatus === "ARTWORK_CUSTOMER_APPROVAL");
-  const pendingProof = proofOrders.find((o) => !(o.artworkApprovals ?? []).some((a) => a.kind === "CUSTOMER_FINAL"));
-  if (pendingProof) {
+  const asAction = (o: (typeof orders)[number]) =>
+    customerActionFor({
+      currentStatus: o.currentStatus,
+      lockedAt: o.lockedAt ?? null,
+      designs: o.designs ?? [],
+      artworkApprovals: o.artworkApprovals,
+      artworkVersions: o.artworkVersions,
+      invoice: o.invoice,
+    });
+  const proof = orders.find((o) => asAction(o) === "proof");
+  if (proof) {
     return {
       title: "Godkänn korrektur",
-      body: `${pendingProof.orderNo} väntar på ert godkännande.`,
-      hrefSuffix: `/ordrar/${pendingProof.orderNo}`,
+      body: `${proof.orderNo} väntar på ert godkännande.`,
+      hrefSuffix: `/ordrar/${proof.orderNo}`,
       cta: "Öppna korrektur",
     };
   }
-  const waitingOb = proofOrders[0];
+  const waitingOb = orders.find(
+    (o) => o.currentStatus === "ARTWORK_CUSTOMER_APPROVAL" && (o.artworkApprovals ?? []).some((a) => a.kind === "CUSTOMER_FINAL"),
+  );
   if (waitingOb) {
     return {
       title: "Väntar på orderbekräftelse",
       body: `${waitingOb.orderNo} — AquaVisibility skickar slutlig orderbekräftelse.`,
       hrefSuffix: `/ordrar/${waitingOb.orderNo}`,
+      cta: "Öppna order",
+    };
+  }
+  const artwork = orders.find((o) => asAction(o) === "artwork");
+  if (artwork) {
+    return {
+      title: "Ladda upp artwork",
+      body: `${artwork.orderNo} saknar artwork.`,
+      hrefSuffix: `/ordrar/${artwork.orderNo}`,
       cta: "Öppna order",
     };
   }

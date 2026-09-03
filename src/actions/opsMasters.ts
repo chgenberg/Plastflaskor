@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { isAquaAdmin } from "@/domain/policies/roles";
 import { getSessionUser } from "@/server/rbac";
-import { createDirectCustomer, updateCustomer } from "@/server/services/customer.service";
+import { createDirectCustomer, updateCustomer, verifyCustomer } from "@/server/services/customer.service";
 
 async function requireStaffAdmin() {
   const user = await getSessionUser();
@@ -47,4 +47,17 @@ export async function updateCustomerAction(formData: FormData) {
   });
   revalidatePath("/operations/kunder");
   revalidatePath(`/operations/kunder/${id}`);
+}
+
+export async function verifyCustomerAction(formData: FormData) {
+  const user = await getSessionUser();
+  if (!isAquaAdmin(user?.role)) throw new Error("Forbidden");
+  const id = field(formData, "id");
+  const priceListId = field(formData, "priceListId");
+  if (!id) throw new Error("Ogiltig kund");
+  if (!priceListId) throw new Error("Prislista krävs");
+  await verifyCustomer(id, priceListId, user?.email ?? undefined);
+  revalidatePath("/operations/kunder");
+  revalidatePath(`/operations/kunder/${id}`);
+  revalidatePath("/operations");
 }

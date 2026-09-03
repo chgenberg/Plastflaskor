@@ -7,10 +7,12 @@ export function OrderPeek({
   closeHref,
   title,
   children,
+  scrollTo,
 }: {
   closeHref: string;
   title: string;
   children: ReactNode;
+  scrollTo?: string;
 }) {
   const router = useRouter();
   const ref = useRef<HTMLDialogElement>(null);
@@ -19,13 +21,16 @@ export function OrderPeek({
     const el = ref.current;
     if (!el) return;
     if (!el.open) el.showModal();
+    if (scrollTo) {
+      el.querySelector(`#${CSS.escape(scrollTo)}`)?.scrollIntoView({ block: "start" });
+    }
     const onClose = () => {
       const params = new URLSearchParams(window.location.search);
       if (params.has("order")) router.push(closeHref);
     };
     el.addEventListener("close", onClose);
     return () => el.removeEventListener("close", onClose);
-  }, [closeHref, router]);
+  }, [closeHref, router, scrollTo]);
 
   return (
     <dialog

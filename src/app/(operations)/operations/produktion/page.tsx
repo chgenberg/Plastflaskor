@@ -1,5 +1,5 @@
 import { FACTORY_JOB_LABELS, ORDER_STEP_LABELS, type OrderStatusCode } from "@/domain/enums";
-import { prisma } from "@/server/db";
+import { listBottlerBoardJobs } from "@/server/services/production.service";
 import { DashPage, DashTable, EmptyState, FilterChip, PageHeader, RowHit, StatusChip } from "@/ui/shell/primitives";
 
 const GROUPS = [
@@ -37,18 +37,7 @@ function groupKey(
 export default async function ProductionBoard({ searchParams }: { searchParams: Promise<{ group?: string }> }) {
   const raw = (await searchParams).group ?? "date";
   const group = GROUPS.some((g) => g.id === raw) ? raw : "date";
-  const jobs = await prisma.productionJob.findMany({
-    where: { factory: { kind: "bottler" } },
-    include: {
-      order: {
-        include: {
-          customer: { select: { name: true } },
-          items: { include: { variant: { include: { product: true } } } },
-        },
-      },
-    },
-    orderBy: { plannedAt: "asc" },
-  });
+  const jobs = await listBottlerBoardJobs();
   const grouped = new Map<string, typeof jobs>();
   for (const j of jobs) {
     const key = groupKey(j, group);

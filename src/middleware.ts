@@ -56,6 +56,7 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
+  // /kassa är publik med avsikt — skyddet ligger i placeCheckoutOrderAction.
   matcher: [
     "/konto",
     "/konto/:path*",

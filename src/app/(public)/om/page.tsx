@@ -5,7 +5,7 @@ import { EditorialShot, PageIntro, PublicPage } from "@/ui/public/PageIntro";
 export default function AboutPage() {
   return (
     <PublicPage narrow>
-      <Reveal>
+      <Reveal variant="public">
         <PageIntro badge="Om oss" title="Mässprodukter och profilprodukter för företag" />
         <EditorialShot src={PAGE_IMAGES.omService} alt="Service och kommunikation" />
       </Reveal>

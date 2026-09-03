@@ -116,6 +116,7 @@ enum RepeatLeadStatus {
 enum ArtworkApprovalKind {
   AQUA_PROOF
   CUSTOMER_FINAL
+  AQUA_REJECTED
 }
 
 model User {
@@ -182,6 +183,9 @@ model Customer {
   users       User[]
   invoices    Invoice[]
   leads       RepeatOpportunity[]
+  source      String               @default("staff")
+  verifiedAt  DateTime?
+  verifiedBy  String?
 }
 
 model Address {
@@ -316,6 +320,8 @@ model Order {
   visualSpecJson         String?
   cupDocumentJson        String?
   lockedAt               DateTime?
+  receivedMailSentAt     DateTime?
+  clientToken            String?         @unique
   repeatHorizonMonths    Int?
   factoryDeadline        String?
   factoryDeadlineAccepted Boolean        @default(false)

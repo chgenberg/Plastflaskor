@@ -2,26 +2,29 @@ import { listAllOrders } from "@/server/services/order.service";
 import { activateDueLeads, listLeads } from "@/server/services/lead.service";
 import { listBottlerInvoices } from "@/server/services/bottlerInvoice.service";
 import { listLabelDispatches } from "@/server/services/labelDispatch.service";
-import { exceptionSummary, exceptionsFor } from "@/domain/exceptions";
+import { countUnverifiedCustomers } from "@/server/services/customer.service";
+import { exceptionsFor } from "@/domain/exceptions";
+import { ORDER_LIST_LANES } from "@/domain/enums";
 import { Reveal } from "@/ui/motion/Reveal";
-import { ActionCard, ActionList, DashPage, KpiCard, KpiStrip, LinkButton, PageHeader, SectionTitle } from "@/ui/shell/primitives";
+import { OrderResultsTable } from "@/ui/ops/OrderResultsTable";
+import { DashPage, KpiCard, KpiStrip, LinkButton, NeedsAttention, PageHeader, QuickLinks } from "@/ui/shell/primitives";
 import { loadOrchestratorBoard, runAquaHeartbeatIfStale } from "@/server/orchestrator";
+
+const PRODUCTION = new Set<string>(ORDER_LIST_LANES.find((l) => l.id === "production")?.statuses ?? []);
 
 export default async function OpsHome() {
   const orders = await listAllOrders();
   await activateDueLeads();
   const { buckets } = await listLeads();
-  const tasks = exceptionSummary(exceptionsFor(orders));
+  const newCustomers = await countUnverifiedCustomers();
+  const exceptions = exceptionsFor(orders);
   const [labelReports, bottlerReports] = await Promise.all([listLabelDispatches(), listBottlerInvoices()]);
-  const house = {
-    labels: orders.filter((o) => o.currentStatus === "LABEL_PRODUCTION").length,
-    bottler: orders.filter((o) =>
-      ["LABELS_DISPATCHED", "LABELS_RECEIVED", "PRODUCTION_SCHEDULED", "IN_PRODUCTION", "READY_TO_SHIP"].includes(
-        o.currentStatus,
-      ),
-    ).length,
-    freight: orders.filter((o) => o.currentStatus === "READY_TO_SHIP" || o.currentStatus === "SHIPPED").length,
-    invoice: orders.filter((o) => o.currentStatus === "DELIVERED" || o.currentStatus === "READY_TO_INVOICE").length,
+  const unverifiedOrders = orders.filter((o) => !o.customer.verifiedAt).length;
+  const kpi = {
+    confirm: orders.filter((o) => o.currentStatus === "SUBMITTED" || o.currentStatus === "AQUA_REVIEW").length,
+    newCustomers,
+    inProduction: orders.filter((o) => PRODUCTION.has(o.currentStatus)).length,
+    toInvoice: orders.filter((o) => o.currentStatus === "DELIVERED" || o.currentStatus === "READY_TO_INVOICE").length,
   };
   let agentOpen = 0;
   try {
@@ -30,6 +33,31 @@ export default async function OpsHome() {
   } catch {
     agentOpen = 0;
   }
+
+  const attention = [
+    newCustomers > 0
+      ? {
+          key: "new-customers",
+          href: "/operations/kunder?filter=ny",
+          label: `${newCustomers} nya kunder att verifiera`,
+        }
+      : null,
+    unverifiedOrders > 0
+      ? {
+          key: "unverified-orders",
+          href: "/operations/ordrar?alert=review&kund=ny",
+          label: `${unverifiedOrders} ordrar från overifierad kund`,
+        }
+      : null,
+    ...exceptions.slice(0, 5).map((e) => ({
+      key: `${e.kind}-${e.orderNo}`,
+      href: `/operations/ordrar/${e.orderNo}`,
+      label: `${e.orderNo} · ${e.label}`,
+    })),
+    buckets.week > 0
+      ? { key: "leads", href: "/operations/leads", label: `${buckets.week} repeat leads denna vecka` }
+      : null,
+  ].filter((row): row is { key: string; href: string; label: string } => Boolean(row));
 
   return (
     <DashPage>
@@ -40,45 +68,29 @@ export default async function OpsHome() {
       />
       <Reveal>
         <KpiStrip>
-          <KpiCard href="/operations/ordrar?phase=labels" label="Etiketter" value={house.labels} />
-          <KpiCard href="/operations/produktion" label="Bottler" value={house.bottler} />
-          <KpiCard href="/operations/frakt" label="Frakt" value={house.freight} />
-          <KpiCard href="/operations/ekonomi" label="Faktura" value={house.invoice} />
+          <KpiCard href="/operations/ordrar?alert=review" label="Att bekräfta" value={kpi.confirm} />
+          <KpiCard href="/operations/kunder?filter=ny" label="Nya kunder" value={kpi.newCustomers} />
+          <KpiCard href="/operations/produktion" label="I produktion" value={kpi.inProduction} />
+          <KpiCard href="/operations/ekonomi" label="Att fakturera" value={kpi.toInvoice} />
         </KpiStrip>
       </Reveal>
-      <p className="text-[13px] text-[var(--av-text-muted)]">
-        Agenten bevakar samma kö.{" "}
-        <a href="/operations/agenten" className="text-[var(--av-text)] hover:text-[var(--av-accent)]">
-          {agentOpen > 0 ? `${agentOpen} öppna kort` : "Öppna agenten"}
-        </a>
-        {labelReports.length + bottlerReports.length > 0 ? (
-          <>
-            {" · "}
-            <a href="/operations/dokument" className="text-[var(--av-text)] hover:text-[var(--av-accent)]">
-              Leverantörsunderlag ({labelReports.length + bottlerReports.length})
-            </a>
-          </>
-        ) : null}
-      </p>
-      <Reveal>
-      <section className="space-y-2">
-        <SectionTitle>Kräver åtgärd</SectionTitle>
-        <ActionList>
-          {tasks.length === 0 && buckets.week === 0 ? (
-            <ActionCard href="/operations/pipeline" label="Allt i fas" value="0" tone="green" />
-          ) : (
-            <>
-              {tasks.map((t) => (
-                <ActionCard key={t.kind} href={t.href} label={t.label} value={t.count} tone={t.severity} />
-              ))}
-              {buckets.week > 0 ? (
-                <ActionCard href="/operations/leads" label="Repeat leads är aktuella denna vecka" value={buckets.week} tone="green" />
-              ) : null}
-            </>
-          )}
-        </ActionList>
+      <NeedsAttention items={attention} />
+      <section className="space-y-3">
+        <h2 className="av-section-title">Senaste ordrar</h2>
+        <OrderResultsTable orders={orders.slice(0, 10)} />
       </section>
-      </Reveal>
+      <QuickLinks
+        links={[
+          { href: "/operations/ordrar", label: "Ordermottagning" },
+          { href: "/operations/kunder", label: "Kunder" },
+          { href: "/operations/agenten", label: "Agenten" },
+        ]}
+      />
+      <p className="text-[13px] text-[var(--av-text-muted)]">
+        Agenten bevakar samma kö.
+        {agentOpen > 0 ? ` ${agentOpen} öppna kort.` : ""}
+        {labelReports.length + bottlerReports.length > 0 ? ` Leverantörsunderlag ${labelReports.length + bottlerReports.length}.` : ""}
+      </p>
     </DashPage>
   );
 }

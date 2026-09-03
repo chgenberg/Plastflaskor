@@ -175,6 +175,19 @@ export function artworkFilePdf(file: { fileName: string; kind: string; storageKe
   ]);
 }
 
+export async function getOrderRecord(orderId: string) {
+  return prisma.order.findUnique({ where: { id: orderId }, select: { id: true } });
+}
+
+export async function getBuyerDesign(designId: string, user: { id: string; role: string }) {
+  return prisma.design.findFirst({
+    where: {
+      id: designId,
+      ...(user.role === "CUSTOMER" ? { userId: user.id } : {}),
+    },
+  });
+}
+
 export async function listDesignsForUser(user: SessionLike) {
   if (user.role === "CUSTOMER") {
     return prisma.design.findMany({

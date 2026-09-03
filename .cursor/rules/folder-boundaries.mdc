@@ -1,0 +1,40 @@
+---
+description: Skylt-lager i Aqua. Ny kod hamnar i rätt mapp.
+alwaysApply: true
+---
+
+# Mapplager — samma som Skylt, en app
+
+Aqua är en Next-app, inte `skyltmotor/`-monorepo. Lagren är desamma.
+Ny fil läggs i lagret nedan. Flytta inte befintliga filer i tysthet.
+
+| Skylt | Aqua | Hit hör |
+|---|---|---|
+| `apps/web/src/app/` | `src/app/` | Route groups, `page.tsx`, `layout.tsx`, `/api`. Renderar. |
+| `apps/web/src/app/**/actions.ts` | `src/actions/` | Tunna mutationer. Anropar `src/server/`. |
+| `apps/web/src/server/` | `src/server/` | Prisma, session, services, integrationer, PDF. |
+| `apps/web/src/components/` | `src/ui/` | React. En mapp per yta (`public`, `checkout`, `order`, `ops`, `supplier`, `shell`). |
+| `packages/{engine,catalog,pricing,shared}` | `src/domain/` | Ren TypeScript. Prisregler, Zod, policies, enum, org.nr. |
+| `apps/web/src/lib/` | `src/lib/` | Isomorft (orkestrator, hjälp). Ingen Prisma. |
+| rot-`audits/` / `docs/` | `audits/` / `docs/` | Bevis och planer. Appen importerar dem aldrig. |
+
+## Vart en ny sak ska
+
+- Sidlogik och Prisma → `src/server/services/`. Sidan anropar servicen.
+- Mutation → `src/actions/`. Inte i `page.tsx`.
+- Pris, status, synlighet, Luhn, snapshot-form → `src/domain/`.
+- Knapp, modal, tabell → `src/ui/<yta>/`.
+- Port + mock/live → `src/server/integrations/`. Klient importerar aldrig mock.
+
+## Förbjudet
+
+- `prisma` i `src/app/`, `src/ui/`, `src/domain/`, `src/lib/`.
+- `"use client"` som värdeimporterar `@/server`. Bara `import type`.
+- `next` / `react` i `src/domain/`.
+- Ny toppnivåmapp under `src/` (`components/`, `packages/`, `features/`).
+- Affärsregel i `page.tsx`.
+- `audits/` eller `docs/` importerade av runtime.
+
+`src/app/` importerar inte `@/server/db`. ESLint stoppar det.
+
+Rör inte `Skyltochgravyr/skyltmotor/`.

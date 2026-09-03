@@ -18,6 +18,7 @@ export type BottlerJobRow = {
   size: PlanSize;
   water: PlanWater;
   cap: PlanCap;
+  actionLabel?: string;
 };
 
 export function BottlerJobsTable({ rows }: { rows: BottlerJobRow[] }) {
@@ -91,6 +92,9 @@ export function BottlerJobsTable({ rows }: { rows: BottlerJobRow[] }) {
               <th>Kork</th>
               <th>Skickdatum</th>
               <th>Status</th>
+              <th className="av-actions">
+                <span className="sr-only">Åtgärd</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -111,6 +115,11 @@ export function BottlerJobsTable({ rows }: { rows: BottlerJobRow[] }) {
                 </td>
                 <td>
                   <StatusChip status={r.status} label={r.statusLabel} />
+                </td>
+                <td className="av-actions">
+                  <LinkButton href={r.href} size="sm">
+                    {r.actionLabel ?? "Öppna"}
+                  </LinkButton>
                 </td>
               </tr>
             ))}

@@ -29,10 +29,11 @@ export default async function OpsOrders({
     factory?: string;
     invoice?: string;
     alert?: string;
+    kund?: string;
   }>;
 }) {
   const params = await searchParams;
-  const { phase, lane, q, late, status, from, to, size, waterType, factory, invoice, alert } = params;
+  const { phase, lane, q, late, status, from, to, size, waterType, factory, invoice, alert, kund } = params;
   const laneDef = ORDER_LIST_LANES.find((item) => item.id === lane);
   const phaseDef = PIPELINE_PHASES.find((p) => p.id === phase);
   const statusCode = asEnum(status, Object.values(OrderStatus));
@@ -60,7 +61,8 @@ export default async function OpsOrders({
     waterType: waterCode,
     late: lateCode,
   });
-  const orders = isExceptionKind(alert) ? ordersWithAlert(all, alert) : all;
+  const flagged = isExceptionKind(alert) ? ordersWithAlert(all, alert) : all;
+  const orders = kund === "ny" ? flagged.filter((o) => !o.customer.verifiedAt) : flagged;
   const factories = await listActiveFactories();
   const title = alert
     ? "Behöver åtgärd"

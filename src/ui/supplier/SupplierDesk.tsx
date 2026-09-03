@@ -2,10 +2,12 @@ import { labelStockLabel } from "@/domain/bottleCatalog";
 import type { InboundDispatchCard, LabelDispatchSummary } from "@/server/services/labelDispatch.service";
 import { bottlerDeskStatus } from "@/domain/bottlerDesk";
 import { planFromItem } from "@/domain/bottlerPlan";
+import { hintFactsFromOrder, statusHint } from "@/domain/statusHint";
+import { supplierActionLabel, supplierCounts } from "@/domain/supplierDesk";
 import { LabelJobsTable } from "@/ui/supplier/LabelJobsTable";
 import { BottlerJobsTable } from "@/ui/supplier/BottlerJobsTable";
 import { Reveal } from "@/ui/motion/Reveal";
-import { ActionCard, ActionList, DashPage, EmptyState, KpiCard, KpiStrip, LinkButton, PageHeader, SectionTitle } from "@/ui/shell/primitives";
+import { DashPage, EmptyState, KpiCard, KpiStrip, LinkButton, NeedsAttention, PageHeader, SectionTitle } from "@/ui/shell/primitives";
 
 type Job = Awaited<ReturnType<typeof import("@/server/services/production.service").listJobsForFactory>>[number];
 
@@ -60,19 +62,22 @@ export function SupplierDesk({
     );
   }
 
-  const inbound = visible.filter((j) => j.order.currentStatus === "LABELS_DISPATCHED").length;
-  const nextShipDate =
-    kind === "label"
-      ? visible
-          .filter((j) => j.order.currentStatus !== "LABELS_DISPATCHED" && j.order.factoryDeadline)
-          .map((j) => j.order.factoryDeadline as string)
-          .sort()[0] ?? null
-      : null;
-  const today = new Date().toLocaleDateString("sv-SE");
-  const nextShipLate = Boolean(nextShipDate && nextShipDate < today);
   const reportByJob = new Map(reports.flatMap((r) => r.jobIds.map((id) => [id, r.reportNo] as const)));
-  const latestReport = reports[0] ?? null;
   const highlighted = highlightReport ? reports.find((r) => r.reportNo === highlightReport) : null;
+  const counts = supplierCounts(visible, shipped, kind);
+  const attention = [
+    ...inboundReports.map((r) => ({
+      key: r.reportNo,
+      href: `/bottler/inleverans/${encodeURIComponent(r.reportNo)}`,
+      label: "Etiketter att ta emot",
+      detail: `${r.orderCount} ordrar · ${r.qty.toLocaleString("sv-SE")} etiketter`,
+    })),
+    ...visible.map((j) => ({
+      key: j.id,
+      href: `${basePath}/jobb/${j.id}`,
+      label: `${j.order.orderNo} · ${supplierActionLabel(kind, j)}`,
+    })),
+  ];
 
   return (
     <DashPage>
@@ -87,41 +92,15 @@ export function SupplierDesk({
           ) : undefined
         }
       />
-      {kind === "label" ? (
-        <Reveal>
-        <div className="space-y-2">
-          <KpiStrip cols={2}>
-            <KpiCard href={basePath} label="Nästa skickdatum" value={nextShipDate ?? "–"} />
-            <KpiCard href={`${basePath}?lage=rapport`} label="Leveransrapport" value={latestReport?.reportNo ?? "Ny"} />
-          </KpiStrip>
-          {nextShipDate ? (
-            <p className="text-[12px] text-[var(--av-text-muted)]">
-              {nextShipLate ? "Deadline har passerat. " : ""}
-              Kortaste deadline. Kör så mycket som hinns; allt som är klart skickas samtidigt.
-            </p>
-          ) : null}
-        </div>
-        </Reveal>
-      ) : inboundReports.length > 0 || inbound > 0 ? (
-        <Reveal>
-        <ActionList>
-          {inboundReports.length > 0
-            ? inboundReports.map((r) => (
-                <ActionCard
-                  key={r.reportNo}
-                  href={`/bottler/inleverans/${encodeURIComponent(r.reportNo)}`}
-                  label="Etiketter att ta emot"
-                  value={`${r.orderCount} ordrar`}
-                  detail={`${r.qty.toLocaleString("sv-SE")} etiketter skickade · ${new Date(r.shippedAt).toLocaleDateString("sv-SE")}`}
-                  tone="yellow"
-                />
-              ))
-            : (
-                <ActionCard href={basePath} label="Etiketter att ta emot" value={inbound} tone="yellow" />
-              )}
-        </ActionList>
-        </Reveal>
-      ) : null}
+      <Reveal>
+        <KpiStrip>
+          <KpiCard href={`${basePath}?f=nya`} label="Nya jobb att acceptera" value={counts.toAccept} />
+          <KpiCard href={`${basePath}?f=pagaende`} label="Pågående" value={counts.active} />
+          <KpiCard href={`${basePath}?f=vecka`} label="Deadline denna vecka" value={counts.dueThisWeek} />
+          <KpiCard href={kind === "bottler" ? `${basePath}/skickat` : `${basePath}?lage=rapport`} label="Skickat" value={counts.shipped} />
+        </KpiStrip>
+      </Reveal>
+      <NeedsAttention items={attention} />
       {receivedReport ? (
         <div className="av-card px-4 py-3 text-[13px]">
           <p className="font-semibold text-[var(--av-status-done-fg)]">{receivedReport} inlevererad</p>
@@ -174,6 +153,7 @@ export function SupplierDesk({
                 (status === "CONFIRMED" || status === "LABEL_PRODUCTION"),
               canSelect: status === "CONFIRMED" || status === "LABEL_PRODUCTION",
               reportNo: reportByJob.get(j.id) ?? null,
+              actionLabel: supplierActionLabel("label", j),
             };
           })}
         />
@@ -199,6 +179,8 @@ export function SupplierDesk({
               deadlineAccepted: j.order.factoryDeadlineAccepted,
               ...lane,
               ...plan,
+              statusLabel: statusHint(j.order.currentStatus, hintFactsFromOrder(j.order), "BOTTLER").label,
+              actionLabel: supplierActionLabel("bottler", j),
             };
           })}
         />

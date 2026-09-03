@@ -21,15 +21,17 @@ export function KontoOrderPeek({
   order,
   role,
   closeHref,
+  steg,
 }: {
   order: ComponentProps<typeof BuyerOrderDetail>["order"];
   role: string;
   closeHref: string;
+  steg?: "artwork" | "korr";
 }) {
   const [path, qs] = closeHref.split("?");
   const extra = Object.fromEntries(new URLSearchParams(qs ?? ""));
   return (
-    <OrderPeek closeHref={closeHref} title={order.orderNo}>
+    <OrderPeek closeHref={closeHref} title={order.orderNo} scrollTo={steg ? `steg-${steg}` : undefined}>
       <BuyerOrderDetail
         order={order}
         role={role}

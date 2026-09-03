@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import { DocumentKind } from "@prisma/client";
 import { isAquaAdmin } from "@/domain/policies/roles";
 import { getSessionUser } from "@/server/rbac";
-import { prisma } from "@/server/db";
-import { saveUploadedDocument } from "@/server/services/document.service";
+import { getOrderRecord, saveUploadedDocument } from "@/server/services/document.service";
 import { safeInternalPath } from "@/domain/safePath";
 
 const KINDS = Object.values(DocumentKind);
@@ -20,7 +19,7 @@ export async function POST(req: Request) {
   if (!orderId || !title || !(file instanceof File)) {
     return NextResponse.json({ error: "Saknar fil, titel eller order" }, { status: 400 });
   }
-  const order = await prisma.order.findUnique({ where: { id: orderId } });
+  const order = await getOrderRecord(orderId);
   if (!order) return NextResponse.json({ error: "Order saknas" }, { status: 404 });
   if (!isAquaAdmin(user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });

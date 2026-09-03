@@ -200,6 +200,25 @@ export function createMockIntegrations(): IntegrationRegistry {
         }
         return { id: `mail-art-${orderId}` };
       },
+      async sendArtworkRejected(orderId) {
+        const order = await prisma.order.findUnique({
+          where: { id: orderId },
+          include: { customer: { include: { users: true } } },
+        });
+        if (order?.customer.users.length) {
+          await prisma.notification.createMany({
+            data: order.customer.users.map((u) => ({
+              userId: u.id,
+              type: "email",
+              title: "Ny artwork behövs",
+              body: `${order.orderNo}: Aqua behöver en ny fil. Öppna ordern och ladda upp artwork.`,
+              entityType: "ORDER",
+              entityId: orderId,
+            })),
+          });
+        }
+        return { id: `mail-art-reject-${orderId}` };
+      },
       async sendDeliveryNotice(orderId) {
         const order = await prisma.order.findUnique({
           where: { id: orderId },
@@ -254,6 +273,16 @@ export function createMockIntegrations(): IntegrationRegistry {
       },
       async markRead(id) {
         await prisma.notification.update({ where: { id }, data: { readAt: new Date() } });
+      },
+    },
+    companyLookup: {
+      async lookup(orgNrDigits) {
+        await delay(250);
+        const known: Record<string, { name: string; line1: string; postalCode: string; city: string }> = {
+          "5598880101": { name: "Fikastunden Direkt AB", line1: "Kungsgatan 1", postalCode: "411 19", city: "Göteborg" },
+          "5568002048": { name: "Aqua Visibility AB", line1: "Regeringsgatan 20", postalCode: "111 53", city: "Stockholm" },
+        };
+        return known[orgNrDigits.replace(/\D/g, "")] ?? null;
       },
     },
   };

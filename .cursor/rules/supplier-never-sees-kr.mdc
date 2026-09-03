@@ -1,0 +1,11 @@
+---
+description: Etikett och bottler ser aldrig kr, fakturor eller kundens prislista
+alwaysApply: true
+---
+# Fabriken ser inte pengar
+
+Sidor och actions under `src/app/(labels)/**`, `src/app/(bottler)/**` och
+`/api/bottler/**` går genom `requireSupplier` och `stripPrices`. Ingen
+Prisma-include av `invoice`, `priceSnapshotJson`, `unitPriceExVat` eller
+`amountExVat`. PDF:er (LR/BF) har antal och datum, inte belopp.
+`canSeeFinance` är bara Aqua Admin.

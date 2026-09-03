@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+export const WATER_KINDS = ["stilla", "kolsyrat", "lime"] as const;
+export type WaterKind = (typeof WATER_KINDS)[number];
+
 export const bottleOptionsSchema = z.object({
   waterType: z.enum(["stilla", "kolsyrat"]),
   cap: z.enum(["skruvkork", "sportkork", "black", "white"]).optional(),
@@ -8,13 +11,31 @@ export const bottleOptionsSchema = z.object({
 
 export type BottleOptions = z.infer<typeof bottleOptionsSchema>;
 
+export function parseWaterKind(raw: unknown): WaterKind {
+  const s = String(raw ?? "").toLowerCase();
+  if (s.includes("lime") || s.includes("citron")) return "lime";
+  if (s.includes("kolsyr")) return "kolsyrat";
+  return "stilla";
+}
+
+export function waterKindFromOptionsJson(optionsJson?: string | null): WaterKind {
+  try {
+    const raw = JSON.parse(optionsJson || "{}") as Record<string, unknown>;
+    return parseWaterKind(raw.waterType);
+  } catch {
+    return "stilla";
+  }
+}
+
+export function waterTypeForOrder(kind: WaterKind): "stilla" | "kolsyrat" {
+  return kind === "stilla" ? "stilla" : "kolsyrat";
+}
+
 export function parseBottleOptions(optionsJson?: string | null): BottleOptions {
   try {
     const raw = JSON.parse(optionsJson || "{}") as Record<string, unknown>;
-    const water =
-      raw.waterType === "kolsyrat" || raw.waterType === "kolsyra" || String(raw.waterType).includes("kolsyr")
-        ? "kolsyrat"
-        : "stilla";
+    const kind = parseWaterKind(raw.waterType);
+    const water = kind === "stilla" ? "stilla" : "kolsyrat";
     const cap =
       raw.cap === "sportkork" || raw.cap === "sport"
         ? "sportkork"
@@ -31,14 +52,22 @@ export function parseBottleOptions(optionsJson?: string | null): BottleOptions {
 }
 
 export function waterTypeLabel(value?: string | null) {
+  if (value === "lime" || value === "CITRON/LIME") return "CITRON/LIME";
   return value === "kolsyrat" || value === "KOLSYRAT" ? "KOLSYRAT" : "STILLA";
+}
+
+export function waterKindLabel(kind: WaterKind) {
+  if (kind === "lime") return "Citron/lime";
+  if (kind === "kolsyrat") return "Kolsyrat";
+  return "Stilla";
 }
 
 export function capLabel(value?: string | null) {
   if (value === "sportkork" || value === "sport") return "SPORTKORK";
+  if (value === "skruvkork" || value === "skruv" || !value) return "SKRUVKORK";
   if (value === "white") return "VIT KAPSYL";
   if (value === "black") return "SVART KAPSYL";
-  return "SVART KAPSYL";
+  return "SKRUVKORK";
 }
 
 export function bottleColorLabel(value?: string | null) {

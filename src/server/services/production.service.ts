@@ -72,6 +72,21 @@ export const FACTORY_EVENTS = [
   "SHIPPED",
 ] as const;
 
+export async function listBottlerBoardJobs() {
+  return prisma.productionJob.findMany({
+    where: { factory: { kind: "bottler" } },
+    include: {
+      order: {
+        include: {
+          customer: { select: { name: true } },
+          items: { include: { variant: { include: { product: true } } } },
+        },
+      },
+    },
+    orderBy: { plannedAt: "asc" },
+  });
+}
+
 export async function listJobsForFactory(factoryId?: string, factoryKind?: "label" | "bottler") {
   return prisma.productionJob.findMany({
     where: {

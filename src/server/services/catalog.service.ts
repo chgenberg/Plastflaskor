@@ -25,6 +25,22 @@ export async function listProducts(categorySlug?: string) {
   });
 }
 
+export async function listHomeProducts() {
+  return prisma.product.findMany({
+    where: { isPublic: true, categorySlug: "profilvatten" },
+    orderBy: { sortOrder: "asc" },
+    take: 6,
+    select: {
+      slug: true,
+      categorySlug: true,
+      name: true,
+      oneLiner: true,
+      moq: true,
+      leadTimeText: true,
+    },
+  });
+}
+
 export async function listWaterProducts() {
   return prisma.product.findMany({
     where: { category: "WATER" },
@@ -143,6 +159,58 @@ export async function updatePriceListItem(id: string, data: { minQty: number; un
       minQty: Math.floor(data.minQty),
       unitPriceExVat: data.unitPriceExVat,
     },
+  });
+}
+
+export async function listPriceLists() {
+  return prisma.priceList.findMany({ orderBy: { name: "asc" } });
+}
+
+export async function listPriceListsAdmin() {
+  return prisma.priceList.findMany({
+    include: {
+      _count: { select: { items: true, customers: true } },
+      items: {
+        where: { variant: { product: { category: "WATER" } } },
+        select: {
+          id: true,
+          minQty: true,
+          unitPriceExVat: true,
+          variant: { select: { name: true, product: { select: { name: true } } } },
+        },
+        orderBy: [{ minQty: "asc" }, { unitPriceExVat: "asc" }],
+      },
+    },
+    orderBy: { code: "asc" },
+  });
+}
+
+const priceListWithItems = {
+  include: {
+    items: {
+      include: { variant: { include: { product: true } } },
+      orderBy: { minQty: "asc" as const },
+    },
+  },
+};
+
+export async function getPriceListPreview(listId?: string) {
+  if (listId) {
+    return prisma.priceList.findUnique({ where: { id: listId }, ...priceListWithItems });
+  }
+  return prisma.priceList.findUnique({ where: { code: "STANDARD" }, ...priceListWithItems });
+}
+
+export async function getPublicWaterVariant(variantId?: string) {
+  if (variantId) {
+    return prisma.productVariant.findFirst({
+      where: { id: variantId, isActive: true, product: { category: "WATER", isPublic: true } },
+      include: { product: true },
+    });
+  }
+  return prisma.productVariant.findFirst({
+    where: { isActive: true, product: { category: "WATER", isPublic: true, slug: "naturligt-mineralvatten-33cl" } },
+    include: { product: true },
   });
 }
 

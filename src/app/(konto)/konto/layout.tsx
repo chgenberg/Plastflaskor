@@ -1,51 +1,14 @@
-import { prisma } from "@/server/db";
 import { requireRole } from "@/server/rbac";
+import { getCustomerName } from "@/server/services/customer.service";
 import { AppShell } from "@/ui/shell/AppShell";
 
 export const dynamic = "force-dynamic";
 
 export default async function KontoLayout({ children }: { children: React.ReactNode }) {
   const user = await requireRole(["CUSTOMER", "AQUA_STAFF", "AQUA_ADMIN"]);
-  const customer = user.customerId
-    ? await prisma.customer.findUnique({ where: { id: user.customerId }, select: { name: true } })
-    : null;
+  const customerName = user.customerId ? await getCustomerName(user.customerId) : null;
   return (
-    <AppShell
-      title={customer?.name ?? "Kundportal"}
-      email={user.email}
-      role={user.role}
-      nav={[
-        {
-          id: "oversikt",
-          label: "Översikt",
-          children: [{ href: "/konto", label: "Hem" }],
-        },
-        {
-          id: "ordrar",
-          label: "Ordrar",
-          children: [
-            { href: "/konto/ordrar", label: "Alla ordrar" },
-            { href: "/konto/ordrar/ny", label: "Ny order" },
-          ],
-        },
-        {
-          id: "design",
-          label: "Design",
-          children: [
-            { href: "/designa", label: "Design Studio" },
-            { href: "/konto/artwork", label: "Artwork" },
-          ],
-        },
-        {
-          id: "ekonomi",
-          label: "Ekonomi",
-          children: [
-            { href: "/konto/fakturor", label: "Fakturor" },
-            { href: "/konto/dokument", label: "Dokument" },
-          ],
-        },
-      ]}
-    >
+    <AppShell title={customerName ?? "Kundportal"} email={user.email} role={user.role} name={user.name}>
       {children}
     </AppShell>
   );

@@ -14,16 +14,16 @@ const SHOTS = [
 export default function InspirationPage() {
   return (
     <PublicPage>
-      <Reveal>
+      <Reveal variant="public">
         <PageIntro badge="Inspiration" title="Referenser och användning" />
         <p className="mt-4 max-w-2xl text-[var(--av-text-secondary)]">
           Profilvatten, dryck och flaskor med egen etikett. Priser och order ligger i kundportalen.
         </p>
       </Reveal>
-      <Reveal>
+      <Reveal variant="public">
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {SHOTS.map((s) => (
-            <figure key={s.src} className="av-card av-lift overflow-hidden">
+            <figure key={s.src} className="av-card av-card-lift overflow-hidden">
               <EditorialShot src={s.src} alt={s.alt} className="aspect-[4/5] rounded-none" />
               <figcaption className="px-6 py-4 text-sm font-medium">{s.title}</figcaption>
             </figure>

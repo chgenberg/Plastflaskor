@@ -1,4 +1,5 @@
 import { getSessionUser } from "@/server/rbac";
+import { Parallax } from "@/ui/motion/Parallax";
 import { PublicFooter, PublicHeader } from "@/ui/public/PublicChrome";
 
 export const dynamic = "force-dynamic";
@@ -8,6 +9,7 @@ export default async function PublicLayout({ children }: { children: React.React
   return (
     <div className="min-h-screen bg-[var(--av-bg)]">
       <PublicHeader email={user?.email} />
+      <Parallax />
       {children}
       <PublicFooter />
     </div>

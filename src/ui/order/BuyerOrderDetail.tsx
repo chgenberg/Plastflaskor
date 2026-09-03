@@ -1,13 +1,14 @@
 import { customerApproveProofAction } from "@/actions";
-import { BUYER_STATUS, invoiceBuyerLabel } from "@/domain/enums";
-import { buyerTimeline, shipmentTrackingSteps } from "@/domain/orderBrief";
+import { invoiceBuyerLabel } from "@/domain/enums";
+import { buyerTimeline, customerActionFor, orderBrief, shipmentTrackingSteps } from "@/domain/orderBrief";
+import { hintFactsFromOrder, statusHint } from "@/domain/statusHint";
 import { buildPriceSnapshot, parseExtras, parseSnapshot } from "@/domain/extras";
 import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
 import { VisualSpecCard } from "@/ui/order/VisualSpecCard";
 import { OrderConfirmationPreview } from "@/ui/order/OrderConfirmationPreview";
 import { ArtworkUpload } from "@/ui/shell/ArtworkUpload";
-import { Button, DashPage, Field, FileLink, NextStep, PageHeader, Panel, StatusChip, Timeline } from "@/ui/shell/primitives";
+import { Button, DashPage, Field, FileLink, NextStep, PageHeader, Panel, StatusChip, StepIndicator, Timeline } from "@/ui/shell/primitives";
 import { canSeePrices } from "@/domain/policies/priceVisibility";
 import { orderArtworkLink } from "@/domain/orderArtwork";
 
@@ -75,10 +76,12 @@ export function BuyerOrderDetail({
         })
       : null);
   const extras = snap?.extras ?? extrasFromOrder;
-  const steps = buyerTimeline(order.currentStatus);
+  const action = customerActionFor(order);
+  const steps = buyerTimeline(order.currentStatus, action);
+  const currentStep = steps.find((s) => s.current)?.id ?? "received";
   const showPrice = canSeePrices(role);
-  const needsProof = order.currentStatus === "ARTWORK_CUSTOMER_APPROVAL";
-  const customerFinal = (order.artworkApprovals ?? []).some((a) => a.kind === "CUSTOMER_FINAL");
+  const hint = statusHint(order.currentStatus, hintFactsFromOrder(order), "CUSTOMER");
+  const brief = orderBrief(order.currentStatus, order.requestedDate);
   const proofDoc = order.documents.find((d) => d.kind === "PROOF");
   const artwork = orderArtworkLink(order);
   const financeDocs = order.documents.filter((d) => d.kind === "FINANCE");
@@ -87,18 +90,39 @@ export function BuyerOrderDetail({
   const shipment = order.shipments[0];
   const trackSteps = shipment ? shipmentTrackingSteps(shipment.status) : [];
   const artworkReturnTo = returnTo ?? repeatHref.replace(/\/repeat$/, "");
+  const latestFile = order.designs.flatMap((d) => d.files)[0];
   const body = (
     <>
       {embedded ? null : <PageHeader title={order.orderNo} subtitle={item?.variant.product.name} />}
       {embedded && item ? <p className="text-[13px] text-[var(--av-text-muted)]">{item.variant.product.name}</p> : null}
       <p className="text-[12px] text-[var(--av-text-muted)]">Agenten bevakar kedjan. Ni behöver inte mejla oss för status.</p>
-      <StatusChip status={order.currentStatus} label={BUYER_STATUS[order.currentStatus]} requestedDate={order.requestedDate} />
-      {order.currentStatus === "SUBMITTED" || order.currentStatus === "AQUA_REVIEW" ? (
-        <NextStep
-          title="Vi har tagit emot din order"
-          body="Vi går nu igenom din order, leveransdatum och artwork. En slutgiltig orderbekräftelse med korrektur kommer inom 24 timmar. Detta är inte den slutliga orderbekräftelsen."
-          tone="done"
-        />
+      <StatusChip status={order.currentStatus} hint={hint} requestedDate={order.requestedDate} />
+      <Panel title="Tidslinje">
+        <p className="mb-3 text-sm text-[var(--av-text-muted)] md:hidden">
+          Steg {steps.findIndex((s) => s.current) + 1} av {steps.length}
+        </p>
+        <div className="hidden md:block">
+          <StepIndicator steps={steps.map((s) => ({ id: s.id, label: s.label }))} current={currentStep} />
+        </div>
+        <div className="md:hidden">
+          <Timeline steps={steps} />
+        </div>
+        <dl className="mt-4 grid gap-3 border-t border-[var(--av-border)] pt-4 text-sm sm:grid-cols-2">
+          <Field label="Aqua-godkänd leverans">{approved ?? "Bekräftas av AquaVisibility"}</Field>
+          <Field label="Preliminärt datum">{order.preliminaryDate ?? "Beräknas från ledtid"}</Field>
+        </dl>
+        {order.deliveryRequirement ? (
+          <p className="mt-3 text-sm font-medium text-[var(--av-status-blocked-fg)]">Viktigt leveranskrav: {order.deliveryRequirement}</p>
+        ) : null}
+      </Panel>
+      {action === "artwork" ? (
+        <NextStep title="Ladda upp artwork" body="Utan artwork kan vi inte skicka korrektur." tone="next" />
+      ) : null}
+      {action === "proof" ? (
+        <NextStep title="Godkänn korrektur" body="Filen blir slutgiltig artwork till etikettproducenten." tone="next" />
+      ) : null}
+      {action === null && !order.lockedAt ? (
+        <NextStep title="Vi jobbar på din order" body={brief.waiting} tone="done" />
       ) : null}
       {approved ? (
         <Panel>
@@ -108,27 +132,51 @@ export function BuyerOrderDetail({
         </Panel>
       ) : null}
       {spec && !order.lockedAt ? <VisualSpecCard spec={spec} /> : null}
-
-      {needsProof ? (
-        customerFinal ? (
-          <NextStep title="Korrektur godkänd" body="AquaVisibility skickar slutlig orderbekräftelse." tone="done" />
-        ) : (
-          <NextStep title="Godkänn korrektur" body="När ni godkänner blir filen den slutgiltiga artwork-filen till etikettproducenten." tone="next" />
-        )
+      {showPrice && item && !order.lockedAt ? (
+        <Panel title="Rader">
+          <ul className="space-y-1 text-sm">
+            {order.items.map((line) => (
+              <li key={line.variant.product.slug} className="flex justify-between gap-4">
+                <span>
+                  {line.variant.product.name} · {line.qty.toLocaleString("sv-SE")} st
+                </span>
+                <span className="tabular-nums">{line.unitPriceExVat.toLocaleString("sv-SE")} kr</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
       ) : null}
-      {needsProof && !customerFinal ? (
-        <Panel title="Korrektur">
-          {proofDoc ? (
-            <p className="mb-3 text-sm">
-              <FileLink href={`/api/documents/${proofDoc.id}?inline=1`}>Förhandsvisa</FileLink>
-              {" · "}
-              <FileLink href={`/api/documents/${proofDoc.id}`}>Ladda ner</FileLink>
-            </p>
-          ) : null}
-          <form action={customerApproveProofAction}>
-            <input type="hidden" name="orderNo" value={order.orderNo} />
-            <Button type="submit">Godkänn korrektur</Button>
-          </form>
+
+      {!order.lockedAt ? (
+        <Panel title="Artwork och korrektur">
+          <div id="steg-artwork" className="space-y-3">
+            {latestFile ? (
+              latestFile.fileName.match(/\.(png|jpe?g|webp|gif|svg)$/i) ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={`/api/artwork-files/${latestFile.id}`} alt="" className="max-h-48 rounded-[var(--av-radius-md)] border border-[var(--av-border)]" />
+              ) : (
+                <FileLink href={`/api/artwork-files/${latestFile.id}`}>{latestFile.fileName}</FileLink>
+              )
+            ) : (
+              <p className="text-sm text-[var(--av-text-muted)]">Ingen artwork uppladdad ännu.</p>
+            )}
+            {action === "artwork" ? <ArtworkUpload orderId={order.id} returnTo={artworkReturnTo} /> : null}
+          </div>
+          <div id="steg-korr" className="mt-4 space-y-3">
+            {proofDoc ? (
+              <p className="text-sm">
+                <FileLink href={`/api/documents/${proofDoc.id}?inline=1`}>Förhandsvisa korrektur</FileLink>
+                {" · "}
+                <FileLink href={`/api/documents/${proofDoc.id}`}>Ladda ner</FileLink>
+              </p>
+            ) : null}
+            {action === "proof" ? (
+              <form action={customerApproveProofAction}>
+                <input type="hidden" name="orderNo" value={order.orderNo} />
+                <Button type="submit">Godkänn korrektur</Button>
+              </form>
+            ) : null}
+          </div>
         </Panel>
       ) : null}
 
@@ -159,61 +207,6 @@ export function BuyerOrderDetail({
             Beställ igen
           </a>
         </>
-      ) : null}
-
-      <Panel title="Tidslinje">
-        <Timeline steps={steps} />
-        <dl className="mt-1 grid gap-3 border-t border-[var(--av-border)] pt-4 text-sm sm:grid-cols-2">
-          <Field label="Aqua-godkänd leverans">{approved ?? "Bekräftas av AquaVisibility"}</Field>
-          <Field label="Preliminärt datum">{order.preliminaryDate ?? "Beräknas från ledtid"}</Field>
-        </dl>
-        {order.deliveryRequirement ? (
-          <p className="mt-3 text-sm font-medium text-[var(--av-status-blocked-fg)]">Viktigt leveranskrav: {order.deliveryRequirement}</p>
-        ) : null}
-      </Panel>
-
-      {order.lockedAt ? null : (
-        <Panel title="Artwork">
-          {order.designs.length ? (
-            <ul className="space-y-2 text-sm">
-              {order.designs.map((d) => (
-                <li key={d.id}>
-                  <p className="font-medium">{d.projectName}</p>
-                  {d.files.map((f) => (
-                    <FileLink key={f.id} href={`/api/artwork-files/${f.id}`}>
-                      {f.fileName}
-                    </FileLink>
-                  ))}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-[var(--av-text-muted)]">Ingen artwork uppladdad ännu.</p>
-          )}
-          <ArtworkUpload orderId={order.id} returnTo={artworkReturnTo} />
-        </Panel>
-      )}
-
-      {showPrice && snap && !order.lockedAt ? (
-        <Panel title="Pris">
-          <ul className="space-y-1 text-sm">
-            {snap.lines.map((l) => (
-              <li key={l.name} className="flex justify-between gap-4">
-                <span>
-                  {l.name} · {l.qty.toLocaleString("sv-SE")} st
-                </span>
-                <span className="tabular-nums">{l.lineExVat.toLocaleString("sv-SE")} kr</span>
-              </li>
-            ))}
-            {snap.extras.map((e) => (
-              <li key={e.kind} className="flex justify-between gap-4 text-[var(--av-text-muted)]">
-                <span>{e.label}</span>
-                <span className="tabular-nums">{e.amountExVat.toLocaleString("sv-SE")} kr</span>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-3 text-lg font-semibold tabular-nums">{snap.amountExVat.toLocaleString("sv-SE")} kr ex moms</p>
-        </Panel>
       ) : null}
 
       {order.invoice ? (

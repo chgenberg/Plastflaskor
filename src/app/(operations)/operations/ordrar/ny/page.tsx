@@ -1,9 +1,8 @@
-import { prisma } from "@/server/db";
 import { requireRole } from "@/server/rbac";
 import { parseBottleOptions } from "@/domain/bottleCatalog";
 import { priceListDisplayName } from "@/domain/priceLists";
-import { getPriceListForBuyer, listWaterProducts } from "@/server/services/catalog.service";
-import { listCustomers } from "@/server/services/customer.service";
+import { getPriceListForBuyer, getPriceListPreview, listPriceLists, listWaterProducts } from "@/server/services/catalog.service";
+import { listCustomerAddresses, listCustomers } from "@/server/services/customer.service";
 import { ManualOrderCustomerPicker, ManualOrderForm } from "@/ui/order/ManualOrderForm";
 import { DashPage, EmptyState, PageHeader, Panel } from "@/ui/shell/primitives";
 
@@ -20,39 +19,18 @@ export default async function NewManualOrderPage({
   const [customers, products, priceLists] = await Promise.all([
     listCustomers(),
     listWaterProducts(),
-    prisma.priceList.findMany({ orderBy: { name: "asc" } }),
+    listPriceLists(),
   ]);
 
   const customer = customerId ? customers.find((c) => c.id === customerId) : null;
   const addresses = customerId
-    ? await prisma.address.findMany({
-        where: { customerId },
-        select: { id: true, line1: true, city: true },
-      })
+    ? (await listCustomerAddresses(customerId)).map((a) => ({ id: a.id, line1: a.line1, city: a.city }))
     : [];
 
   const list = customerId
     ? await getPriceListForBuyer({ customerId })
     : isNewCustomer
-      ? lista
-        ? await prisma.priceList.findUnique({
-            where: { id: lista },
-            include: {
-              items: {
-                include: { variant: { include: { product: true } } },
-                orderBy: { minQty: "asc" },
-              },
-            },
-          })
-        : await prisma.priceList.findUnique({
-            where: { code: "STANDARD" },
-            include: {
-              items: {
-                include: { variant: { include: { product: true } } },
-                orderBy: { minQty: "asc" },
-              },
-            },
-          })
+      ? await getPriceListPreview(lista)
       : null;
 
   const variants = list

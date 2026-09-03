@@ -6,27 +6,7 @@ export const dynamic = "force-dynamic";
 export default async function BottlerLayout({ children }: { children: React.ReactNode }) {
   const user = await requireSupplier("bottler");
   return (
-    <AppShell
-      title="Bottler"
-      email={user.email}
-      role={user.role}
-      dense
-      nav={[
-        {
-          id: "jobb",
-          label: "Jobb",
-          children: [
-            { href: "/bottler", label: "Översikt" },
-            { href: "/bottler/skickat", label: "Skickat" },
-          ],
-        },
-        {
-          id: "underlag",
-          label: "Underlag",
-          children: [{ href: "/bottler/dokument", label: "Dokument" }],
-        },
-      ]}
-    >
+    <AppShell title="Bottler" email={user.email} role={user.role} name={user.name} dense>
       {children}
     </AppShell>
   );

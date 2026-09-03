@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { placeBuyerOrderAction } from "@/actions";
 import { addLeadTimeDays } from "@/domain/orderBrief";
 import { bottleColorLabel, capLabel, waterTypeLabel } from "@/domain/bottleCatalog";
+import { matchVariant, unique } from "@/domain/bottleVariants";
 import { Button, controlClass } from "@/ui/shell/primitives";
 
 type Variant = {
@@ -24,24 +25,6 @@ function unitFor(v: Variant | undefined, qty: number) {
   if (!v?.tiers.length) return null;
   const match = v.tiers.filter((t) => qty >= t.minQty).sort((a, b) => b.minQty - a.minQty)[0];
   return match?.unitPriceExVat ?? null;
-}
-
-function unique<T>(xs: T[]) {
-  return [...new Set(xs)];
-}
-
-function matchVariant(
-  variants: Variant[],
-  volumeMl: number | null,
-  waterType: "stilla" | "kolsyrat",
-  cap: string,
-  color: string,
-) {
-  return (
-    variants.find((v) => v.volumeMl === volumeMl && v.waterType === waterType && v.cap === cap && v.color === color) ??
-    variants.find((v) => v.volumeMl === volumeMl && v.waterType === waterType) ??
-    variants.find((v) => v.volumeMl === volumeMl)
-  );
 }
 
 export function BottleOrderForm({
@@ -72,7 +55,7 @@ export function BottleOrderForm({
   const [waterType, setWaterType] = useState<"stilla" | "kolsyrat">(fromDesign?.waterType ?? first?.waterType ?? "stilla");
   const [cap, setCap] = useState(fromDesign?.cap ?? first?.cap ?? "skruvkork");
   const [color, setColor] = useState(fromDesign?.color ?? first?.color ?? "transparent");
-  const [qty, setQty] = useState(fromDesign?.qty ?? first?.moq ?? 270);
+  const [qty, setQty] = useState(fromDesign?.qty ?? first?.moq ?? 1);
 
   const types = unique(variants.filter((v) => v.volumeMl === volumeMl).map((v) => v.waterType));
   const resolvedType = types.includes(waterType) ? waterType : (types[0] ?? "stilla");
@@ -172,9 +155,9 @@ export function BottleOrderForm({
         <input
           name="qty"
           type="number"
-          min={selected?.moq ?? 270}
+          min={selected?.moq ?? 1}
           value={qty}
-          onChange={(e) => setQty(Number(e.target.value) || selected?.moq || 270)}
+          onChange={(e) => setQty(Number(e.target.value) || selected?.moq || 1)}
           className={`${controlClass} mt-1`}
           required
         />

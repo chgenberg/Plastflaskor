@@ -1,4 +1,4 @@
-import { isOverdue } from "./orderBrief";
+import { isOverdue, needsNewArtworkAfterReject } from "./orderBrief";
 
 export type ExceptionKind =
   | "review"
@@ -17,6 +17,7 @@ export type ExceptionKind =
   | "invoice"
   | "overdue"
   | "overdue_proof"
+  | "artwork_rejected"
   | "lead";
 
 export type AlertSeverity = "green" | "yellow" | "red" | "grey";
@@ -42,6 +43,7 @@ export type OrderLike = {
   shipments?: { waybillNo?: string | null; type?: string }[] | null;
   invoice?: { status?: string } | null;
   artworkApprovals?: { kind: string; createdAt: Date | string }[] | null;
+  artworkVersions?: { createdAt: Date | string }[] | null;
 };
 
 export const EXCEPTION_SEVERITY: Record<ExceptionKind, AlertSeverity> = {
@@ -61,6 +63,7 @@ export const EXCEPTION_SEVERITY: Record<ExceptionKind, AlertSeverity> = {
   invoice: "yellow",
   overdue: "red",
   overdue_proof: "red",
+  artwork_rejected: "yellow",
   lead: "green",
 };
 
@@ -204,6 +207,12 @@ const RULES: { kind: ExceptionKind; label: string; href: (o: OrderLike) => strin
       if (o.requestedDate) return daysBetween(o.requestedDate) >= -5;
       return false;
     },
+  },
+  {
+    kind: "artwork_rejected",
+    label: "Kund ska ladda upp ny artwork",
+    href: (o) => `/operations/ordrar/${o.orderNo}`,
+    match: (o) => needsNewArtworkAfterReject(o),
   },
 ];
 

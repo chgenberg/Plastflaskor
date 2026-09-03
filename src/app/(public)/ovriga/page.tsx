@@ -9,18 +9,18 @@ export default async function OvrigaPage() {
   const products = await listProducts("kyl");
   return (
     <PublicPage>
-      <Reveal>
+      <Reveal variant="public">
         <PageIntro badge="Övriga" title="Kyl och tillbehör" align="center" />
         <p className="mx-auto mt-4 max-w-2xl text-center text-[var(--av-text-secondary)]">
           En profilerbar kyl med avtagbart energibesparande lock.
         </p>
       </Reveal>
-      <Reveal>
+      <Reveal variant="public">
         <div className="mt-12 grid gap-5 md:grid-cols-2">
           {products.map((p) => {
             const img = imageForProduct(p.slug);
             return (
-              <article key={p.id} className="av-card av-lift overflow-hidden">
+              <article key={p.id} className="av-card av-card-lift overflow-hidden">
                 {img ? (
                   <Link href={`/produkter/${p.categorySlug}/${p.slug}`} className="av-media block aspect-[4/5] rounded-none">
                     <Image src={img} alt={p.name} fill className="object-cover" sizes="50vw" />

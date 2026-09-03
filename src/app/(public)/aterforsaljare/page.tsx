@@ -5,7 +5,7 @@ import { EditorialShot, PageIntro, PillLink, PublicPage } from "@/ui/public/Page
 export default function ResellerLanding() {
   return (
     <PublicPage narrow>
-      <Reveal>
+      <Reveal variant="public">
         <PageIntro badge="Återförsäljare" title="För återförsäljare" />
         <EditorialShot src={PAGE_IMAGES.aterforsaljareKit} alt="Samplekit för återförsäljare" />
       </Reveal>

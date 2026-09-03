@@ -1,6 +1,7 @@
-import { ORDER_STEP_LABELS, invoiceBuyerLabel, type OrderStatusCode } from "@/domain/enums";
+import { invoiceBuyerLabel } from "@/domain/enums";
 import { parseExtras } from "@/domain/extras";
 import { isOverdue } from "@/domain/orderBrief";
+import { hintFactsFromOrder, statusHint } from "@/domain/statusHint";
 import { DashTable, RowHit, StatusChip } from "@/ui/shell/primitives";
 
 function rowValue(order: {
@@ -38,6 +39,9 @@ type ResultOrder = {
   }[];
   extrasJson?: string | null;
   priceSnapshotJson?: string | null;
+  designs?: { files?: { id: string }[] }[];
+  artworkApprovals?: { kind: string }[];
+  artworkVersions?: { id: string }[];
 };
 
 function fmtDate(value?: Date | string | null) {
@@ -92,7 +96,7 @@ export function OrderResultsTable({ orders, hrefBase = "/operations/ordrar" }: {
             <td>
               <StatusChip
                 status={o.currentStatus}
-                label={ORDER_STEP_LABELS[o.currentStatus as OrderStatusCode]}
+                hint={statusHint(o.currentStatus, hintFactsFromOrder(o), "AQUA")}
                 requestedDate={o.requestedDate}
               />
             </td>

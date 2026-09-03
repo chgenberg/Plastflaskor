@@ -35,6 +35,65 @@ const eslintConfig = [
       ],
     },
   },
+  {
+    files: ["src/domain/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            { name: "next", message: "domain är rent TypeScript. Ingen Next." },
+            { name: "react", message: "domain är rent TypeScript. Ingen React." },
+            { name: "react-dom", message: "domain är rent TypeScript. Ingen React." },
+          ],
+          patterns: [
+            { group: ["next/*"], message: "domain är rent TypeScript. Ingen Next." },
+            { group: ["react/*", "react-dom/*"], message: "domain är rent TypeScript. Ingen React." },
+            { group: ["@/server", "@/server/*"], message: "domain anropar inte servern." },
+            { group: ["@/actions", "@/actions/*"], message: "domain anropar inte actions." },
+            { group: ["@/ui", "@/ui/*"], message: "domain importerar inte UI." },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["src/app/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [{ name: "@/server/db", message: "Sidor anropar services, inte Prisma." }],
+          patterns: [
+            {
+              group: ["**/integrations/adapters/mock", "@/server/integrations/adapters/mock"],
+              message: "Importera getIntegrations() istället för mock-adaptrar.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["src/ui/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            { name: "@prisma/client", message: "UI pratar inte med databasen." },
+          ],
+          patterns: [
+            { group: ["@/server/db"], message: "UI anropar inte Prisma." },
+            {
+              group: ["**/integrations/adapters/mock", "@/server/integrations/adapters/mock"],
+              message: "Importera getIntegrations() istället för mock-adaptrar.",
+            },
+          ],
+        },
+      ],
+    },
+  },
 ];
 
 export default eslintConfig;

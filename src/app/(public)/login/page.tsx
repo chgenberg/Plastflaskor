@@ -15,7 +15,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
 
   return (
     <PublicPage narrow>
-      <Reveal>
+      <Reveal variant="public">
       <div className="mb-8 text-center">
         <Image src="/brand/aqua-visibility-logo.png" alt="aqua visibility" width={140} height={46} className="mx-auto h-9 w-auto" />
         <h1 className="mt-8 text-[28px] font-semibold tracking-tight">Logga in</h1>
@@ -37,6 +37,12 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             Logga in
           </Button>
         </form>
+        <p className="mt-4 text-center text-sm text-[var(--av-text-muted)]">
+          Ny kund? Kontot skapas i kassan när du beställer.{" "}
+          <a href="/produkter/profilvatten" className="font-medium text-[var(--av-accent)]">
+            Till profilvatten
+          </a>
+        </p>
       </div>
       <div className="mt-8 space-y-3 text-center text-[12px] leading-relaxed text-[var(--av-text-muted)]">
         <p className="font-medium text-[var(--av-text)]">Demovisning — samma lösenord: AquaDemo26!</p>

@@ -4,7 +4,7 @@ import { PageIntro, PublicPage } from "@/ui/public/PageIntro";
 export default function ThanksPage() {
   return (
     <PublicPage narrow>
-      <Reveal>
+      <Reveal variant="public">
         <div className="text-center">
           <PageIntro title="Tack!" align="center" />
           <p className="mt-4 text-[var(--av-text-secondary)]">Vi återkommer med offert.</p>

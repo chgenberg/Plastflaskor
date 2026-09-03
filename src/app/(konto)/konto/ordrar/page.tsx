@@ -1,6 +1,7 @@
 import { requireRole } from "@/server/rbac";
 import { listOrdersForCustomer } from "@/server/services/order.service";
-import { BUYER_STATUS } from "@/domain/enums";
+import { customerActionFor } from "@/domain/orderBrief";
+import { hintFactsFromOrder, statusHint } from "@/domain/statusHint";
 import { specFromOrderItem } from "@/domain/visualSpec";
 import { imageForProduct } from "@/domain/productImages";
 import { BuyerOrderTable } from "@/ui/order/BuyerOrderCard";
@@ -9,20 +10,25 @@ import { DashPage, EmptyState, FilterChip, LinkButton, PageHeader } from "@/ui/s
 
 const DONE = new Set(["DELIVERED", "INVOICED", "PAID"]);
 
-export default async function KontoOrders({ searchParams }: { searchParams: Promise<{ view?: string; order?: string }> }) {
-  const { view: raw, order: peekNo } = await searchParams;
-  const view = raw === "delivered" || raw === "active" || raw === "proof" || raw === "shipped" ? raw : "all";
+export default async function KontoOrders({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string; order?: string; steg?: string }>;
+}) {
+  const { view: raw, order: peekNo, steg } = await searchParams;
+  const view = raw === "delivered" || raw === "active" || raw === "action" || raw === "shipped" ? raw : "all";
   const user = await requireRole(["CUSTOMER", "AQUA_STAFF", "AQUA_ADMIN"]);
   const all = user.customerId ? await listOrdersForCustomer(user.customerId) : [];
   const closeHref = view === "all" ? "/konto/ordrar" : `/konto/ordrar?view=${view}`;
   const peek = findKontoOrder(all, peekNo);
+  const peekSteg = steg === "artwork" || steg === "korr" ? steg : undefined;
   const orders =
     view === "active"
       ? all.filter((o) => !DONE.has(o.currentStatus))
       : view === "delivered"
         ? all.filter((o) => DONE.has(o.currentStatus))
-        : view === "proof"
-          ? all.filter((o) => o.currentStatus === "ARTWORK_CUSTOMER_APPROVAL")
+        : view === "action"
+          ? all.filter((o) => customerActionFor(o))
           : view === "shipped"
             ? all.filter((o) => o.currentStatus === "SHIPPED")
             : all;
@@ -33,7 +39,7 @@ export default async function KontoOrders({ searchParams }: { searchParams: Prom
         {[
           { id: "all", label: "Alla", href: "/konto/ordrar" },
           { id: "active", label: "Aktiva", href: "/konto/ordrar?view=active" },
-          { id: "proof", label: "Väntar på godkännande", href: "/konto/ordrar?view=proof" },
+          { id: "action", label: "Väntar på dig", href: "/konto/ordrar?view=action" },
           { id: "shipped", label: "På väg", href: "/konto/ordrar?view=shipped" },
           { id: "delivered", label: "Levererade / tidigare", href: "/konto/ordrar?view=delivered" },
         ].map((tab) => (
@@ -48,6 +54,7 @@ export default async function KontoOrders({ searchParams }: { searchParams: Prom
         <BuyerOrderTable
           rows={orders.map((o) => {
             const item = o.items[0];
+            const hint = statusHint(o.currentStatus, hintFactsFromOrder(o), "CUSTOMER");
             return {
               href: kontoPeekHref("/konto/ordrar", o.orderNo, view === "all" ? undefined : { view }),
               orderNo: o.orderNo,
@@ -57,7 +64,7 @@ export default async function KontoOrders({ searchParams }: { searchParams: Prom
                 imageSrc: item ? imageForProduct(item.variant.product.slug) : null,
               }),
               status: o.currentStatus,
-              statusLabel: BUYER_STATUS[o.currentStatus],
+              statusLabel: hint.label,
               delivery: o.aquaApprovedDelivery
                 ? `Leverans ${o.aquaApprovedDelivery}`
                 : o.preliminaryDate
@@ -69,7 +76,7 @@ export default async function KontoOrders({ searchParams }: { searchParams: Prom
           })}
         />
       )}
-      {peek ? <KontoOrderPeek order={peek} role={user.role} closeHref={closeHref} /> : null}
+      {peek ? <KontoOrderPeek order={peek} role={user.role} closeHref={closeHref} steg={peekSteg} /> : null}
     </DashPage>
   );
 }

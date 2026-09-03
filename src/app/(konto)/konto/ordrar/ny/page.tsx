@@ -1,7 +1,8 @@
 import { requireRole } from "@/server/rbac";
 import { parseBottleOptions } from "@/domain/bottleCatalog";
 import { listWaterProducts, getPriceListForBuyer } from "@/server/services/catalog.service";
-import { prisma } from "@/server/db";
+import { listCustomerAddresses } from "@/server/services/customer.service";
+import { getBuyerDesign } from "@/server/services/document.service";
 import { BottleOrderForm } from "@/ui/order/BottleOrderForm";
 import { DashPage, PageHeader, Panel } from "@/ui/shell/primitives";
 
@@ -10,17 +11,8 @@ export default async function NewCustomerOrder({ searchParams }: { searchParams:
   const user = await requireRole(["CUSTOMER", "AQUA_STAFF", "AQUA_ADMIN"]);
   const products = await listWaterProducts();
   const list = user.customerId ? await getPriceListForBuyer({ customerId: user.customerId }) : null;
-  const addresses = user.customerId
-    ? await prisma.address.findMany({ where: { customerId: user.customerId } })
-    : [];
-  const design = designId
-    ? await prisma.design.findFirst({
-        where: {
-          id: designId,
-          ...(user.role === "CUSTOMER" && user.id ? { userId: user.id } : {}),
-        },
-      })
-    : null;
+  const addresses = user.customerId ? await listCustomerAddresses(user.customerId) : [];
+  const design = designId && user.id ? await getBuyerDesign(designId, { id: user.id, role: user.role }) : null;
   const designOpt = design ? parseBottleOptions(design.optionsJson) : null;
   const variants = products.flatMap((p) =>
     p.variants.map((v) => {

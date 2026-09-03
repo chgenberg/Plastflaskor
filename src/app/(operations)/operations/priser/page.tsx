@@ -1,25 +1,10 @@
 import { updatePriceItemAction } from "@/actions/catalogMasters";
 import { priceListDisplayName } from "@/domain/priceLists";
-import { prisma } from "@/server/db";
+import { listPriceListsAdmin } from "@/server/services/catalog.service";
 import { Button, DashPage, DataRow, DataTable, EmptyState, PageHeader, controlCompact } from "@/ui/shell/primitives";
 
 export default async function PriceListsAdmin() {
-  const lists = await prisma.priceList.findMany({
-    include: {
-      _count: { select: { items: true, customers: true } },
-      items: {
-        where: { variant: { product: { category: "WATER" } } },
-        select: {
-          id: true,
-          minQty: true,
-          unitPriceExVat: true,
-          variant: { select: { name: true, product: { select: { name: true } } } },
-        },
-        orderBy: [{ minQty: "asc" }, { unitPriceExVat: "asc" }],
-      },
-    },
-    orderBy: { code: "asc" },
-  });
+  const lists = await listPriceListsAdmin();
 
   return (
     <DashPage>
