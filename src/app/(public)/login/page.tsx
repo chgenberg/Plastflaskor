@@ -3,6 +3,7 @@ import { getSessionUser, homeForRole } from "@/server/rbac";
 import { safeInternalPath } from "@/domain/safePath";
 import { redirect } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { Reveal } from "@/ui/motion/Reveal";
 import { PublicPage } from "@/ui/public/PageIntro";
 import { Button, controlClass } from "@/ui/shell/primitives";
@@ -39,9 +40,9 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         </form>
         <p className="mt-4 text-center text-sm text-[var(--av-text-muted)]">
           Ny kund? Kontot skapas i kassan när du beställer.{" "}
-          <a href="/produkter/profilvatten" className="font-medium text-[var(--av-accent)]">
+          <Link href="/produkter/profilvatten" className="font-medium text-[var(--av-accent)]">
             Till profilvatten
-          </a>
+          </Link>
         </p>
       </div>
       <div className="mt-8 space-y-3 text-center text-[12px] leading-relaxed text-[var(--av-text-muted)]">
