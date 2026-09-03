@@ -42,6 +42,7 @@ export function ProductConfigurator({
   canSeePrices,
   designId,
   onOrder,
+  onPreview,
 }: {
   productId: string;
   slug: string;
@@ -50,6 +51,7 @@ export function ProductConfigurator({
   canSeePrices: boolean;
   designId?: string;
   onOrder: (selection: ProductSelection) => void;
+  onPreview?: (preview: { volume: string | null; water: string }) => void;
 }) {
   const rows: Row[] = useMemo(
     () =>
@@ -74,6 +76,13 @@ export function ProductConfigurator({
   const selected = matchVariant(rows, volumeMl, resolvedType, cap, color) ?? first;
   const pack = selected?.packSize && selected.packSize > 1 ? selected.packSize : 1;
   const belowMoq = qty < moq;
+
+  useEffect(() => {
+    onPreview?.({
+      volume: selected ? volumeLabel(selected.volumeMl) : null,
+      water: waterKindLabel(resolvedType),
+    });
+  }, [onPreview, resolvedType, selected]);
 
   useEffect(() => {
     if (!canSeePrices || !selected) {

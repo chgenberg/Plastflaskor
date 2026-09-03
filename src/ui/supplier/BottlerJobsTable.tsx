@@ -75,7 +75,7 @@ export function BottlerJobsTable({ rows }: { rows: BottlerJobRow[] }) {
             ))}
           </select>
         </label>
-        <LinkButton href={printHref} variant="primary" size="sm">
+        <LinkButton href={printHref} variant="primary" size="lg">
           Print all
         </LinkButton>
       </div>
@@ -117,7 +117,7 @@ export function BottlerJobsTable({ rows }: { rows: BottlerJobRow[] }) {
                   <StatusChip status={r.status} label={r.statusLabel} />
                 </td>
                 <td className="av-actions">
-                  <LinkButton href={r.href} size="sm">
+                  <LinkButton href={r.href} size="lg">
                     {r.actionLabel ?? "Öppna"}
                   </LinkButton>
                 </td>

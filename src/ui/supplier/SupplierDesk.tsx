@@ -3,7 +3,7 @@ import type { InboundDispatchCard, LabelDispatchSummary } from "@/server/service
 import { bottlerDeskStatus } from "@/domain/bottlerDesk";
 import { planFromItem } from "@/domain/bottlerPlan";
 import { hintFactsFromOrder, statusHint } from "@/domain/statusHint";
-import { supplierActionLabel, supplierCounts } from "@/domain/supplierDesk";
+import { supplierActionLabel, supplierCounts, supplierNeedsAttention } from "@/domain/supplierDesk";
 import { LabelJobsTable } from "@/ui/supplier/LabelJobsTable";
 import { BottlerJobsTable } from "@/ui/supplier/BottlerJobsTable";
 import { Reveal } from "@/ui/motion/Reveal";
@@ -72,11 +72,13 @@ export function SupplierDesk({
       label: "Etiketter att ta emot",
       detail: `${r.orderCount} ordrar · ${r.qty.toLocaleString("sv-SE")} etiketter`,
     })),
-    ...visible.map((j) => ({
-      key: j.id,
-      href: `${basePath}/jobb/${j.id}`,
-      label: `${j.order.orderNo} · ${supplierActionLabel(kind, j)}`,
-    })),
+    ...visible
+      .filter((j) => supplierNeedsAttention(kind, j))
+      .map((j) => ({
+        key: j.id,
+        href: `${basePath}/jobb/${j.id}`,
+        label: `${j.order.orderNo} · ${supplierActionLabel(kind, j)}`,
+      })),
   ];
 
   return (

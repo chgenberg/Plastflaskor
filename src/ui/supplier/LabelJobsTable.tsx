@@ -129,7 +129,7 @@ export function LabelJobsTable({
                   <td className="av-actions">
                     {!compose ? (
                       <TableActions>
-                        <LinkButton href={r.href} size="sm">
+                        <LinkButton href={r.href} size="lg">
                           {r.actionLabel ?? "Öppna"}
                         </LinkButton>
                       </TableActions>

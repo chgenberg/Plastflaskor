@@ -157,7 +157,7 @@ export function hrefParts(href: string) {
   return { path, query: new URLSearchParams(query ?? "") };
 }
 
-export function childActive(href: string, path: string, search: URLSearchParams) {
+export function childActive(href: string, path: string, search: { get(name: string): string | null }) {
   const { path: target, query } = hrefParts(href);
   const roots = ["/operations", "/konto", "/labels", "/bottler"];
   if (query.get("phase")) {

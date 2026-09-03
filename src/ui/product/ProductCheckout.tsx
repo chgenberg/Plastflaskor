@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { ProductSelection } from "@/domain/productSelection";
 import { volumeLabel } from "@/domain/productFacts";
-import { parseBottleOptions } from "@/domain/bottleCatalog";
+import { waterKindFromOptionsJson, waterKindLabel } from "@/domain/bottleCatalog";
 import { OrderModal } from "@/ui/checkout/OrderModal";
 import { ProductConfigurator, type ConfigVariant } from "./ProductConfigurator";
 import { ProductStickyBar } from "./ProductStickyBar";
@@ -27,8 +27,11 @@ export function ProductCheckout({
 }) {
   const [selection, setSelection] = useState<ProductSelection | null>(null);
   const first = variants[0];
-  const volume = first ? volumeLabel(first.volumeMl) : null;
-  const water = first ? parseBottleOptions(first.optionsJson).waterType : "stilla";
+  const [preview, setPreview] = useState(() => ({
+    volume: first ? volumeLabel(first.volumeMl) : null,
+    water: first ? waterKindLabel(waterKindFromOptionsJson(first.optionsJson)) : "Stilla",
+  }));
+  const line = preview.volume ? `${preview.volume} · ${preview.water}` : null;
 
   return (
     <>
@@ -39,8 +42,9 @@ export function ProductCheckout({
         variants={variants}
         canSeePrices={canSeePrices}
         onOrder={setSelection}
+        onPreview={setPreview}
       />
-      <ProductStickyBar name={name} volume={volume ? `${volume} · ${water === "kolsyrat" ? "kolsyrat" : "stilla"}` : null} />
+      <ProductStickyBar name={name} volume={line} />
       {selection ? <OrderModal selection={selection} me={me} onClose={() => setSelection(null)} /> : null}
     </>
   );

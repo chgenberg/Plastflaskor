@@ -34,28 +34,30 @@ export function AppShell({
   name?: string | null;
   dense?: boolean;
 }) {
+  const path = usePathname();
   return (
     <Suspense
       fallback={
-        <ShellFrame title={title} email={email} role={role} name={name} dense={dense}>
+        <ShellFrame title={title} email={email} role={role} name={name} dense={dense} path={path}>
           {children}
         </ShellFrame>
       }
     >
-      <ShellInner title={title} email={email} role={role} name={name} dense={dense}>
+      <ShellSearch title={title} email={email} role={role} name={name} dense={dense} path={path}>
         {children}
-      </ShellInner>
+      </ShellSearch>
     </Suspense>
   );
 }
 
-function ShellInner({
+function ShellSearch({
   title,
   children,
   email,
   role,
   name,
   dense,
+  path,
 }: {
   title: string;
   children: React.ReactNode;
@@ -63,8 +65,8 @@ function ShellInner({
   role?: string | null;
   name?: string | null;
   dense?: boolean;
+  path: string;
 }) {
-  const path = usePathname();
   const search = useSearchParams();
   return (
     <ShellFrame title={title} email={email} role={role} name={name} dense={dense} path={path} search={search}>
@@ -80,7 +82,7 @@ function ShellFrame({
   role,
   name,
   dense,
-  path = "/",
+  path,
   search,
 }: {
   title: string;
@@ -89,7 +91,7 @@ function ShellFrame({
   role?: string | null;
   name?: string | null;
   dense?: boolean;
-  path?: string;
+  path: string;
   search?: URLSearchParams | { get(name: string): string | null };
 }) {
   const navRole = navRoleOf(role);
@@ -101,7 +103,7 @@ function ShellFrame({
   const settingsHref = SETTINGS_HREF[navRole];
   const [open, setOpen] = useState(false);
   const params = search ?? new URLSearchParams();
-  const pageTitle = titleForPath(path, params instanceof URLSearchParams ? params : new URLSearchParams());
+  const pageTitle = titleForPath(path, params);
   const letters = initials(name ?? email);
 
   useEffect(() => {
@@ -172,7 +174,7 @@ function ShellFrame({
 
       <nav className="av-tabbar md:hidden" aria-label="Snabbmeny">
         {tabItems.map((item) => {
-          const on = childActive(item.href, path, params instanceof URLSearchParams ? params : new URLSearchParams());
+          const on = childActive(item.href, path, params);
           return (
             <Link key={item.href} href={item.href} aria-current={on ? "page" : undefined} className={`av-tab${on ? " is-active" : ""}`}>
               {item.label}
@@ -230,7 +232,6 @@ function DashNav({
   path: string;
   search: URLSearchParams | { get(name: string): string | null };
 }) {
-  const params = search instanceof URLSearchParams ? search : new URLSearchParams();
   return (
     <nav className="av-nav" aria-label="Huvudmeny">
       {nav.map((mother) => {
@@ -240,7 +241,7 @@ function DashNav({
             {bare ? null : <h2 className="av-nav-label">{mother.label}</h2>}
             <ul className="av-nav-list">
               {mother.children.map((child) => {
-                const on = childActive(child.href, path, params);
+                const on = childActive(child.href, path, search);
                 return (
                   <li key={child.href}>
                     <Link

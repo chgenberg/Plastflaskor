@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { inIsoWeek, isoWeekBounds, supplierActionLabel, supplierCounts } from "./supplierDesk";
+import { inIsoWeek, isoWeekBounds, supplierActionLabel, supplierCounts, supplierNeedsAttention } from "./supplierDesk";
 
 test("iso week contains monday through sunday", () => {
   const wednesday = new Date("2026-09-02T12:00:00");
@@ -33,4 +33,24 @@ test("bottler counts dispatched as toAccept", () => {
   assert.equal(counts.dueThisWeek, 1);
   assert.equal(counts.shipped, 1);
   assert.equal(supplierActionLabel("bottler", visible[0]!), "Ta emot etiketter");
+});
+
+test("NeedsAttention skips jobs that only say open", () => {
+  const today = new Date("2026-09-02T12:00:00");
+  assert.equal(
+    supplierNeedsAttention("label", { order: { currentStatus: "LABEL_PRODUCTION", factoryDeadlineAccepted: false } }, today),
+    true,
+  );
+  assert.equal(
+    supplierNeedsAttention("label", { order: { currentStatus: "LABEL_PRODUCTION", factoryDeadlineAccepted: true } }, today),
+    false,
+  );
+  assert.equal(
+    supplierNeedsAttention("bottler", { order: { currentStatus: "LABELS_DISPATCHED", factoryDeadlineAccepted: true } }, today),
+    true,
+  );
+  assert.equal(
+    supplierNeedsAttention("bottler", { order: { currentStatus: "IN_PRODUCTION", factoryDeadlineAccepted: true } }, today),
+    false,
+  );
 });

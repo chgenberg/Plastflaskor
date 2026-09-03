@@ -69,3 +69,7 @@ export function supplierActionLabel(kind: SupplierKind, job: SupplierJobLike, to
   if (status === "READY_TO_SHIP") return "Rapportera POD / skicka";
   return "Öppna jobb";
 }
+
+export function supplierNeedsAttention(kind: SupplierKind, job: SupplierJobLike, today = new Date()) {
+  return supplierActionLabel(kind, job, today) !== "Öppna jobb";
+}
