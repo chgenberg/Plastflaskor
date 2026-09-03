@@ -206,3 +206,23 @@ export async function listDesignsForUser(user: SessionLike) {
     take: 40,
   });
 }
+
+export async function getLatestStudioDraft(user: SessionLike) {
+  if (user.role === "RESELLER") return null;
+  const where =
+    user.role === "CUSTOMER"
+      ? { OR: [{ userId: user.id }, ...(user.customerId ? [{ order: { customerId: user.customerId } }] : [])] }
+      : {};
+  return prisma.design.findFirst({
+    where,
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      projectName: true,
+      productId: true,
+      canvasJson: true,
+      optionsJson: true,
+      cupDocumentJson: true,
+    },
+  });
+}

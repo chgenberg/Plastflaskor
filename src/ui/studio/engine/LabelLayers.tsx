@@ -9,7 +9,9 @@ export function LabelLayers({
   onSelect,
   onDragStart,
   onScaleStart,
+  onRotateStart,
   compact,
+  hideEmpty,
 }: {
   layers: Layer[];
   selectedId?: string;
@@ -17,7 +19,9 @@ export function LabelLayers({
   onSelect?: (id: string) => void;
   onDragStart?: (id: string, e: { clientX: number; clientY: number }) => void;
   onScaleStart?: (id: string, e: { clientX: number; clientY: number }) => void;
+  onRotateStart?: (id: string, e: { clientX: number; clientY: number }) => void;
   compact?: boolean;
+  hideEmpty?: boolean;
 }) {
   const artwork = layers.find((l) => l.type === "artwork");
   const rest = layers.filter((l) => l.type !== "artwork");
@@ -26,7 +30,9 @@ export function LabelLayers({
     <>
       {artwork?.src ? (
         <div
-          className={`absolute inset-0 overflow-hidden ${interactive ? "cursor-default" : ""}`}
+          data-layer-id={artwork.id}
+          className={`absolute overflow-hidden ${interactive ? "cursor-default" : ""}`}
+          style={{ inset: artwork.fit === "contain" ? "7%" : 0 }}
           onPointerDown={() => interactive && onSelect?.(artwork.id)}
         >
           {artwork.src.startsWith("data:") || artwork.src.startsWith("blob:") ? (
@@ -34,17 +40,21 @@ export function LabelLayers({
             <img
               src={artwork.src}
               alt=""
-              className="h-full w-full object-cover"
-              style={{ transform: `scale(${artwork.scale}) rotate(${artwork.rotation}deg)` }}
+              className={`h-full w-full ${artwork.fit === "contain" ? "object-contain" : "object-cover"}`}
+              style={{
+                transform: `scale(${artwork.flipX ? -artwork.scale : artwork.scale}, ${artwork.scale}) rotate(${artwork.rotation}deg)`,
+              }}
             />
           ) : (
             <Image
               src={artwork.src}
               alt=""
               fill
-              className="object-cover"
+              className={artwork.fit === "contain" ? "object-contain" : "object-cover"}
               sizes="640px"
-              style={{ transform: `scale(${artwork.scale}) rotate(${artwork.rotation}deg)` }}
+              style={{
+                transform: `scale(${artwork.flipX ? -artwork.scale : artwork.scale}, ${artwork.scale}) rotate(${artwork.rotation}deg)`,
+              }}
             />
           )}
           {interactive && selectedId === artwork.id ? (
@@ -73,7 +83,7 @@ export function LabelLayers({
             style={{
               left: `${layer.x}%`,
               top: `${layer.y}%`,
-              transform: `translate(-50%, -50%) scale(${layer.scale}) rotate(${layer.rotation}deg)`,
+              transform: `translate(-50%, -50%) scale(${layer.flipX ? -layer.scale : layer.scale}, ${layer.scale}) rotate(${layer.rotation}deg)`,
             }}
           >
             {layer.type === "logo" && layer.src ? (
@@ -87,15 +97,19 @@ export function LabelLayers({
                 />
               </div>
             ) : null}
-            {layer.type === "logo" && !layer.src && interactive ? (
+            {layer.type === "logo" && !layer.src && interactive && !hideEmpty ? (
               <div className="rounded-md border border-dashed border-[var(--av-border-strong)] bg-white/70 px-5 py-3 text-[11px] text-[var(--av-text-muted)]">
                 Logotyp
               </div>
             ) : null}
             {layer.type === "text" && layer.text ? (
               <p
-                className="whitespace-nowrap text-center font-semibold tracking-wide drop-shadow-sm"
-                style={{ color: layer.color, fontSize: compact ? 9 : 15 }}
+                className="whitespace-nowrap font-semibold tracking-wide drop-shadow-sm"
+                style={{
+                  color: layer.color,
+                  fontSize: compact ? 9 : 15,
+                  textAlign: layer.align ?? "center",
+                }}
               >
                 {layer.text}
               </p>
@@ -109,7 +123,7 @@ export function LabelLayers({
                 className={compact ? "h-10 w-10" : "h-[72px] w-[72px]"}
               />
             ) : null}
-            {layer.type === "qr" && !layer.text && interactive ? (
+            {layer.type === "qr" && !layer.text && interactive && !hideEmpty ? (
               <div className="rounded-md border border-dashed border-[var(--av-border-strong)] bg-white/70 px-3 py-2 text-[11px] text-[var(--av-text-muted)]">
                 QR
               </div>
@@ -136,6 +150,15 @@ export function LabelLayers({
                     }}
                   />
                 ))}
+                <span
+                  className="absolute left-1/2 top-full mt-2 h-3 w-3 -translate-x-1/2 rounded-full border border-[#4C7AD9] bg-white"
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onSelect?.(layer.id);
+                    onRotateStart?.(layer.id, e);
+                  }}
+                />
               </>
             ) : null}
           </div>

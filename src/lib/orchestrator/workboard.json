@@ -1,6 +1,59 @@
 {
-  "updatedAt": "2026-09-03T14:30:00.000Z",
+  "updatedAt": "2026-09-03T15:25:00.000Z",
   "cards": [
+    {
+      "id": "wb-studio-engine-tests",
+      "title": "node:test för etikettmotorn",
+      "body": "geometry.ts (clamp/snap/wrapInsets/tangent/skala). parseStudioCanvasJson i cupDocument. Stress i cupDocument.test.ts + labelEngine.test.ts. npm test 72/72. Ingen commit.",
+      "status": "done",
+      "domainId": "artwork",
+      "playbook": "artwork",
+      "files": [
+        "src/ui/studio/engine/geometry.ts",
+        "src/ui/studio/engine/labelEngine.test.ts",
+        "src/domain/cupDocument.ts",
+        "src/domain/cupDocument.test.ts"
+      ],
+      "gate": "none",
+      "source": "cursor",
+      "createdAt": "2026-09-03T15:16:00.000Z",
+      "updatedAt": "2026-09-03T15:25:00.000Z"
+    },
+    {
+      "id": "wb-studio-stresstest",
+      "title": "Stresstest designmotorn",
+      "body": "Persona + agenter mot LabelCanvas/Studio/cupDocument. Laga format, fejk-spar, utkastkrav, HUD-zoom, bleed-Y, flatten flip/fit.",
+      "status": "done",
+      "domainId": "artwork",
+      "playbook": "artwork",
+      "files": [
+        "src/ui/studio/engine/LabelCanvas.tsx",
+        "src/ui/studio/Studio.tsx",
+        "src/ui/studio/engine/flattenLabel.ts",
+        "audits/studio-engine-stresstest-2026-09-03.md"
+      ],
+      "gate": "none",
+      "source": "cursor",
+      "createdAt": "2026-09-03T15:15:00.000Z",
+      "updatedAt": "2026-09-03T15:30:00.000Z"
+    },
+    {
+      "id": "wb-studio-canva",
+      "title": "Canva-lätt etikettstudio",
+      "body": "En nav, 56 px header, duk som hjälte, dieline, flytande HUD, fällbar inspektör, flaska som tittruta. Drop på duk, snap, startskärm, printGate på CTA. Inga kr i studion.",
+      "status": "done",
+      "domainId": "artwork",
+      "playbook": "artwork",
+      "files": [
+        "src/ui/studio/Studio.tsx",
+        "src/ui/studio/engine/LabelCanvas.tsx",
+        "src/domain/cupDocument.ts"
+      ],
+      "gate": "none",
+      "source": "cursor",
+      "createdAt": "2026-09-03T15:05:00.000Z",
+      "updatedAt": "2026-09-03T13:15:00.000Z"
+    },
     {
       "id": "wb-dash-bbb-polish",
       "title": "Dashboard-yta som BBB, Aqua-färger",

@@ -1,4 +1,5 @@
 import { listWaterProducts } from "@/server/services/catalog.service";
+import { getLatestStudioDraft } from "@/server/services/document.service";
 import { getSessionUser } from "@/server/rbac";
 import { Studio } from "@/ui/studio/Studio";
 import { wrapForVolume } from "@/ui/studio/engine/types";
@@ -7,6 +8,7 @@ export default async function DesignProductPage({ params }: { params: Promise<{ 
   const { product } = await params;
   const products = await listWaterProducts();
   const user = await getSessionUser();
+  const latestDraft = user ? await getLatestStudioDraft(user) : null;
   return (
     <Studio
       products={products.map((p) => ({
@@ -22,6 +24,7 @@ export default async function DesignProductPage({ params }: { params: Promise<{ 
       }))}
       initialSlug={product}
       role={user?.role}
+      latestDraft={latestDraft}
     />
   );
 }

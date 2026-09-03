@@ -40,6 +40,17 @@ export function parseCupDocument(raw: string | null | undefined): CupDocument | 
   }
 }
 
+/** Studio canvasJson layers. Missing, empty, or non-array → null. */
+export function parseStudioCanvasJson(raw: string): { layers: Record<string, unknown>[] } | null {
+  try {
+    const parsed = JSON.parse(raw) as { layers?: unknown };
+    if (!Array.isArray(parsed.layers) || parsed.layers.length === 0) return null;
+    return { layers: parsed.layers as Record<string, unknown>[] };
+  } catch {
+    return null;
+  }
+}
+
 export function emptyCupDocument(input: {
   productSlug: string;
   quantity: number;
@@ -72,10 +83,16 @@ export function emptyCupDocument(input: {
 export const REQUIRED_PRINT_MESSAGE =
   "Placera obligatoriska etikettelement innan du går vidare.";
 
+export function printGate(requirements: { required?: boolean; placed?: boolean }[] | null | undefined) {
+  const required = (requirements ?? []).filter((r) => r.required === true);
+  const done = required.filter((r) => r.placed === true).length;
+  return { done, total: required.length, ready: required.length === 0 || done === required.length };
+}
+
 export function assertRequiredPrintPlaced(
   requirements: { required?: boolean; placed?: boolean }[] | null | undefined,
 ) {
-  if ((requirements ?? []).some((r) => r.required === true && r.placed !== true)) {
+  if (!printGate(requirements).ready) {
     throw new Error(REQUIRED_PRINT_MESSAGE);
   }
 }

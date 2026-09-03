@@ -19,6 +19,7 @@ export function BottlePreview({
   zoom,
   layers,
   onYaw,
+  compact,
 }: {
   categorySlug: string;
   productSlug?: string;
@@ -31,6 +32,7 @@ export function BottlePreview({
   zoom: number;
   layers: Layer[];
   onYaw?: (yaw: number) => void;
+  compact?: boolean;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const scene = useRef<SceneHandle | null>(null);
@@ -82,7 +84,7 @@ export function BottlePreview({
   return (
     <div
       ref={host}
-      className="relative h-full min-h-[320px] w-full cursor-grab active:cursor-grabbing"
+      className={`relative h-full w-full cursor-grab active:cursor-grabbing ${compact ? "" : "min-h-[320px]"}`}
       onPointerDown={(e) => {
         drag.current = { x: e.clientX, yaw };
         e.currentTarget.setPointerCapture(e.pointerId);

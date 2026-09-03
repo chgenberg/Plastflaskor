@@ -26,12 +26,24 @@ export type Layer = {
   y: number;
   scale: number;
   rotation: number;
+  flipX?: boolean;
+  fit?: "cover" | "contain";
+  align?: "left" | "center" | "right";
   src?: string;
   text?: string;
   color?: string;
 };
 
-export type Tool = "design" | "text" | "upload" | "colors" | "bottle" | "preview";
+export type StudioDraft = {
+  id: string;
+  projectName: string;
+  productId: string;
+  canvasJson: string;
+  optionsJson: string;
+  cupDocumentJson?: string;
+};
+
+export type StudioPane = "add" | "layers" | "bottle" | "reqs";
 
 export type Finish = "matte" | "gloss";
 
@@ -79,6 +91,44 @@ export function defaultLayers(): Layer[] {
       text: "",
     },
   ];
+}
+
+function asNumber(value: unknown, fallback: number) {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+export function normalizeLayers(raw: unknown): Layer[] {
+  const defaults = defaultLayers();
+  if (!Array.isArray(raw)) return defaults;
+  return defaults.map((base) => {
+    const found = raw.find((item) => item && typeof item === "object" && (item as Layer).id === base.id);
+    if (!found || typeof found !== "object") return base;
+    const patch = found as Partial<Layer>;
+    return {
+      ...base,
+      ...patch,
+      id: base.id,
+      type: base.type,
+      name: typeof patch.name === "string" ? patch.name : base.name,
+      x: asNumber(patch.x, base.x),
+      y: asNumber(patch.y, base.y),
+      scale: asNumber(patch.scale, base.scale),
+      rotation: asNumber(patch.rotation, base.rotation),
+    };
+  });
+}
+
+export function parseStudioCanvas(raw: string): { layers: Layer[]; finish?: Finish; printFiles: string[] } {
+  try {
+    const parsed = JSON.parse(raw) as { layers?: unknown; finish?: Finish; printFiles?: unknown };
+    return {
+      layers: normalizeLayers(parsed.layers),
+      finish: parsed.finish === "gloss" || parsed.finish === "matte" ? parsed.finish : undefined,
+      printFiles: Array.isArray(parsed.printFiles) ? parsed.printFiles.filter((n): n is string => typeof n === "string") : [],
+    };
+  } catch {
+    return { layers: defaultLayers(), printFiles: [] };
+  }
 }
 
 export function skuLabel(p: StudioProduct) {

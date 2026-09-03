@@ -18,10 +18,10 @@ function loadImage(src: string) {
   });
 }
 
-function cover(ctx: CanvasRenderingContext2D, img: CanvasImageSource, w: number, h: number) {
+function fitImage(ctx: CanvasRenderingContext2D, img: CanvasImageSource, w: number, h: number, mode: "cover" | "contain") {
   const iw = "width" in img ? Number(img.width) : w;
   const ih = "height" in img ? Number(img.height) : h;
-  const scale = Math.max(w / iw, h / ih);
+  const scale = mode === "contain" ? Math.min(w / iw, h / ih) : Math.max(w / iw, h / ih);
   const dw = iw * scale;
   const dh = ih * scale;
   ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
@@ -51,9 +51,16 @@ export async function composeLabelCanvas(layers: Layer[], w = 1536, h = 768) {
       ctx.save();
       ctx.translate(w / 2, h / 2);
       ctx.rotate((artwork.rotation * Math.PI) / 180);
-      ctx.scale(artwork.scale, artwork.scale);
+      ctx.scale(artwork.flipX ? -artwork.scale : artwork.scale, artwork.scale);
       ctx.translate(-w / 2, -h / 2);
-      cover(ctx, img, w, h);
+      if (artwork.fit === "contain") {
+        const padX = w * 0.07;
+        const padY = h * 0.07;
+        ctx.translate(padX, padY);
+        fitImage(ctx, img, w - padX * 2, h - padY * 2, "contain");
+      } else {
+        fitImage(ctx, img, w, h, "cover");
+      }
       ctx.restore();
     } catch {
       /* keep paper base */
@@ -69,6 +76,7 @@ export async function composeLabelCanvas(layers: Layer[], w = 1536, h = 768) {
       ctx.save();
       ctx.translate((logo.x / 100) * w, (logo.y / 100) * h);
       ctx.rotate((logo.rotation * Math.PI) / 180);
+      ctx.scale(logo.flipX ? -1 : 1, 1);
       ctx.fillStyle = "rgba(255,255,255,0.92)";
       const padX = 14;
       const padY = 10;
@@ -87,10 +95,10 @@ export async function composeLabelCanvas(layers: Layer[], w = 1536, h = 768) {
     ctx.save();
     ctx.translate((text.x / 100) * w, (text.y / 100) * h);
     ctx.rotate((text.rotation * Math.PI) / 180);
-    ctx.scale(text.scale, text.scale);
+    ctx.scale(text.flipX ? -text.scale : text.scale, text.scale);
     ctx.fillStyle = text.color ?? "#1d1d1f";
     ctx.font = "600 48px Inter, ui-sans-serif, system-ui, sans-serif";
-    ctx.textAlign = "center";
+    ctx.textAlign = text.align ?? "center";
     ctx.textBaseline = "middle";
     ctx.shadowColor = "rgba(255,255,255,0.35)";
     ctx.shadowBlur = 4;
