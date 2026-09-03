@@ -56,13 +56,13 @@ export function SelectionHud({
           <span className="sr-only">Textfärg</span>
           <input type="color" value={layer.color ?? "#1d1d1f"} onChange={(e) => onColor(e.target.value)} className="h-5 w-5 cursor-pointer border-0 bg-transparent p-0" />
         </label>
-        <button type="button" onClick={() => onAlign("left")}>
+        <button type="button" onClick={() => onAlign("left")} aria-label="Vänsterställ">
           V
         </button>
-        <button type="button" onClick={() => onAlign("center")}>
+        <button type="button" onClick={() => onAlign("center")} aria-label="Centrera">
           M
         </button>
-        <button type="button" onClick={() => onAlign("right")}>
+        <button type="button" onClick={() => onAlign("right")} aria-label="Högerställ">
           H
         </button>
       </>

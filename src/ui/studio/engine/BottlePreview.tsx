@@ -96,6 +96,9 @@ export function BottlePreview({
       onPointerUp={() => {
         drag.current = null;
       }}
+      onPointerCancel={() => {
+        drag.current = null;
+      }}
     >
       {photo ? <PhotoMockup slug={slug} categorySlug={categorySlug} yaw={yaw} zoom={zoom} layers={layers} /> : null}
     </div>

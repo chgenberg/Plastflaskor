@@ -209,10 +209,14 @@ export async function listDesignsForUser(user: SessionLike) {
 
 export async function getLatestStudioDraft(user: SessionLike) {
   if (user.role === "RESELLER") return null;
+  const draft = { orderId: null, status: "DRAFT" as const };
   const where =
     user.role === "CUSTOMER"
-      ? { OR: [{ userId: user.id }, ...(user.customerId ? [{ order: { customerId: user.customerId } }] : [])] }
-      : {};
+      ? {
+          ...draft,
+          OR: [{ userId: user.id }, ...(user.customerId ? [{ order: { customerId: user.customerId } }] : [])],
+        }
+      : { ...draft, userId: user.id };
   return prisma.design.findFirst({
     where,
     orderBy: { createdAt: "desc" },

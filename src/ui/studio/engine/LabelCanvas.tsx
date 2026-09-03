@@ -131,7 +131,10 @@ export function LabelCanvas({
         let ny = clamp(y - active.dy, bleedY, 100 - bleedY);
         const sx = snap(nx, [50, safeX, 100 - safeX]);
         const sy = snap(ny, [50, safeY, 100 - safeY]);
-        setGuides({ x: sx === 50 || sx === safeX || sx === 100 - safeX ? sx : undefined, y: sy === 50 ? 50 : undefined });
+        setGuides({
+          x: sx === 50 || sx === safeX || sx === 100 - safeX ? sx : undefined,
+          y: sy === 50 || sy === safeY || sy === 100 - safeY ? sy : undefined,
+        });
         nx = sx;
         ny = sy;
         active.x = nx;
@@ -246,6 +249,13 @@ export function LabelCanvas({
     e.preventDefault();
     const [a, b] = [e.touches[0], e.touches[1]];
     const dist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+    const box = frame.current?.getBoundingClientRect();
+    if (box?.width && box.height) {
+      setOrigin({
+        x: ((((a.clientX + b.clientX) / 2) - box.left) / box.width) * 100,
+        y: ((((a.clientY + b.clientY) / 2) - box.top) / box.height) * 100,
+      });
+    }
     onZoom(clamp(pinch.current.zoom * (dist / (pinch.current.dist || 1)), 0.5, 2.2));
   }
 
@@ -281,6 +291,7 @@ export function LabelCanvas({
             onScaleStart={startScale}
             onRotateStart={startRotate}
             hideEmpty={hideEmpty}
+            wrap={wrap}
           />
         </div>
         <div className="av-dieline-bleed" />
@@ -290,7 +301,13 @@ export function LabelCanvas({
         {guides.y != null ? <span className="av-snap-y" style={{ top: `${guides.y}%` }} /> : null}
         {empty ? <p className="av-studio-empty">Släpp er logotyp här.</p> : null}
         {hud && hudPos ? (
-          <div className="av-studio-hud" style={{ left: hudPos.left, top: hudPos.top, transform: "translateX(-50%)" }} role="toolbar" aria-label="Lager">
+          <div
+            className="av-studio-hud"
+            style={{ left: hudPos.left, top: hudPos.top, transform: "translateX(-50%)" }}
+            role="toolbar"
+            aria-label="Lager"
+            onPointerDown={(e) => e.stopPropagation()}
+          >
             {hud}
           </div>
         ) : null}

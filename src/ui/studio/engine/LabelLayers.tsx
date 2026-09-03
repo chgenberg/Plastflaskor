@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { wrapInsets } from "./geometry";
 import { qrSvgDataUrl } from "./qrMark";
 import type { Layer } from "./types";
 
@@ -12,6 +13,7 @@ export function LabelLayers({
   onRotateStart,
   compact,
   hideEmpty,
+  wrap,
 }: {
   layers: Layer[];
   selectedId?: string;
@@ -22,9 +24,13 @@ export function LabelLayers({
   onRotateStart?: (id: string, e: { clientX: number; clientY: number }) => void;
   compact?: boolean;
   hideEmpty?: boolean;
+  wrap?: { widthMm: number; heightMm: number; bleedMm: number };
 }) {
   const artwork = layers.find((l) => l.type === "artwork");
   const rest = layers.filter((l) => l.type !== "artwork");
+  const inset = wrap
+    ? `${wrapInsets(wrap).safeY}% ${wrapInsets(wrap).safeX}%`
+    : "7%";
 
   return (
     <>
@@ -32,7 +38,7 @@ export function LabelLayers({
         <div
           data-layer-id={artwork.id}
           className={`absolute overflow-hidden ${interactive ? "cursor-default" : ""}`}
-          style={{ inset: artwork.fit === "contain" ? "7%" : 0 }}
+          style={{ inset: artwork.fit === "contain" ? inset : 0 }}
           onPointerDown={() => interactive && onSelect?.(artwork.id)}
         >
           {artwork.src.startsWith("data:") || artwork.src.startsWith("blob:") ? (

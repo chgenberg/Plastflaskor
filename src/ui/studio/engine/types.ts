@@ -8,6 +8,7 @@ export type StudioProduct = {
   variantSku?: string;
   wrap?: { widthMm: number; heightMm: number; bleedMm: number };
   printRequirements?: { code: string; label: string; required: boolean }[];
+  variants?: { sku: string; water: "stilla" | "kolsyrat" }[];
 };
 
 export function wrapForVolume(volumeMl?: number | null) {
@@ -138,7 +139,8 @@ export function skuLabel(p: StudioProduct) {
       ? `${ml / 10} cl`
       : `${ml} ml`
     : "—";
-  return volume;
+  const short = p.name.split("–")[0].replace(/\s+\d+\s*cl.*$/i, "").trim();
+  return short && volume !== "—" ? `${volume} · ${short}` : volume;
 }
 
 export function shapeFor(categorySlug: string): "bottle" | "can" | "cup" | "sport" | "cooler" {

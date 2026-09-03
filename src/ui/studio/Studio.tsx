@@ -102,14 +102,14 @@ export function Studio({
     () =>
       emptyCupDocument({
         productSlug: product.slug,
-        variantSku: product.variantSku,
+        variantSku: product.variants?.find((v) => v.water === waterType)?.sku ?? product.variantSku,
         quantity: qty,
         finish: finish === "gloss" ? "glossy" : "matte",
         wrap,
         layers: layers as unknown as Record<string, unknown>[],
         requirements,
       }),
-    [product.slug, product.variantSku, qty, finish, wrap, layers, requirements],
+    [product.slug, product.variantSku, product.variants, qty, finish, waterType, wrap, layers, requirements],
   );
   const options = useMemo(() => JSON.stringify({ ...cupDoc.options, waterType, cap }), [cupDoc, waterType, cap]);
   const emptyCanvas = !layers.some((l) => l.src || (l.type !== "artwork" && l.text));
@@ -222,6 +222,14 @@ export function Studio({
     [next[idx], next[swap]] = [next[swap], next[idx]];
     pushHistory(next);
   }
+
+  useEffect(() => {
+    if (!initialSlug) return;
+    setSheetOpen(true);
+    if (latestDraft && latestDraft.productId === product.id) applyDraft(latestDraft);
+    // Mount-only: hydrate matching draft and open the mobile sheet.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -391,7 +399,7 @@ export function Studio({
             </div>
           ) : null}
           {phase === "edit" && gate.total > 0 ? (
-            <p className="av-studio-gate hidden sm:block">
+            <p className="av-studio-gate">
               <button type="button" onClick={() => openPane("reqs")}>
                 {gate.done} av {gate.total} klara
               </button>
@@ -501,6 +509,7 @@ export function Studio({
                   volumeMl={product.volumeMl}
                   cap={cap}
                   finish={finish}
+                  water={waterType}
                   yaw={yaw}
                   zoom={peekOpen ? 1 : 0.72}
                   layers={layers}

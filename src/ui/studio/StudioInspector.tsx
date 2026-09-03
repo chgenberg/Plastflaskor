@@ -85,8 +85,9 @@ export function StudioInspector({
                     onPrintFile(file.name);
                     return;
                   }
+                  const target = selected.type === "artwork" ? "artwork" : "logo";
                   const reader = new FileReader();
-                  reader.onload = () => onUpload(String(reader.result), selected.type === "artwork" ? "artwork" : "logo");
+                  reader.onload = () => onUpload(String(reader.result), target);
                   reader.readAsDataURL(file);
                 }}
               />

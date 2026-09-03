@@ -1,3 +1,4 @@
+import { waterKindFromOptionsJson, waterTypeForOrder } from "@/domain/bottleCatalog";
 import { listWaterProducts } from "@/server/services/catalog.service";
 import { getLatestStudioDraft } from "@/server/services/document.service";
 import { getSessionUser } from "@/server/rbac";
@@ -20,6 +21,10 @@ export default async function DesignPage() {
         variantSku: p.variants[0]?.sku,
         wrap: wrapForVolume(p.variants[0]?.volumeMl),
         printRequirements: p.printRequirements,
+        variants: p.variants.map((v) => ({
+          sku: v.sku,
+          water: waterTypeForOrder(waterKindFromOptionsJson(v.optionsJson)),
+        })),
       }))}
       role={user?.role}
       latestDraft={latestDraft}
