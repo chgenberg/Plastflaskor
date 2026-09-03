@@ -43,7 +43,11 @@ export default async function KontoArtworkPage({
       <PageHeader
         title="Artwork"
         subtitle="Era artwork-filer och tidigare designer."
-        action={<LinkButton href="/designa">Ny design</LinkButton>}
+        action={
+          <LinkButton href="/designa" size="sm">
+            Ny design
+          </LinkButton>
+        }
       />
       <NeedsAttention
         items={missing.map((o) => ({

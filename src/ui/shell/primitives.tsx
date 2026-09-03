@@ -164,44 +164,19 @@ export function PageHeader({
   action?: ReactNode;
   actions?: ReactNode;
 }) {
+  const slot = actions ?? action;
   return (
     <div className="av-page-header">
-      <div>
+      <div className="av-page-header-copy">
         <h1>{title}</h1>
         {subtitle ? <p>{subtitle}</p> : null}
       </div>
-      {actions ?? action}
+      {slot ? <div className="av-page-header-actions">{slot}</div> : null}
     </div>
   );
 }
 
-export function NeedsAttention({
-  title = "Kräver åtgärd",
-  items,
-}: {
-  title?: string;
-  items: { key: string; href: string; label: string; detail?: string }[];
-}) {
-  if (!items.length) return null;
-  return (
-    <section className="av-attention">
-      <p className="av-label">{title}</p>
-      <ul>
-        {items.map((item) => (
-          <li key={item.key}>
-            <Link href={item.href} className="av-attention-row">
-              <span>
-                <strong>{item.label}</strong>
-                {item.detail ? <span className="av-attention-detail">{item.detail}</span> : null}
-              </span>
-              <span aria-hidden>→</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
+export { NeedsAttention } from "./NeedsAttention";
 
 export function StatusInfo({
   title,

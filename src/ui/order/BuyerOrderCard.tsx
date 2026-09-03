@@ -18,7 +18,7 @@ export function BuyerOrderTable({ rows }: { rows: BuyerOrderRow[] }) {
   const showAction = rows.some((r) => r.actionHref && r.actionLabel);
   return (
     <DashTable
-      count={`${rows.length} order${rows.length === 1 ? "" : "ar"}`}
+      count={`${rows.length} ${rows.length === 1 ? "order" : "ordrar"}`}
       columns={[
         { label: "Order" },
         ...(showCustomer ? [{ label: "Kund" }] : []),

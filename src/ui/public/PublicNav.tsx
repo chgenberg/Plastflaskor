@@ -71,7 +71,6 @@ export function PublicNav({ email }: { email?: string | null }) {
   const overHero = path === "/";
   const [mobileOpen, setMobileOpen] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
-  const [scrolled, setScrolled] = useState(!overHero);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -84,22 +83,8 @@ export function PublicNav({ email }: { email?: string | null }) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  useEffect(() => {
-    if (!overHero) {
-      setScrolled(true);
-      return;
-    }
-    const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [overHero]);
-
   return (
-    <header
-      className={overHero ? "av-site-header fixed inset-x-0 top-0 z-50" : "sticky top-0 z-50 border-b border-[var(--av-border)] bg-[var(--av-surface)]/85 backdrop-blur-md"}
-      data-scrolled={overHero ? (scrolled ? "true" : "false") : undefined}
-    >
+    <header className={`av-site-header z-50 ${overHero ? "fixed inset-x-0 top-0" : "sticky top-0"}`}>
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4">
         <Link href="/" className="shrink-0" onClick={() => setOpen(null)}>
           <Image
@@ -108,7 +93,7 @@ export function PublicNav({ email }: { email?: string | null }) {
             width={148}
             height={40}
             priority
-            className={`h-8 w-auto ${overHero && !scrolled ? "brightness-0 invert" : ""}`}
+            className="h-8 w-auto"
           />
         </Link>
 

@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { previewPriceAction } from "@/actions/checkout";
 import {
-  bottleColorLabel,
-  capLabel,
+  bottleColorShopLabel,
+  capShopLabel,
   parseBottleOptions,
   type WaterKind,
   waterKindFromOptionsJson,
@@ -15,7 +15,7 @@ import {
 import { CAP_CHOICES, COLOR_CHOICES, matchVariant, unique } from "@/domain/bottleVariants";
 import type { ProductSelection } from "@/domain/productSelection";
 import { volumeLabel } from "@/domain/productFacts";
-import { Button, controlClass } from "@/ui/shell/primitives";
+import { Button } from "@/ui/shell/primitives";
 
 export type ConfigVariant = {
   id: string;
@@ -25,14 +25,6 @@ export type ConfigVariant = {
 };
 
 type Row = ConfigVariant & { waterType: WaterKind; cap?: string; color?: string };
-
-function chipClass(on: boolean) {
-  return `rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
-    on
-      ? "border-[var(--av-ink)] bg-[var(--av-ink)] text-[var(--av-surface)]"
-      : "border-[var(--av-border-strong)] bg-[var(--av-surface)] text-[var(--av-text)]"
-  }`;
-}
 
 export function ProductConfigurator({
   productId,
@@ -105,126 +97,141 @@ export function ProductConfigurator({
       }
     : null;
 
+  const summary = [volumeLabel(selected?.volumeMl ?? volumeMl), waterKindLabel(resolvedType), capShopLabel(cap)]
+    .filter(Boolean)
+    .join(" · ");
+
+  function bump(delta: number) {
+    setQty((n) => Math.max(moq, n + delta));
+  }
+
   return (
-    <div className="av-card space-y-4 p-6">
-      {sizes.length ? (
-        <fieldset>
-          <legend className="mb-2 text-sm font-medium">Volym</legend>
-          <div className="flex flex-wrap gap-2">
-            {sizes.map((ml) => (
-              <button key={ml} type="button" className={chipClass(volumeMl === ml)} onClick={() => setVolumeMl(ml)}>
-                {volumeLabel(ml)}
-              </button>
-            ))}
-          </div>
-        </fieldset>
-      ) : null}
+    <div className="av-config">
+      <div className="av-config-head">
+        <p className="av-config-kicker">Din flaska</p>
+        <p className="av-config-summary">{summary}</p>
+      </div>
 
-      {types.length > 1 ? (
-        <fieldset>
-          <legend className="mb-2 text-sm font-medium">Vatten</legend>
-          <div className="flex flex-wrap gap-2">
-            {types.map((t) => (
-              <button
-                key={t}
-                type="button"
-                className={chipClass(resolvedType === t)}
-                onClick={() => setWaterType(t)}
-              >
-                {waterKindLabel(t)}
-              </button>
-            ))}
-          </div>
-        </fieldset>
-      ) : null}
-
-      <label className="block text-sm font-medium">
-        Kork
-        <select className={`${controlClass} mt-1.5`} value={cap} onChange={(e) => setCap(e.target.value)}>
-          {CAP_CHOICES.map((c) => (
-            <option key={c} value={c}>
-              {capLabel(c)}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <label className="block text-sm font-medium">
-        Flaskfärg
-        <select className={`${controlClass} mt-1.5`} value={color} onChange={(e) => setColor(e.target.value)}>
-          {COLOR_CHOICES.map((c) => (
-            <option key={c} value={c}>
-              {bottleColorLabel(c)}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <label className="block text-sm font-medium">
-        Antal
-        <input
-          type="number"
-          min={moq}
-          step={pack}
-          value={qty}
-          onChange={(e) => setQty(Number(e.target.value) || moq)}
-          className={`${controlClass} mt-1.5`}
-        />
-        <span className="mt-1 block text-[12px] text-[var(--av-text-muted)]">Minst {moq} st</span>
-      </label>
-
-      <fieldset>
-        <legend className="mb-2 text-sm font-medium">Artwork</legend>
-        <label className="flex items-start gap-2 text-sm">
-          <input type="radio" name="artwork-when" checked={!artworkNow} onChange={() => setArtworkNow(false)} />
-          Skicka senare
-        </label>
-        <label className="mt-2 flex items-start gap-2 text-sm">
-          <input type="radio" name="artwork-when" checked={artworkNow} onChange={() => setArtworkNow(true)} />
-          Designa nu
-        </label>
-        {artworkNow ? (
-          <p className="mt-2 text-sm">
-            <Link
-              href={`/designa/${slug}?next=/produkter/profilvatten/${slug}`}
-              className="font-medium text-[var(--av-accent)]"
-            >
-              Öppna studion
-            </Link>
-          </p>
+      <div className="av-config-scroll">
+        {sizes.length ? (
+          <fieldset className="av-config-field">
+            <legend>Volym</legend>
+            <div className="av-seg" role="group" aria-label="Volym">
+              {sizes.map((ml) => (
+                <button
+                  key={ml}
+                  type="button"
+                  aria-pressed={volumeMl === ml}
+                  onClick={() => setVolumeMl(ml)}
+                >
+                  {volumeLabel(ml)}
+                </button>
+              ))}
+            </div>
+          </fieldset>
         ) : null}
-      </fieldset>
 
-      {canSeePrices ? (
-        quote ? (
-          <p className="text-sm font-medium">
-            {quote.lineExVat.toLocaleString("sv-SE")} exkl. moms ({quote.unitPriceExVat.toLocaleString("sv-SE")} / st)
-          </p>
+        {types.length > 1 ? (
+          <fieldset className="av-config-field">
+            <legend>Vatten</legend>
+            <div className="av-seg" role="group" aria-label="Vatten">
+              {types.map((t) => (
+                <button key={t} type="button" aria-pressed={resolvedType === t} onClick={() => setWaterType(t)}>
+                  {waterKindLabel(t)}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+        ) : null}
+
+        <div className="av-config-grid">
+          <label className="av-config-field">
+            <span>Kork</span>
+            <select className="av-config-select" value={cap} onChange={(e) => setCap(e.target.value)}>
+              {CAP_CHOICES.map((c) => (
+                <option key={c} value={c}>
+                  {capShopLabel(c)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="av-config-field">
+            <span>Färg</span>
+            <select className="av-config-select" value={color} onChange={(e) => setColor(e.target.value)}>
+              {COLOR_CHOICES.map((c) => (
+                <option key={c} value={c}>
+                  {bottleColorShopLabel(c)}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <div className="av-config-field">
+          <span>Antal</span>
+          <div className="av-stepper">
+            <button type="button" aria-label="Minska antal" onClick={() => bump(-pack)} disabled={qty <= moq}>
+              −
+            </button>
+            <input
+              type="number"
+              min={moq}
+              step={pack}
+              value={qty}
+              onChange={(e) => setQty(Math.max(moq, Number(e.target.value) || moq))}
+            />
+            <button type="button" aria-label="Öka antal" onClick={() => bump(pack)}>
+              +
+            </button>
+          </div>
+          <p className="av-config-hint">Minst {moq.toLocaleString("sv-SE")} st</p>
+        </div>
+
+        <fieldset className="av-config-field">
+          <legend>Artwork</legend>
+          <div className="av-seg" role="radiogroup" aria-label="Artwork">
+            <button type="button" aria-pressed={!artworkNow} onClick={() => setArtworkNow(false)}>
+              Senare
+            </button>
+            <button type="button" aria-pressed={artworkNow} onClick={() => setArtworkNow(true)}>
+              Designa nu
+            </button>
+          </div>
+          {artworkNow ? (
+            <p className="av-config-hint">
+              <Link href={`/designa/${slug}?next=/produkter/profilvatten/${slug}`}>Öppna studion</Link>
+            </p>
+          ) : (
+            <p className="av-config-hint">Du kan skicka filen efter ordern.</p>
+          )}
+        </fieldset>
+      </div>
+
+      <div className="av-config-foot">
+        {canSeePrices ? (
+          quote ? (
+            <p className="av-config-price">
+              {quote.lineExVat.toLocaleString("sv-SE")} exkl. moms
+              <span>
+                {quote.unitPriceExVat.toLocaleString("sv-SE")} / st
+              </span>
+            </p>
+          ) : (
+            <p className="av-config-hint">Kontakta oss för pris vid detta antal.</p>
+          )
         ) : (
-          <p className="text-sm text-[var(--av-text-muted)]">Kontakta oss för pris vid detta antal.</p>
-        )
-      ) : (
-        <p className="text-sm text-[var(--av-text-muted)]">Pris visas när du skapar konto</p>
-      )}
-
-      <details className="text-sm">
-        <summary className="cursor-pointer font-medium">Trygg beställning</summary>
-        <ul className="mt-2 list-disc space-y-1 pl-5 text-[var(--av-text-secondary)]">
-          <li>Ingen betalning nu. Faktura kommer efter leverans.</li>
-          <li>Aqua bekräftar leveransdatum i orderbekräftelsen.</li>
-          <li>Artwork kan skickas senare.</li>
-        </ul>
-      </details>
-
-      <Button
-        type="button"
-        size="lg"
-        className="w-full"
-        disabled={!selection || belowMoq}
-        onClick={() => selection && onOrder(selection)}
-      >
-        Beställ
-      </Button>
+          <p className="av-config-hint">Pris visas när du skapar konto</p>
+        )}
+        <Button
+          type="button"
+          size="lg"
+          className="w-full"
+          disabled={!selection || belowMoq}
+          onClick={() => selection && onOrder(selection)}
+        >
+          Beställ
+        </Button>
+      </div>
     </div>
   );
 }

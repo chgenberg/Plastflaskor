@@ -54,7 +54,7 @@ function fmtDate(value?: Date | string | null) {
 export function OrderResultsTable({ orders, hrefBase = "/operations/ordrar" }: { orders: ResultOrder[]; hrefBase?: string }) {
   return (
     <DashTable
-      count={`${orders.length} order${orders.length === 1 ? "" : "ar"}`}
+      count={`${orders.length} ${orders.length === 1 ? "order" : "ordrar"}`}
       columns={[
         { label: "Order" },
         { label: "Datum" },

@@ -64,7 +64,11 @@ export default async function OpsHome() {
       <PageHeader
         title="Vad behöver du göra nu?"
         subtitle="Master Dashboard — kräver åtgärd."
-        action={<LinkButton href="/operations/pipeline">Öppna pipeline</LinkButton>}
+        action={
+          <LinkButton href="/operations/pipeline" size="sm">
+            Öppna pipeline
+          </LinkButton>
+        }
       />
       <Reveal>
         <KpiStrip>

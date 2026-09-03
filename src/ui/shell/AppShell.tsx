@@ -146,7 +146,7 @@ function ShellFrame({
 
   return (
     <div className="min-h-dvh bg-[var(--av-bg)] text-[var(--av-text)]">
-      <aside className="av-shell-aside hidden md:fixed md:inset-y-0 md:left-0 md:z-40 md:flex">
+      <aside className="av-shell-aside hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:flex">
         <div className="av-shell-brand">
           <Link href="/" className="inline-block">
             <Image src="/brand/aqua-visibility-logo.png" alt="aqua visibility" width={120} height={38} className="h-6 w-auto" />
@@ -158,7 +158,7 @@ function ShellFrame({
         {foot}
       </aside>
 
-      <header className="av-topbar md:hidden">
+      <header className="av-topbar lg:hidden">
         <p className="av-topbar-title truncate">{pageTitle}</p>
         <button
           type="button"
@@ -172,7 +172,7 @@ function ShellFrame({
         </button>
       </header>
 
-      <nav className="av-tabbar md:hidden" aria-label="Snabbmeny">
+      <nav className="av-tabbar lg:hidden" aria-label="Snabbmeny">
         {tabItems.map((item) => {
           const on = childActive(item.href, path, params);
           return (
@@ -188,8 +188,8 @@ function ShellFrame({
         ) : null}
       </nav>
 
-      {open ? <button type="button" className="av-drawer-overlay md:hidden" aria-label="Stäng meny" onClick={() => setOpen(false)} /> : null}
-      <div id="av-drawer" className="av-drawer-panel md:hidden" inert={!open || undefined}>
+      {open ? <button type="button" className="av-drawer-overlay lg:hidden" aria-label="Stäng meny" onClick={() => setOpen(false)} /> : null}
+      <div id="av-drawer" className="av-drawer-panel lg:hidden" inert={!open || undefined}>
         <div className="flex items-center justify-between px-4 py-3">
           <p className="text-sm font-medium">Meny</p>
           <button type="button" className="av-drawer-close av-shell-logout" onClick={() => setOpen(false)}>
@@ -201,10 +201,8 @@ function ShellFrame({
         {foot}
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col pt-[var(--av-topbar-h)] pb-[var(--av-tabbar-h)] md:pl-[var(--av-shell-w)] md:pt-0 md:pb-0">
-        <main className={`mx-auto w-full max-w-7xl flex-1 ${dense ? "px-3 py-5 md:px-6 md:py-7" : "px-4 py-6 md:px-8 md:py-8"}`}>
-          {children}
-        </main>
+      <div className="av-shell-stage flex min-w-0 flex-1 flex-col">
+        <main className={`av-shell-canvas${dense ? " av-shell-canvas--dense" : ""}`}>{children}</main>
       </div>
     </div>
   );

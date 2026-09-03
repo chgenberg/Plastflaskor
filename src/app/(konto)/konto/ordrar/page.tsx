@@ -34,7 +34,14 @@ export default async function KontoOrders({
             : all;
   return (
     <DashPage>
-      <PageHeader title="Ordrar" action={<LinkButton href="/konto/ordrar/ny">Ny order</LinkButton>} />
+      <PageHeader
+        title="Ordrar"
+        action={
+          <LinkButton href="/konto/ordrar/ny" size="sm">
+            Ny order
+          </LinkButton>
+        }
+      />
       <div className="flex flex-wrap gap-1.5">
         {[
           { id: "all", label: "Alla", href: "/konto/ordrar" },

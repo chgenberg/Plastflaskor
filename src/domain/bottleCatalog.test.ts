@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  bottleColorShopLabel,
   capLabel,
+  capShopLabel,
   parseWaterKind,
   waterKindFromOptionsJson,
   waterTypeForOrder,
@@ -23,4 +25,9 @@ test("capLabel names skruvkork as SKRUVKORK", () => {
   assert.equal(capLabel("sportkork"), "SPORTKORK");
   assert.equal(capLabel("black"), "SVART KAPSYL");
   assert.equal(capLabel(undefined), "SKRUVKORK");
+});
+
+test("shop labels use sentence case", () => {
+  assert.equal(capShopLabel("skruvkork"), "Skruvkork");
+  assert.equal(bottleColorShopLabel("transparent"), "Transparent");
 });

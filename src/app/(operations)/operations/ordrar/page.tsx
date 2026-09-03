@@ -75,7 +75,11 @@ export default async function OpsOrders({
       <PageHeader
         title={title}
         subtitle="Filtrera på fas eller sök order, kund, produkt, org.nr eller tracking."
-        action={<LinkButton href="/operations/ordrar/ny">Ny order</LinkButton>}
+        action={
+          <LinkButton href="/operations/ordrar/ny" size="sm">
+            Ny order
+          </LinkButton>
+        }
       />
       <OrderFilterForm
         values={{ q, lane, phase, from, to, size, waterType, factory, late }}

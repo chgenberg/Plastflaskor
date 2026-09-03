@@ -62,8 +62,8 @@ export default async function ProductPage({ params }: { params: Promise<{ catego
         <p className="mt-4 max-w-2xl text-lg text-[var(--av-text-secondary)]">{item.oneLiner}</p>
       </Reveal>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_400px] lg:items-start">
-        <div className="space-y-8">
+      <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
+        <div className="min-w-0 space-y-8">
           <section>
             <h2 className="text-sm font-semibold">Om produkten</h2>
             <article className="mt-3 space-y-4 text-sm leading-relaxed text-[var(--av-text-secondary)]">
@@ -106,7 +106,7 @@ export default async function ProductPage({ params }: { params: Promise<{ catego
             </details>
           ) : null}
         </div>
-        <div id="bestall" className="scroll-mt-20 lg:sticky lg:top-24">
+        <aside id="bestall" className="av-config-dock scroll-mt-24">
           {isWater ? (
             <ProductCheckout
               productId={item.id}
@@ -118,12 +118,12 @@ export default async function ProductPage({ params }: { params: Promise<{ catego
               me={user?.email ? { email: user.email, customerId: user.customerId ?? null } : null}
             />
           ) : (
-            <div className="av-card p-6">
+            <div className="av-config p-6">
               <p className="text-sm text-[var(--av-text-secondary)]">Den här produkten beställs via offert.</p>
               <PillLink href={`/offert?product=${item.id}`}>Begär offert</PillLink>
             </div>
           )}
-        </div>
+        </aside>
       </div>
     </PublicPage>
   );

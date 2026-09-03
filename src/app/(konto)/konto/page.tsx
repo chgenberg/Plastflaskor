@@ -95,7 +95,11 @@ export default async function KontoHome({
       <PageHeader
         title={`Hej ${user.name?.split(" ")[0] ?? ""}`}
         subtitle="Vad som behövs av dig, sedan ordrar och snabblänkar."
-        action={<LinkButton href="/konto/ordrar/ny">Ny order</LinkButton>}
+        action={
+          <LinkButton href="/konto/ordrar/ny" size="sm">
+            Ny order
+          </LinkButton>
+        }
       />
       <NeedsAttention items={attention} />
       {firstOrder ? (
@@ -131,7 +135,7 @@ export default async function KontoHome({
         <section className="space-y-3">
           <div className="flex items-end justify-between gap-3">
             <h2 className="av-section-title">Senaste ordrar</h2>
-            <Link href="/konto/ordrar" className="text-sm font-medium text-[var(--av-accent)]">
+            <Link href="/konto/ordrar" className="av-grow-link">
               Visa alla
             </Link>
           </div>

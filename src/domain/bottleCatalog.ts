@@ -76,6 +76,20 @@ export function bottleColorLabel(value?: string | null) {
   return "TRANSPARENT FLASKA";
 }
 
+/** Butikstext. Versaler i capLabel/bottleColorLabel är för visual spec. */
+export function capShopLabel(value?: string | null) {
+  if (value === "sportkork" || value === "sport") return "Sportkork";
+  if (value === "white") return "Vit kapsyl";
+  if (value === "black") return "Svart kapsyl";
+  return "Skruvkork";
+}
+
+export function bottleColorShopLabel(value?: string | null) {
+  if (value === "frost") return "Frostad";
+  if (value === "black") return "Svart";
+  return "Transparent";
+}
+
 export function labelSpecForVolume(volumeMl?: number | null) {
   const cl = volumeMl ? Math.round(volumeMl / 10) : 33;
   return {
